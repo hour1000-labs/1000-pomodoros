@@ -11,6 +11,37 @@ Before editing files for a substantial task:
 
 # Project Context
 
+Read the following to get the full context of the project:
+@context/product-spec.md
+@context/decisions.md
+@context/ai-interaction.md
+@context/current-feature.md
+@context/DESIGN.md
+
+## Feature Workflow
+
+For feature or fix work, use the local `feature` skill in `.codex/skills/feature/`.
+
+Standard lifecycle:
+
+1. `feature load <spec path or description>`
+2. `feature start`
+3. `feature test`
+4. `feature review`
+5. `feature complete`
+
+`feature explain` is optional.
+
+Rules:
+
+- Treat `context/current-feature.md` as the source of truth for active scope.
+- Every implementation change must map to an acceptance criterion.
+- Do not implement a feature until it has been loaded and documented.
+- Do not complete a feature unless its status is `Ready to Commit`.
+- If testing or review fails, keep the status `In Progress`, fix the issues, and repeat `feature test` and `feature review`.
+- Preserve `## History` as append-only.
+- Follow `context/ai-interaction.md` for branching, communication, scope, and verification rules.
+
 ## Scaffold
 
 - Project: `1000-pomodoros`

@@ -1568,65 +1568,23 @@ The first version is complete when a user can:
 
 ---
 
-# **24\. Open Product Decisions**
+# **24\. Product Decision Registry**
 
-We should both resolve these and agree unanimously before design is finalized.
+Confirmed and pending product decisions are tracked in
+[`context/decisions.md`](decisions.md), which is authoritative when this
+specification contains older alternatives or recommendations.
 
-## **Product identity**
-
-* Is “journey” the correct term? journey sounds good to me  
-* Are users tracking skills, projects, goals, or all three? all three works, but i guess primarily skills  
-* Is the 1,000-hour target literal or symbolic? literal  
-* Is one pomodoro always exactly 25 minutes? yes  
-* Is the product primarily a timer or a progress tracker? progress tracker
-
-## **Focus sessions**
-
-* Minimum session duration 5mins  
-* Whether partial sessions count yes, if it’s to 5 mins  
-* Whether overtime is encouraged no, overtime is off by default. there should also be a cap to the overtime, like maybe 2-4 hours max in case the user forgets to stop the timer  
-* Whether manual time is allowed yes  
-* Whether break timers are included not sure if we should for initial version. thoughts?  
-* Whether users may hide the timer no, don’t see an appeal for hiding the timer unless you feel it’s a good feature  
-* Whether focus ratings belong in version one don’t think we need focus ratings at all ever, maybe because i’ve never actually rated my sessions for any of the apps that i’ve used
-
-## **Progress**
-
-* Final visual design for pomodoros tbd  
-* How partial pomodoros appear maybe do some math and base it off of how many minutes the user has worked? 12.5 \= half a tomato 5 mins \= ⅕ of a tomato  
-* How 2,400 pomodoros are displayed i visualize it to fill up the whole screen, i think psychologically having the user see a filled page gives them a strong sense of accomplishment  
-* Whether users can customize their final target yes, can update whenever they want  
-* Whether milestones are time-based, outcome-based, or both time-based, but i guess it could be outcome-based too if they finish it before the 1000 hour mark.
-
-## **Next steps**
-
-* Whether each journey has one next step or a list a list with the current next step at the top of the list  
-* Whether due dates are included no  
-* Whether users can schedule next steps not sure, probably not?  
-* Whether completed next steps appear prominently not sure. maybe have the completed next steps in a separate screen?
-
-## **Motivation**
-
-* Whether streaks are included yes  
-* What counts as maintaining a streak doing a focus session for at least 5 minutes for any journey  
-* Whether weekly goals are included sure  
-* Whether milestone sharing is included maybe eventually  
-* Whether completion animations are subtle or playful subtle is fine
-
-## **Business**
-
-* Free, paid, or freemium free on initial version, but freemium later  
-* Number of free journeys 1-3  
-* Features users may eventually pay for having more than one journey, custom focus timers (only allow 25 mins for free people without customization)  
-* Initial target audience anyone that wants to improve a skill or hobby  
-* Launch channel tbd  
-* Definition of a successful first month have it work end to end with little to no bugs
+Before loading a feature, check the decision registry. A pending decision blocks
+work only when it materially affects that feature's behavior, acceptance
+criteria, data model, or user interface.
 
 ---
 
 # **25\. Recommended Default Decisions**
 
-To keep development focused, the current recommended defaults are:
+These are historical recommendations from the original specification. They are
+not authoritative when they differ from `context/decisions.md`; confirm or move
+them into that registry before relying on them for implementation.
 
 * Use “Journey” for a tracked skill or project.  
 * One pomodoro equals 25 minutes.  
@@ -1714,4 +1672,3 @@ Only after the product behavior and version-one scope are agreed upon should the
 * Hosting  
 * API boundaries  
 * Testing strategy
-

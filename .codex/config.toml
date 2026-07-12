@@ -1,0 +1,36 @@
+# ~/.codex/config.toml
+
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 6
+max_depth = 1
+
+[agents.code-scanner]
+description = "Read-only TanStack Start auditor for security, performance, code quality, and component/file decomposition."
+config_file = "agents/code-scanner.toml"
+
+[agents.auth-auditor]
+description = "Security auditor for TanStack Start auth boundaries, sessions, tokens, password flows, and protected mutations."
+config_file = "agents/auth-auditor.toml"
+
+[agents.ui-reviewer]
+description = "Reviews UI for visual issues, responsiveness, and accessibility."
+config_file = "agents/ui-reviewer.toml"
+
+[agents.refactor-scanner]
+description = "Scans a requested folder for duplicate code that should be extracted into shared utilities, components, hooks, wrappers, or helpers."
+config_file = "agents/refactor-scanner.toml"
+
+[mcp_servers.neon]
+url = "https://mcp.neon.tech/mcp"
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+env_vars = ["CONTEXT7_API_KEY"]
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["@playwright/mcp@latest"]
