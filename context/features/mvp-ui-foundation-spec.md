@@ -49,5 +49,6 @@ This spec establishes the shared frontend foundation for the 1000 Pomodoros code
 - @context/features/onboarding-create-journey-spec.md
 - @context/features/timer-setup-spec.md
 - @context/features/journey-detail-spec.md
+- @context/screenshots/landing-page-ui.png
 - @src/lib/mock-data.ts
 

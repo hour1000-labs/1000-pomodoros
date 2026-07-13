@@ -1,9 +1,10 @@
 # Complete Action
 
-Complete and integrate a feature only after its documented gates pass. This
-action performs consequential Git operations; obtain user confirmation before
-commit, merge, push, branch deletion, or remote-branch deletion unless the user
-explicitly requested those operations in the same task.
+Complete and integrate a feature only after its documented gates pass. An
+explicit `feature complete` request authorizes the standard local integration
+sequence below: commit, merge to `main`, record/reset the feature, delete the
+local feature branch, and push `main`. Obtain separate confirmation for a pull
+request, force operation, remote-branch deletion, or other workflow variation.
 
 ## Preconditions
 
@@ -20,13 +21,15 @@ gate by editing a checkbox during this action.
 
 ## Steps
 
-1. Summarize the files to be committed and request any required confirmation.
+1. Summarize the files to be committed. Preserve and exclude unrelated user
+   changes throughout branch switches and commits.
 2. Stage only files belonging to the feature; never use broad staging when
    unrelated changes are present.
 3. Commit with a descriptive message.
-4. Integrate using the repository's requested workflow. Do not assume that local
-   merge to `main` is preferred over a pull request.
-5. After successful integration, append one entry to the end of `## History`:
+4. Switch to local `main` and merge the documented feature branch. Prefer a
+   fast-forward merge and stop rather than forcing or rewriting history if it
+   cannot fast-forward.
+5. After the successful merge, append one entry to the end of `## History`:
 
    ```markdown
    ### YYYY-MM-DD — <feature name>
@@ -45,9 +48,21 @@ gate by editing a checkbox during this action.
    - Verification restores the standard unchecked checklist.
    - Notes is empty except for its comment.
    - History retains all entries, including the new entry.
-7. Commit the history/reset separately when the integration workflow requires it.
-8. Push or delete branches only with explicit authorization, and report the exact
-   branch and remote affected.
+7. Commit the history/reset separately on `main`.
+8. Delete the merged local feature branch with the safe branch-delete operation.
+9. Push `main` to its configured remote.
+10. Delete a remote feature branch only when the user explicitly requests it;
+    remote deletion is not part of the standard sequence.
+
+The required standard order is:
+
+```text
+commit feature -> merge to main -> commit history/reset -> delete local branch -> push main
+```
+
+Do not delete the local feature branch until both feature commits are reachable
+from local `main`. If the push fails, keep local `main` intact and report the
+failure; the merged work remains recoverable from `main`.
 
 ## Completion Gate
 
