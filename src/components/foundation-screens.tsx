@@ -228,7 +228,7 @@ export function OnboardingFoundationScreen({
 
   return (
     <OnboardingLayout>
-      <div className="w-full space-y-8">
+      <div className="w-full max-w-reading space-y-8">
         <ScreenHeader
           eyebrow={copy.step}
           title={copy.title}

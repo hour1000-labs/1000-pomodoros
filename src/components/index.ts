@@ -11,6 +11,7 @@ export {
 } from '@/components/layouts'
 export { LoadingState } from '@/components/loading-state'
 export { MilestoneProgress } from '@/components/milestone-progress'
+export { OnboardingCreateJourney } from '@/components/onboarding-create-journey'
 export { PomodoroBlock } from '@/components/pomodoro-block'
 export { PomodoroGrid } from '@/components/pomodoro-grid'
 export { PersistedStateBoundary } from '@/components/persisted-state-boundary'
