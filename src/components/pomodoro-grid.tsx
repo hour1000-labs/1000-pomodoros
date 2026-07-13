@@ -41,7 +41,7 @@ export function PomodoroGrid({
     <figure className={cn('m-0 w-full overflow-x-auto', className)}>
       <div
         className={cn(
-          'grid grid-cols-10 gap-1',
+          'grid grid-cols-10 gap-1 p-1',
           onSelect && 'min-w-[29.75rem] grid-cols-10',
         )}
         aria-label={`${completedPomodoros} complete pomodoros out of ${safeTotal}`}
