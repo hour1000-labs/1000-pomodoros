@@ -4,6 +4,8 @@
 
 This is step 1 of 4 in onboarding. The screen captures the one thing the user wants to improve and keeps setup intentionally minimal.
 
+Use the screenshot referenced below as the visual reference for how this screen should look.
+
 ## Requirements
 
 - Create the screen at `/onboarding/journey`.
@@ -27,9 +29,8 @@ This is step 1 of 4 in onboarding. The screen captures the one thing the user wa
 
 ## References
 
-- @context/screenshots/onboarding-create-journey.png
+- @context/screenshots/onboarding1-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/onboarding-add-motivation-spec.md
 - @src/lib/mock-data.ts
-

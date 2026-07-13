@@ -2,7 +2,9 @@
 
 ## Overview
 
-This screen introduces 1000 Pomodoros, shows the product before explaining it, and sends a new user into Journey creation. Use the exported Stitch mockup referenced below for the visual composition.
+This screen introduces 1000 Pomodoros, shows the product before explaining it, and sends a new user into Journey creation.
+
+Use the screenshot referenced below as the visual reference for how this screen should look.
 
 ## Requirements
 
@@ -26,9 +28,8 @@ This screen introduces 1000 Pomodoros, shows the product before explaining it, a
 
 ## References
 
-- @context/screenshots/landing-page.png
+- @context/screenshots/landing-page-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/onboarding-create-journey-spec.md
 - @src/lib/mock-data.ts
-

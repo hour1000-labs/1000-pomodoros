@@ -4,6 +4,8 @@
 
 This is the returning-user Home screen. It answers what the user should work on now before showing recent progress or supporting statistics.
 
+Use the screenshot referenced below as the visual reference for how this screen should look.
+
 ## Requirements
 
 - Create the screen at `/home`.
@@ -27,10 +29,9 @@ This is the returning-user Home screen. It answers what the user should work on 
 
 ## References
 
-- @context/screenshots/home.png
+- @context/screenshots/home-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/journey-detail-spec.md
 - @context/features/timer-setup-spec.md
 - @src/lib/mock-data.ts
-

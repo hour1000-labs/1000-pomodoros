@@ -4,6 +4,8 @@
 
 This is the ready state of the focus experience. It confirms the Journey, Next step, and duration while keeping the user one action away from focused work.
 
+Use the screenshot referenced below as the visual reference for how this screen should look.
+
 ## Requirements
 
 - Implement the ready state at `/focus`.
@@ -27,10 +29,9 @@ This is the ready state of the focus experience. It confirms the Journey, Next s
 
 ## References
 
-- @context/screenshots/timer-setup.png
+- @context/screenshots/timer-setup-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/focus-timer-running-spec.md
 - @context/features/focus-timer-paused-spec.md
 - @src/lib/mock-data.ts
-

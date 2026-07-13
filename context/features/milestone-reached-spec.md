@@ -4,6 +4,8 @@
 
 This screen recognizes a meaningful amount of completed work without turning progress into a loud reward system. It appears only for a milestone that was actually earned.
 
+Use the screenshot referenced below as the visual reference for how this screen should look.
+
 ## Requirements
 
 - Create the screen at `/milestones/$milestoneId`.
@@ -27,10 +29,9 @@ This screen recognizes a meaningful amount of completed work without turning pro
 
 ## References
 
-- @context/screenshots/milestone-reached.png
+- @context/screenshots/milestone-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/session-complete-spec.md
 - @context/features/journey-detail-spec.md
 - @src/lib/mock-data.ts
-

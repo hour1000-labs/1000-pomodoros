@@ -4,6 +4,8 @@
 
 This screen credits the completed work immediately and makes the new progress visible before asking the user to do anything else.
 
+Use the screenshot referenced below as the visual reference for how this screen should look.
+
 ## Requirements
 
 - Create the screen at `/focus/complete`.
@@ -28,11 +30,10 @@ This screen credits the completed work immediately and makes the new progress vi
 
 ## References
 
-- @context/screenshots/session-complete.png
+- @context/screenshots/session-complete-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/focus-timer-running-spec.md
 - @context/features/journey-detail-spec.md
 - @context/features/milestone-reached-spec.md
 - @src/lib/mock-data.ts
-

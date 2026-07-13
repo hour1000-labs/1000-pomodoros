@@ -4,6 +4,8 @@
 
 This is the paused state of `/focus`. It preserves the timer context while making Resume the obvious next action.
 
+Use the screenshot referenced below as the visual reference for how this screen should look.
+
 ## Requirements
 
 - Render this state on `/focus` when the active FocusSession status is `paused`.
@@ -26,10 +28,9 @@ This is the paused state of `/focus`. It preserves the timer context while makin
 
 ## References
 
-- @context/screenshots/focus-timer-paused.png
+- @context/screenshots/timer-paused-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/focus-timer-running-spec.md
 - @context/features/session-complete-spec.md
 - @src/lib/mock-data.ts
-

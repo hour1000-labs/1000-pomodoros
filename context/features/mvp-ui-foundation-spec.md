@@ -4,6 +4,8 @@
 
 This spec establishes the shared frontend foundation for the 1000 Pomodoros coded MVP. Build this before implementing individual screens. The MVP validates the complete loop with client-side persistence: create a Journey, choose a Next step, focus, complete a session, and see progress become visible.
 
+Use the screenshots referenced by the individual screen specs below as the visual reference for how the MVP should look.
+
 ## Requirements
 
 - Use the existing TanStack Start, React 19, TypeScript, Tailwind CSS v4, and Lucide React stack.
@@ -51,4 +53,3 @@ This spec establishes the shared frontend foundation for the 1000 Pomodoros code
 - @context/features/journey-detail-spec.md
 - @context/screenshots/landing-page-ui.png
 - @src/lib/mock-data.ts
-

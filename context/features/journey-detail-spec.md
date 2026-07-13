@@ -4,6 +4,8 @@
 
 This is the primary progress screen for one Journey. It should make accumulated effort satisfying while keeping the current Next step and Start action immediately available.
 
+Use the screenshot referenced below as the visual reference for how this screen should look.
+
 ## Requirements
 
 - Create the screen at `/journeys/$journeyId`.
@@ -30,10 +32,9 @@ This is the primary progress screen for one Journey. It should make accumulated 
 
 ## References
 
-- @context/screenshots/journey-detail.png
+- @context/screenshots/journey-detail-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/timer-setup-spec.md
 - @context/features/home-spec.md
 - @src/lib/mock-data.ts
-

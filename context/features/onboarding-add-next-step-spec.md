@@ -4,6 +4,8 @@
 
 This is step 4 of 4 in onboarding. The screen turns the long-term Journey into one concrete action and finishes onboarding by starting real work.
 
+Use the screenshot referenced below as the visual reference for how this screen should look.
+
 ## Requirements
 
 - Create the screen at `/onboarding/next-step`.
@@ -26,10 +28,9 @@ This is step 4 of 4 in onboarding. The screen turns the long-term Journey into o
 
 ## References
 
-- @context/screenshots/onboarding-add-next-step.png
+- @context/screenshots/onboarding4-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/onboarding-choose-target-spec.md
 - @context/features/timer-setup-spec.md
 - @src/lib/mock-data.ts
-

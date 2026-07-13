@@ -4,6 +4,8 @@
 
 This is step 3 of 4 in onboarding. The screen makes the long-term goal concrete with numbers while keeping attention on the next reachable milestone.
 
+Use the screenshot referenced below as the visual reference for how this screen should look.
+
 ## Requirements
 
 - Create the screen at `/onboarding/target`.
@@ -25,10 +27,9 @@ This is step 3 of 4 in onboarding. The screen makes the long-term goal concrete 
 
 ## References
 
-- @context/screenshots/onboarding-choose-target.png
+- @context/screenshots/onboarding3-ui.png
 - @context/DESIGN.md
 - @context/features/mvp-ui-foundation-spec.md
 - @context/features/onboarding-add-motivation-spec.md
 - @context/features/onboarding-add-next-step-spec.md
 - @src/lib/mock-data.ts
-
