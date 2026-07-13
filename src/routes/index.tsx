@@ -1,11 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/')({ component: Home });
+import { LandingFoundationScreen } from '@/components/foundation-screens'
 
-function Home() {
-  return (
-    <main>
-      <h1>1000 Pomodoros</h1>
-    </main>
-  );
-}
+export const Route = createFileRoute('/')({ component: LandingFoundationScreen })

@@ -1,5 +1,7 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 
+import { TooltipProvider } from '@/components/ui/tooltip'
+
 import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
@@ -9,6 +11,14 @@ export const Route = createRootRoute({
       {
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
+      },
+      {
+        name: 'theme-color',
+        content: '#FFFFFF',
+      },
+      {
+        name: 'description',
+        content: 'Turn focused work into visible progress toward mastery.',
       },
       { title: '1000 Pomodoros' },
     ],
@@ -24,7 +34,7 @@ function RootDocument({ children }: Readonly<{ children: React.ReactNode }>) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
         <Scripts />
       </body>
     </html>

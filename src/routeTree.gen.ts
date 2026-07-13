@@ -9,38 +9,166 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FocusIndexRouteImport } from './routes/focus/index'
+import { Route as OnboardingTargetRouteImport } from './routes/onboarding/target'
+import { Route as OnboardingNextStepRouteImport } from './routes/onboarding/next-step'
+import { Route as OnboardingMotivationRouteImport } from './routes/onboarding/motivation'
+import { Route as OnboardingJourneyRouteImport } from './routes/onboarding/journey'
+import { Route as MilestonesMilestoneIdRouteImport } from './routes/milestones/$milestoneId'
+import { Route as JourneysJourneyIdRouteImport } from './routes/journeys/$journeyId'
+import { Route as FocusCompleteRouteImport } from './routes/focus/complete'
 
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FocusIndexRoute = FocusIndexRouteImport.update({
+  id: '/focus/',
+  path: '/focus/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingTargetRoute = OnboardingTargetRouteImport.update({
+  id: '/onboarding/target',
+  path: '/onboarding/target',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingNextStepRoute = OnboardingNextStepRouteImport.update({
+  id: '/onboarding/next-step',
+  path: '/onboarding/next-step',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingMotivationRoute = OnboardingMotivationRouteImport.update({
+  id: '/onboarding/motivation',
+  path: '/onboarding/motivation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingJourneyRoute = OnboardingJourneyRouteImport.update({
+  id: '/onboarding/journey',
+  path: '/onboarding/journey',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MilestonesMilestoneIdRoute = MilestonesMilestoneIdRouteImport.update({
+  id: '/milestones/$milestoneId',
+  path: '/milestones/$milestoneId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JourneysJourneyIdRoute = JourneysJourneyIdRouteImport.update({
+  id: '/journeys/$journeyId',
+  path: '/journeys/$journeyId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FocusCompleteRoute = FocusCompleteRouteImport.update({
+  id: '/focus/complete',
+  path: '/focus/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/focus/complete': typeof FocusCompleteRoute
+  '/journeys/$journeyId': typeof JourneysJourneyIdRoute
+  '/milestones/$milestoneId': typeof MilestonesMilestoneIdRoute
+  '/onboarding/journey': typeof OnboardingJourneyRoute
+  '/onboarding/motivation': typeof OnboardingMotivationRoute
+  '/onboarding/next-step': typeof OnboardingNextStepRoute
+  '/onboarding/target': typeof OnboardingTargetRoute
+  '/focus/': typeof FocusIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/focus/complete': typeof FocusCompleteRoute
+  '/journeys/$journeyId': typeof JourneysJourneyIdRoute
+  '/milestones/$milestoneId': typeof MilestonesMilestoneIdRoute
+  '/onboarding/journey': typeof OnboardingJourneyRoute
+  '/onboarding/motivation': typeof OnboardingMotivationRoute
+  '/onboarding/next-step': typeof OnboardingNextStepRoute
+  '/onboarding/target': typeof OnboardingTargetRoute
+  '/focus': typeof FocusIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/focus/complete': typeof FocusCompleteRoute
+  '/journeys/$journeyId': typeof JourneysJourneyIdRoute
+  '/milestones/$milestoneId': typeof MilestonesMilestoneIdRoute
+  '/onboarding/journey': typeof OnboardingJourneyRoute
+  '/onboarding/motivation': typeof OnboardingMotivationRoute
+  '/onboarding/next-step': typeof OnboardingNextStepRoute
+  '/onboarding/target': typeof OnboardingTargetRoute
+  '/focus/': typeof FocusIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/home'
+    | '/focus/complete'
+    | '/journeys/$journeyId'
+    | '/milestones/$milestoneId'
+    | '/onboarding/journey'
+    | '/onboarding/motivation'
+    | '/onboarding/next-step'
+    | '/onboarding/target'
+    | '/focus/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/home'
+    | '/focus/complete'
+    | '/journeys/$journeyId'
+    | '/milestones/$milestoneId'
+    | '/onboarding/journey'
+    | '/onboarding/motivation'
+    | '/onboarding/next-step'
+    | '/onboarding/target'
+    | '/focus'
+  id:
+    | '__root__'
+    | '/'
+    | '/home'
+    | '/focus/complete'
+    | '/journeys/$journeyId'
+    | '/milestones/$milestoneId'
+    | '/onboarding/journey'
+    | '/onboarding/motivation'
+    | '/onboarding/next-step'
+    | '/onboarding/target'
+    | '/focus/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HomeRoute: typeof HomeRoute
+  FocusCompleteRoute: typeof FocusCompleteRoute
+  JourneysJourneyIdRoute: typeof JourneysJourneyIdRoute
+  MilestonesMilestoneIdRoute: typeof MilestonesMilestoneIdRoute
+  OnboardingJourneyRoute: typeof OnboardingJourneyRoute
+  OnboardingMotivationRoute: typeof OnboardingMotivationRoute
+  OnboardingNextStepRoute: typeof OnboardingNextStepRoute
+  OnboardingTargetRoute: typeof OnboardingTargetRoute
+  FocusIndexRoute: typeof FocusIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +176,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/focus/': {
+      id: '/focus/'
+      path: '/focus'
+      fullPath: '/focus/'
+      preLoaderRoute: typeof FocusIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/target': {
+      id: '/onboarding/target'
+      path: '/onboarding/target'
+      fullPath: '/onboarding/target'
+      preLoaderRoute: typeof OnboardingTargetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/next-step': {
+      id: '/onboarding/next-step'
+      path: '/onboarding/next-step'
+      fullPath: '/onboarding/next-step'
+      preLoaderRoute: typeof OnboardingNextStepRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/motivation': {
+      id: '/onboarding/motivation'
+      path: '/onboarding/motivation'
+      fullPath: '/onboarding/motivation'
+      preLoaderRoute: typeof OnboardingMotivationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/journey': {
+      id: '/onboarding/journey'
+      path: '/onboarding/journey'
+      fullPath: '/onboarding/journey'
+      preLoaderRoute: typeof OnboardingJourneyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/milestones/$milestoneId': {
+      id: '/milestones/$milestoneId'
+      path: '/milestones/$milestoneId'
+      fullPath: '/milestones/$milestoneId'
+      preLoaderRoute: typeof MilestonesMilestoneIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journeys/$journeyId': {
+      id: '/journeys/$journeyId'
+      path: '/journeys/$journeyId'
+      fullPath: '/journeys/$journeyId'
+      preLoaderRoute: typeof JourneysJourneyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/focus/complete': {
+      id: '/focus/complete'
+      path: '/focus/complete'
+      fullPath: '/focus/complete'
+      preLoaderRoute: typeof FocusCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HomeRoute: HomeRoute,
+  FocusCompleteRoute: FocusCompleteRoute,
+  JourneysJourneyIdRoute: JourneysJourneyIdRoute,
+  MilestonesMilestoneIdRoute: MilestonesMilestoneIdRoute,
+  OnboardingJourneyRoute: OnboardingJourneyRoute,
+  OnboardingMotivationRoute: OnboardingMotivationRoute,
+  OnboardingNextStepRoute: OnboardingNextStepRoute,
+  OnboardingTargetRoute: OnboardingTargetRoute,
+  FocusIndexRoute: FocusIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
