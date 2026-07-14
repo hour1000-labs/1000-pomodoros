@@ -1,21 +1,21 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router';
 
-import { EmptyState } from '@/components/shared/empty-state'
-import { FocusLayout } from '@/components/shared/focus-layout'
-import { PersistedStateBoundary } from '@/components/shared/persisted-state-boundary'
-import { PomodoroGrid } from '@/components/shared/pomodoro-grid'
-import { PrimaryButton } from '@/components/shared/primary-button'
-import { ScreenHeader } from '@/components/shared/screen-header'
-import { Card, CardContent } from '@/components/ui/card'
-import { getJourneyContext } from '@/lib/journey-context'
-import type { AppState } from '@/lib/models'
+import { EmptyState } from '@/components/shared/empty-state';
+import { FocusLayout } from '@/components/shared/focus-layout';
+import { PersistedStateBoundary } from '@/components/shared/persisted-state-boundary';
+import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
+import { PrimaryButton } from '@/components/shared/primary-button';
+import { ScreenHeader } from '@/components/shared/screen-header';
+import { Card, CardContent } from '@/components/ui/card';
+import { getJourneyContext } from '@/lib/journey-context';
+import type { AppState } from '@/lib/models';
 
 function CompletionContent({ state }: { state: AppState }) {
   const latestSession = state.focusSessions.find(
-    (session) => session.id === state.lastCompletedSessionId,
-  )
+    (session) => session.id === state.lastCompletedSessionId
+  );
 
-  if (!latestSession || latestSession.status !== 'completed') {
+  if (latestSession?.status !== 'completed') {
     return (
       <FocusLayout>
         <EmptyState
@@ -29,10 +29,10 @@ function CompletionContent({ state }: { state: AppState }) {
           }
         />
       </FocusLayout>
-    )
+    );
   }
 
-  const context = getJourneyContext(state, latestSession.journeyId)
+  const context = getJourneyContext(state, latestSession.journeyId);
 
   if (!context) {
     return (
@@ -48,10 +48,10 @@ function CompletionContent({ state }: { state: AppState }) {
           }
         />
       </FocusLayout>
-    )
+    );
   }
 
-  const minutes = latestSession.focusedMinutes
+  const minutes = latestSession.focusedMinutes;
 
   return (
     <FocusLayout>
@@ -62,10 +62,7 @@ function CompletionContent({ state }: { state: AppState }) {
           description={`You added ${minutes} focused minutes to ${context.journey.name}.`}
           actions={
             <PrimaryButton asChild>
-              <Link
-                to="/journeys/$journeyId"
-                params={{ journeyId: context.journey.id }}
-              >
+              <Link to="/journeys/$journeyId" params={{ journeyId: context.journey.id }}>
                 View progress
               </Link>
             </PrimaryButton>
@@ -79,16 +76,14 @@ function CompletionContent({ state }: { state: AppState }) {
               startIndex={0}
               renderLimit={100}
               latestIndex={
-                context.progress.fullPomodoros > 0
-                  ? context.progress.fullPomodoros - 1
-                  : undefined
+                context.progress.fullPomodoros > 0 ? context.progress.fullPomodoros - 1 : undefined
               }
             />
           </CardContent>
         </Card>
       </div>
     </FocusLayout>
-  )
+  );
 }
 
 export function SessionCompleteScreen() {
@@ -96,5 +91,5 @@ export function SessionCompleteScreen() {
     <PersistedStateBoundary>
       {(state) => <CompletionContent state={state} />}
     </PersistedStateBoundary>
-  )
+  );
 }

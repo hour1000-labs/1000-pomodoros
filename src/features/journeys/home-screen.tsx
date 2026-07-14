@@ -1,38 +1,35 @@
-import { EmptyJourneyState } from '@/components/shared/empty-journey-state'
-import { ScreenHeader } from '@/components/shared/screen-header'
-import { getJourneyContext } from '@/lib/journey-context'
-import type { AppState } from '@/lib/models'
-import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data'
-import {
-  deriveProgressFromSessions,
-  getSessionsForLocalDate,
-} from '@/lib/progress'
+import { EmptyJourneyState } from '@/components/shared/empty-journey-state';
+import { ScreenHeader } from '@/components/shared/screen-header';
+import { getJourneyContext } from '@/lib/journey-context';
+import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data';
+import type { AppState } from '@/lib/models';
+import { deriveProgressFromSessions, getSessionsForLocalDate } from '@/lib/progress';
 
-import { ApplicationLayout } from './components/application-layout'
-import { ApplicationStateBoundary } from './components/application-state-boundary'
-import { ContinueCard } from './components/continue-card'
-import { JourneyCard } from './components/journey-card'
-import { StatItem } from './components/stat-item'
-import { formatFocusedTime } from './format-focused-time'
+import { ApplicationLayout } from './components/application-layout';
+import { ApplicationStateBoundary } from './components/application-state-boundary';
+import { ContinueCard } from './components/continue-card';
+import { JourneyCard } from './components/journey-card';
+import { StatItem } from './components/stat-item';
+import { formatFocusedTime } from './format-focused-time';
 
 function ApplicationEmptyState() {
   return (
     <ApplicationLayout journeyId={LEARN_GUITAR_JOURNEY_ID}>
       <EmptyJourneyState />
     </ApplicationLayout>
-  )
+  );
 }
 
 function HomeContent({ state }: { state: AppState }) {
-  const context = getJourneyContext(state)
+  const context = getJourneyContext(state);
 
-  if (!context) return <ApplicationEmptyState />
+  if (!context) return <ApplicationEmptyState />;
 
-  const { journey, nextStep, progress } = context
+  const { journey, nextStep, progress } = context;
   const todayProgress = deriveProgressFromSessions(
     getSessionsForLocalDate(state.focusSessions, new Date()),
-    journey.id,
-  )
+    journey.id
+  );
 
   return (
     <ApplicationLayout journeyId={journey.id}>
@@ -48,18 +45,9 @@ function HomeContent({ state }: { state: AppState }) {
           nextStep={nextStep?.title}
         />
       </section>
-      <section
-        className="mt-10 grid grid-cols-2 gap-6 sm:max-w-md"
-        aria-label="Today"
-      >
-        <StatItem
-          value={String(todayProgress.fullPomodoros)}
-          label="Pomodoros today"
-        />
-        <StatItem
-          value={String(todayProgress.focusedMinutes)}
-          label="Focused minutes"
-        />
+      <section className="mt-10 grid grid-cols-2 gap-6 sm:max-w-md" aria-label="Today">
+        <StatItem value={String(todayProgress.fullPomodoros)} label="Pomodoros today" />
+        <StatItem value={String(todayProgress.focusedMinutes)} label="Focused minutes" />
       </section>
       <section className="mt-12">
         <h2 className="mb-5 text-2xl font-bold">Active Journey</h2>
@@ -73,13 +61,11 @@ function HomeContent({ state }: { state: AppState }) {
         />
       </section>
     </ApplicationLayout>
-  )
+  );
 }
 
 export function HomeScreen() {
   return (
-    <ApplicationStateBoundary>
-      {(state) => <HomeContent state={state} />}
-    </ApplicationStateBoundary>
-  )
+    <ApplicationStateBoundary>{(state) => <HomeContent state={state} />}</ApplicationStateBoundary>
+  );
 }

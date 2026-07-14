@@ -1,5 +1,5 @@
-import { PomodoroGrid } from '@/components/shared/pomodoro-grid'
-import type { Journey } from '@/lib/models'
+import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
+import type { Journey } from '@/lib/models';
 
 export function FullTargetFoundationDemo({ journey }: { journey: Journey }) {
   return (
@@ -8,5 +8,5 @@ export function FullTargetFoundationDemo({ journey }: { journey: Journey }) {
       totalPomodoros={journey.targetMinutes / 25}
       renderLimit={100}
     />
-  )
+  );
 }

@@ -36,6 +36,7 @@ Rules:
 
 - Treat `context/current-feature.md` as the source of truth for active scope.
 - Every implementation change must map to an acceptance criterion.
+- Run `pnpm check` before feature testing and review; use `pnpm check:fix` only when file changes are intended.
 - Do not implement a feature until it has been loaded and documented.
 - Do not complete a feature unless its status is `Ready to Commit`.
 - If testing or review fails, keep the status `In Progress`, fix the issues, and repeat `feature test` and `feature review`.
@@ -71,6 +72,7 @@ Run `pnpm dlx @tanstack/intent@latest list` before substantial work and load the
 - Tailwind CSS v4 through `@tailwindcss/vite`
 - TanStack Devtools and Router Devtools from the default scaffold
 - Vitest, Testing Library, and jsdom from the default scaffold
+- Biome for formatting, linting, and import organization
 - No application integrations, data layer, authentication, API routes, or feature scaffolding
 
 ## Architecture

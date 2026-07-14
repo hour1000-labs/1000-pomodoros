@@ -1,5 +1,5 @@
-import { Progress } from '@/components/ui/progress'
-import { cn } from '@/lib/utils'
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 export function MilestoneProgress({
   value,
@@ -7,12 +7,12 @@ export function MilestoneProgress({
   detail,
   className,
 }: {
-  value: number
-  label: string
-  detail?: string
-  className?: string
+  value: number;
+  label: string;
+  detail?: string;
+  className?: string;
 }) {
-  const safeValue = Math.min(100, Math.max(0, value))
+  const safeValue = Math.min(100, Math.max(0, value));
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -22,5 +22,5 @@ export function MilestoneProgress({
       </div>
       <Progress value={safeValue} aria-label={`${label}: ${Math.round(safeValue)}%`} />
     </div>
-  )
+  );
 }

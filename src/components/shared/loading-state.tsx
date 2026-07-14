@@ -8,5 +8,5 @@ export function LoadingState({ label = 'Loading saved progress' }: { label?: str
       <div className="mt-2 h-5 w-3/4 animate-pulse rounded-md bg-ink/10" />
       <div className="mt-8 h-28 w-full animate-pulse rounded-lg bg-ink/10" />
     </section>
-  )
+  );
 }

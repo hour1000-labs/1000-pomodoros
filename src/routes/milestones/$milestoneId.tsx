@@ -1,13 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
 
-import { MilestoneDetailScreen } from '@/features/milestones/milestone-detail-screen'
+import { MilestoneDetailScreen } from '@/features/milestones/milestone-detail-screen';
 
 export const Route = createFileRoute('/milestones/$milestoneId')({
   component: MilestoneRoute,
-})
+});
 
 function MilestoneRoute() {
-  const { milestoneId } = Route.useParams()
+  const { milestoneId } = Route.useParams();
 
-  return <MilestoneDetailScreen milestoneId={milestoneId} />
+  return <MilestoneDetailScreen milestoneId={milestoneId} />;
 }

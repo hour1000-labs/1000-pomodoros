@@ -1,13 +1,8 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties } from 'react';
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils';
 
-export type PomodoroBlockState =
-  | 'complete'
-  | 'partial'
-  | 'future'
-  | 'latest'
-  | 'milestone'
+export type PomodoroBlockState = 'complete' | 'partial' | 'future' | 'latest' | 'milestone';
 
 const stateClass: Record<PomodoroBlockState, string> = {
   complete: 'border-pomodoro-red bg-pomodoro-red',
@@ -15,7 +10,7 @@ const stateClass: Record<PomodoroBlockState, string> = {
   future: 'border-ink/20 bg-paper',
   latest: 'border-ink bg-pomodoro-red ring-2 ring-ink ring-offset-2',
   milestone: 'border-ink bg-ink',
-}
+};
 
 export function PomodoroBlock({
   state,
@@ -24,22 +19,22 @@ export function PomodoroBlock({
   onSelect,
   className,
 }: {
-  state: PomodoroBlockState
-  label: string
-  fraction?: number
-  onSelect?: () => void
-  className?: string
+  state: PomodoroBlockState;
+  label: string;
+  fraction?: number;
+  onSelect?: () => void;
+  className?: string;
 }) {
-  const clampedFraction = Math.min(1, Math.max(0, fraction))
+  const clampedFraction = Math.min(1, Math.max(0, fraction));
   const commonClass = cn(
     'relative aspect-square size-full min-h-4 min-w-4 max-w-7 overflow-hidden rounded-sm border',
     stateClass[state],
     onSelect && 'min-h-11 min-w-11 cursor-pointer focus-visible:outline-none',
-    className,
-  )
+    className
+  );
   const partialStyle = {
     '--pomodoro-fill': `${clampedFraction * 100}%`,
-  } as CSSProperties
+  } as CSSProperties;
 
   const content = (
     <>
@@ -55,7 +50,7 @@ export function PomodoroBlock({
       ) : null}
       <span className="sr-only">{label}</span>
     </>
-  )
+  );
 
   return onSelect ? (
     <button
@@ -78,5 +73,5 @@ export function PomodoroBlock({
     >
       {content}
     </span>
-  )
+  );
 }

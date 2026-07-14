@@ -78,9 +78,14 @@ Use the scripts that exist in `package.json`.
 Current required commands:
 
 ```bash
+pnpm check
 pnpm test
 pnpm build
 ```
+
+`pnpm check` is read-only and must pass with no warnings. Use `pnpm check:fix`
+only when formatting files, organizing imports, and applying safe lint fixes is
+intended.
 
 Also perform checks that apply to the change:
 

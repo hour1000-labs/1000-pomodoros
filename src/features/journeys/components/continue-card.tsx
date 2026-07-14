@@ -1,17 +1,16 @@
-import { ArrowRight, Timer } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-
-import { Card, CardContent } from '@/components/ui/card'
-import { PrimaryButton } from '@/components/shared/primary-button'
+import { Link } from '@tanstack/react-router';
+import { ArrowRight, Timer } from 'lucide-react';
+import { PrimaryButton } from '@/components/shared/primary-button';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function ContinueCard({
   journeyId,
   journeyName,
   nextStep,
 }: {
-  journeyId: string
-  journeyName: string
-  nextStep?: string
+  journeyId: string;
+  journeyName: string;
+  nextStep?: string;
 }) {
   return (
     <Card className="border-0 bg-ink text-paper ring-0">
@@ -39,5 +38,5 @@ export function ContinueCard({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

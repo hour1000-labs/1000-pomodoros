@@ -1,26 +1,24 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router';
 
-import { EmptyState } from '@/components/shared/empty-state'
-import { MilestoneProgress } from '@/components/shared/milestone-progress'
-import { PomodoroGrid } from '@/components/shared/pomodoro-grid'
-import { PrimaryButton } from '@/components/shared/primary-button'
-import { ScreenHeader } from '@/components/shared/screen-header'
-import { Card, CardContent } from '@/components/ui/card'
-import { getJourneyContext } from '@/lib/journey-context'
-import type { AppState } from '@/lib/models'
-import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data'
+import { EmptyState } from '@/components/shared/empty-state';
+import { MilestoneProgress } from '@/components/shared/milestone-progress';
+import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
+import { PrimaryButton } from '@/components/shared/primary-button';
+import { ScreenHeader } from '@/components/shared/screen-header';
+import { Card, CardContent } from '@/components/ui/card';
+import { getJourneyContext } from '@/lib/journey-context';
+import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data';
+import type { AppState } from '@/lib/models';
 
-import { ApplicationLayout } from './components/application-layout'
-import { ApplicationStateBoundary } from './components/application-state-boundary'
-import { formatFocusedTime } from './format-focused-time'
+import { ApplicationLayout } from './components/application-layout';
+import { ApplicationStateBoundary } from './components/application-state-boundary';
+import { formatFocusedTime } from './format-focused-time';
 
 function JourneyNotFoundState({ state }: { state: AppState }) {
   const navigationJourneyId =
-    state.journeys.find(
-      (journey) => journey.id === state.lastActiveJourneyId,
-    )?.id ??
+    state.journeys.find((journey) => journey.id === state.lastActiveJourneyId)?.id ??
     state.journeys[0]?.id ??
-    LEARN_GUITAR_JOURNEY_ID
+    LEARN_GUITAR_JOURNEY_ID;
 
   return (
     <ApplicationLayout journeyId={navigationJourneyId}>
@@ -35,21 +33,15 @@ function JourneyNotFoundState({ state }: { state: AppState }) {
         }
       />
     </ApplicationLayout>
-  )
+  );
 }
 
-function JourneyContent({
-  state,
-  journeyId,
-}: {
-  state: AppState
-  journeyId: string
-}) {
-  const context = getJourneyContext(state, journeyId)
+function JourneyContent({ state, journeyId }: { state: AppState; journeyId: string }) {
+  const context = getJourneyContext(state, journeyId);
 
-  if (!context) return <JourneyNotFoundState state={state} />
+  if (!context) return <JourneyNotFoundState state={state} />;
 
-  const { journey, nextStep, progress } = context
+  const { journey, nextStep, progress } = context;
 
   return (
     <ApplicationLayout journeyId={journey.id}>
@@ -73,9 +65,7 @@ function JourneyContent({
                     maximumFractionDigits: 1,
                   })}
                 </p>
-                <p className="mb-0 text-sm text-ink/60">
-                  Pomodoros completed
-                </p>
+                <p className="mb-0 text-sm text-ink/60">Pomodoros completed</p>
               </div>
               <p className="mb-0 text-sm text-ink/60">
                 {formatFocusedTime(progress.focusedMinutes)} focused
@@ -84,11 +74,7 @@ function JourneyContent({
             <PomodoroGrid
               focusedMinutes={progress.focusedMinutes}
               totalPomodoros={Math.min(100, progress.targetPomodoros)}
-              latestIndex={
-                progress.fullPomodoros > 0
-                  ? progress.fullPomodoros - 1
-                  : undefined
-              }
+              latestIndex={progress.fullPomodoros > 0 ? progress.fullPomodoros - 1 : undefined}
               milestoneIndexes={[9, 24, 49, 99]}
             />
           </CardContent>
@@ -109,7 +95,7 @@ function JourneyContent({
         </div>
       </section>
     </ApplicationLayout>
-  )
+  );
 }
 
 export function JourneyDetailScreen({ journeyId }: { journeyId: string }) {
@@ -117,5 +103,5 @@ export function JourneyDetailScreen({ journeyId }: { journeyId: string }) {
     <ApplicationStateBoundary>
       {(state) => <JourneyContent state={state} journeyId={journeyId} />}
     </ApplicationStateBoundary>
-  )
+  );
 }

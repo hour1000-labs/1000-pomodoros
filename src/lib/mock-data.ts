@@ -6,12 +6,11 @@ import {
   type Milestone,
   type NextStep,
   type WeeklyGoal,
-} from './models'
+} from './models';
 
-export const LEARN_GUITAR_JOURNEY_ID = 'journey-learn-guitar'
-export const LEARN_GUITAR_CURRENT_STEP_ID = 'next-step-f-chord'
-export const LEARN_GUITAR_25_HOUR_MILESTONE_ID =
-  'milestone-learn-guitar-25-hours'
+export const LEARN_GUITAR_JOURNEY_ID = 'journey-learn-guitar';
+export const LEARN_GUITAR_CURRENT_STEP_ID = 'next-step-f-chord';
+export const LEARN_GUITAR_25_HOUR_MILESTONE_ID = 'milestone-learn-guitar-25-hours';
 
 export const learnGuitarJourney: Journey = {
   id: LEARN_GUITAR_JOURNEY_ID,
@@ -22,7 +21,7 @@ export const learnGuitarJourney: Journey = {
   createdAt: '2026-05-20T18:00:00.000Z',
   updatedAt: '2026-07-12T18:25:00.000Z',
   lastActiveAt: '2026-07-12T18:25:00.000Z',
-}
+};
 
 export const learnGuitarNextSteps: NextStep[] = [
   {
@@ -55,10 +54,10 @@ export const learnGuitarNextSteps: NextStep[] = [
     createdAt: '2026-07-08T17:40:00.000Z',
     completedAt: null,
   },
-]
+];
 
 function createCompletedSession(endedAt: string, index: number): FocusSession {
-  const endedAtTime = new Date(endedAt).getTime()
+  const endedAtTime = new Date(endedAt).getTime();
 
   return {
     id: `session-learn-guitar-${String(index + 1).padStart(2, '0')}`,
@@ -71,12 +70,12 @@ function createCompletedSession(endedAt: string, index: number): FocusSession {
     startedAt: new Date(endedAtTime - 25 * 60 * 1_000).toISOString(),
     endedAt,
     reflection: '',
-  }
+  };
 }
 
 const earlierSessionEndTimes = Array.from({ length: 36 }, (_, index) =>
-  new Date(Date.UTC(2026, 4, 20 + index, 18, 25)).toISOString(),
-)
+  new Date(Date.UTC(2026, 4, 20 + index, 18, 25)).toISOString()
+);
 
 const thisWeekSessionEndTimes = [
   '2026-07-08T17:25:00.000Z',
@@ -86,12 +85,12 @@ const thisWeekSessionEndTimes = [
   '2026-07-10T18:25:00.000Z',
   '2026-07-12T17:25:00.000Z',
   '2026-07-12T18:25:00.000Z',
-]
+];
 
 export const learnGuitarFocusSessions: FocusSession[] = [
   ...earlierSessionEndTimes,
   ...thisWeekSessionEndTimes,
-].map(createCompletedSession)
+].map(createCompletedSession);
 
 export const learnGuitarMilestones: Milestone[] = [
   {
@@ -115,7 +114,7 @@ export const learnGuitarMilestones: Milestone[] = [
     targetFocusedMinutes: 50 * 60,
     earnedAt: null,
   },
-]
+];
 
 export const learnGuitarWeeklyGoal: WeeklyGoal = {
   id: 'weekly-goal-all-journeys',
@@ -123,7 +122,7 @@ export const learnGuitarWeeklyGoal: WeeklyGoal = {
   targetPomodoros: 10,
   weekStartsOn: 1,
   createdAt: '2026-07-06T07:00:00.000Z',
-}
+};
 
 export const learnGuitarMockData = {
   journey: learnGuitarJourney,
@@ -131,7 +130,7 @@ export const learnGuitarMockData = {
   focusSessions: learnGuitarFocusSessions,
   milestones: learnGuitarMilestones,
   weeklyGoal: learnGuitarWeeklyGoal,
-}
+};
 
 export function createSeedAppState(): AppState {
   return {
@@ -144,20 +143,19 @@ export function createSeedAppState(): AppState {
     onboardingDraft: null,
     activeTimer: null,
     lastActiveJourneyId: LEARN_GUITAR_JOURNEY_ID,
-    lastCompletedSessionId:
-      learnGuitarFocusSessions.at(-1)?.id ?? null,
-  }
+    lastCompletedSessionId: learnGuitarFocusSessions.at(-1)?.id ?? null,
+  };
 }
 
 export function createMilestoneReachedAppState(): AppState {
   const milestoneSessionEndTimes = Array.from({ length: 60 }, (_, index) =>
-    new Date(Date.UTC(2026, 4, 14 + index, 18, 25)).toISOString(),
-  )
-  const focusSessions = milestoneSessionEndTimes.map(createCompletedSession)
+    new Date(Date.UTC(2026, 4, 14 + index, 18, 25)).toISOString()
+  );
+  const focusSessions = milestoneSessionEndTimes.map(createCompletedSession);
   const reachedMilestone: Milestone = {
     ...learnGuitarMilestones[1],
     earnedAt: '2026-07-12T18:25:00.000Z',
-  }
+  };
 
   return {
     ...createSeedAppState(),
@@ -168,5 +166,5 @@ export function createMilestoneReachedAppState(): AppState {
       { ...learnGuitarMilestones[2] },
     ],
     lastCompletedSessionId: focusSessions.at(-1)?.id ?? null,
-  }
+  };
 }

@@ -1,10 +1,7 @@
-import {
-  PomodoroBlock,
-  type PomodoroBlockState,
-} from '@/components/shared/pomodoro-block'
-import { cn } from '@/lib/utils'
+import { PomodoroBlock, type PomodoroBlockState } from '@/components/shared/pomodoro-block';
+import { cn } from '@/lib/utils';
 
-const MINUTES_PER_POMODORO = 25
+const MINUTES_PER_POMODORO = 25;
 
 export function PomodoroGrid({
   focusedMinutes,
@@ -16,43 +13,43 @@ export function PomodoroGrid({
   onSelect,
   className,
 }: {
-  focusedMinutes: number
-  totalPomodoros: number
-  startIndex?: number
-  renderLimit?: number
-  latestIndex?: number
-  milestoneIndexes?: number[]
-  onSelect?: (index: number) => void
-  className?: string
+  focusedMinutes: number;
+  totalPomodoros: number;
+  startIndex?: number;
+  renderLimit?: number;
+  latestIndex?: number;
+  milestoneIndexes?: number[];
+  onSelect?: (index: number) => void;
+  className?: string;
 }) {
-  const safeTotal = Math.max(0, Math.floor(totalPomodoros))
-  const safeStart = Math.min(Math.max(0, Math.floor(startIndex)), safeTotal)
-  const visibleCount = Math.min(Math.max(0, renderLimit), safeTotal - safeStart)
-  const completedPomodoros = Math.floor(Math.max(0, focusedMinutes) / MINUTES_PER_POMODORO)
-  const partialFraction = (Math.max(0, focusedMinutes) % MINUTES_PER_POMODORO) / MINUTES_PER_POMODORO
-  const milestoneSet = new Set(milestoneIndexes)
+  const safeTotal = Math.max(0, Math.floor(totalPomodoros));
+  const safeStart = Math.min(Math.max(0, Math.floor(startIndex)), safeTotal);
+  const visibleCount = Math.min(Math.max(0, renderLimit), safeTotal - safeStart);
+  const completedPomodoros = Math.floor(Math.max(0, focusedMinutes) / MINUTES_PER_POMODORO);
+  const partialFraction =
+    (Math.max(0, focusedMinutes) % MINUTES_PER_POMODORO) / MINUTES_PER_POMODORO;
+  const milestoneSet = new Set(milestoneIndexes);
 
   function getState(index: number): PomodoroBlockState {
-    if (latestIndex === index) return 'latest'
-    if (milestoneSet.has(index) && index < completedPomodoros) return 'milestone'
-    if (index < completedPomodoros) return 'complete'
-    if (index === completedPomodoros && partialFraction > 0) return 'partial'
-    return 'future'
+    if (latestIndex === index) return 'latest';
+    if (milestoneSet.has(index) && index < completedPomodoros) return 'milestone';
+    if (index < completedPomodoros) return 'complete';
+    if (index === completedPomodoros && partialFraction > 0) return 'partial';
+    return 'future';
   }
 
   return (
-    <figure className={cn('m-0 w-full overflow-x-auto', className)}>
+    <figure
+      className={cn('m-0 w-full overflow-x-auto', className)}
+      aria-label={`${completedPomodoros} complete pomodoros out of ${safeTotal}`}
+    >
       <div
-        className={cn(
-          'grid grid-cols-10 gap-1 p-1',
-          onSelect && 'min-w-[29.75rem] grid-cols-10',
-        )}
-        aria-label={`${completedPomodoros} complete pomodoros out of ${safeTotal}`}
+        className={cn('grid grid-cols-10 gap-1 p-1', onSelect && 'min-w-[29.75rem] grid-cols-10')}
       >
         {Array.from({ length: visibleCount }, (_, offset) => {
-          const index = safeStart + offset
-          const state = getState(index)
-          const fraction = state === 'partial' ? partialFraction : undefined
+          const index = safeStart + offset;
+          const state = getState(index);
+          const fraction = state === 'partial' ? partialFraction : undefined;
 
           return (
             <PomodoroBlock
@@ -64,7 +61,7 @@ export function PomodoroGrid({
               }`}
               onSelect={onSelect ? () => onSelect(index) : undefined}
             />
-          )
+          );
         })}
       </div>
       {safeTotal > visibleCount ? (
@@ -74,5 +71,5 @@ export function PomodoroGrid({
         </figcaption>
       ) : null}
     </figure>
-  )
+  );
 }

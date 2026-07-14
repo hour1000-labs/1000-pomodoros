@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from 'react';
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils';
 
 export function FocusLayout({
   children,
@@ -10,10 +10,10 @@ export function FocusLayout({
     <main
       className={cn(
         'flex min-h-dvh w-full items-center justify-center bg-paper px-gutter-mobile py-10 text-ink md:px-gutter-desktop',
-        className,
+        className
       )}
     >
       {children}
     </main>
-  )
+  );
 }

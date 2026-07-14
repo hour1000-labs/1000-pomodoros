@@ -1,7 +1,7 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router';
 
-import { EmptyState } from './empty-state'
-import { PrimaryButton } from './primary-button'
+import { EmptyState } from './empty-state';
+import { PrimaryButton } from './primary-button';
 
 export function EmptyJourneyState() {
   return (
@@ -15,5 +15,5 @@ export function EmptyJourneyState() {
         </PrimaryButton>
       }
     />
-  )
+  );
 }

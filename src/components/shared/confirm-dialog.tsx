@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from 'react';
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from '@/components/ui/dialog';
 
 export function ConfirmDialog({
   trigger,
@@ -20,12 +20,12 @@ export function ConfirmDialog({
   cancelLabel = 'Cancel',
   onConfirm,
 }: {
-  trigger: ReactNode
-  title: string
-  description: string
-  confirmLabel?: string
-  cancelLabel?: string
-  onConfirm: () => void
+  trigger: ReactNode;
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
 }) {
   return (
     <Dialog>
@@ -45,5 +45,5 @@ export function ConfirmDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

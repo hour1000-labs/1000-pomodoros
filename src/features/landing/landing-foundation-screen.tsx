@@ -1,12 +1,12 @@
-import { ArrowRight, Check, Clock3, Play } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router';
+import { ArrowRight, Check, Clock3, Play } from 'lucide-react';
 
-import { PomodoroGrid } from '@/components/shared/pomodoro-grid'
-import { PrimaryButton } from '@/components/shared/primary-button'
-import { ScreenHeader } from '@/components/shared/screen-header'
-import { Card, CardContent } from '@/components/ui/card'
+import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
+import { PrimaryButton } from '@/components/shared/primary-button';
+import { ScreenHeader } from '@/components/shared/screen-header';
+import { Card, CardContent } from '@/components/ui/card';
 
-import { PublicLayout } from './components/public-layout'
+import { PublicLayout } from './components/public-layout';
 
 export function LandingFoundationScreen() {
   return (
@@ -32,23 +32,17 @@ export function LandingFoundationScreen() {
           </div>
           <CardContent className="grid p-0 sm:grid-cols-2">
             <div className="border-b-2 border-ink p-5 sm:border-r-2 sm:border-b-0">
-              <p className="mb-2 text-xs font-bold text-ink/60">
-                Current Journey
-              </p>
+              <p className="mb-2 text-xs font-bold text-ink/60">Current Journey</p>
               <p className="mb-6 text-2xl leading-tight font-bold tracking-[-0.025em]">
                 Learn guitar
               </p>
               <div className="border-y border-ink/20 py-4">
                 <p className="mb-1 text-xs font-bold text-ink/60">Next step</p>
-                <p className="mb-0 text-sm font-bold">
-                  Practice the F chord transition
-                </p>
+                <p className="mb-0 text-sm font-bold">Practice the F chord transition</p>
               </div>
               <div className="mt-5 flex items-end justify-between gap-4">
                 <div>
-                  <p className="mb-1 text-xs font-bold text-ink/60">
-                    Focused time
-                  </p>
+                  <p className="mb-1 text-xs font-bold text-ink/60">Focused time</p>
                   <p className="mb-0 text-xl font-bold">17h 55m</p>
                 </div>
                 <span className="grid size-11 place-items-center rounded-full bg-pomodoro-red text-paper">
@@ -57,13 +51,9 @@ export function LandingFoundationScreen() {
               </div>
             </div>
             <div className="p-5">
-              <p className="mb-1 text-xs font-bold text-ink/60">
-                Focus session
-              </p>
+              <p className="mb-1 text-xs font-bold text-ink/60">Focus session</p>
               <div className="mb-5 flex items-center justify-between gap-4 border-b border-ink/20 pb-4">
-                <p className="mb-0 text-4xl font-bold tracking-[-0.04em] tabular-nums">
-                  25:00
-                </p>
+                <p className="mb-0 text-4xl font-bold tracking-[-0.04em] tabular-nums">25:00</p>
                 <span className="grid size-11 place-items-center rounded-full bg-ink text-paper">
                   <Play aria-hidden="true" className="size-4 fill-current" />
                 </span>
@@ -72,11 +62,7 @@ export function LandingFoundationScreen() {
                 <span className="text-ink/60">Your visible effort</span>
                 <span>43 / 50</span>
               </div>
-              <PomodoroGrid
-                focusedMinutes={43 * 25}
-                totalPomodoros={50}
-                latestIndex={42}
-              />
+              <PomodoroGrid focusedMinutes={43 * 25} totalPomodoros={50} latestIndex={42} />
               <div className="mt-5 flex items-center gap-3 rounded-md bg-ink p-3 text-paper">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-pomodoro-red">
                   <Clock3 aria-hidden="true" className="size-4" />
@@ -91,5 +77,5 @@ export function LandingFoundationScreen() {
         </Card>
       </div>
     </PublicLayout>
-  )
+  );
 }

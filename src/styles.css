@@ -1,6 +1,6 @@
-@import '@fontsource-variable/manrope';
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "@fontsource-variable/manrope";
+@import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -52,8 +52,8 @@
 }
 
 @theme inline {
-  --font-sans: 'Manrope Variable', Manrope, system-ui, sans-serif;
-  --font-mono: 'Manrope Variable', Manrope, system-ui, sans-serif;
+  --font-sans: "Manrope Variable", Manrope, system-ui, sans-serif;
+  --font-mono: "Manrope Variable", Manrope, system-ui, sans-serif;
 
   --color-ink: var(--ink);
   --color-paper: var(--paper);
@@ -127,7 +127,7 @@
     font: inherit;
   }
 
-  :where(button, input:not([type='hidden']), select, textarea, [role='button']) {
+  :where(button, input:not([type="hidden"]), select, textarea, [role="button"]) {
     min-height: 2.75rem;
   }
 
@@ -163,9 +163,13 @@
   *,
   *::before,
   *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: Reduced-motion overrides must win the cascade. */
     scroll-behavior: auto !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Reduced-motion overrides must win the cascade. */
     animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Reduced-motion overrides must win the cascade. */
     animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Reduced-motion overrides must win the cascade. */
     transition-duration: 0.01ms !important;
   }
 }

@@ -1,26 +1,20 @@
-import { Check } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
 
-import { EmptyState } from '@/components/shared/empty-state'
-import { FocusLayout } from '@/components/shared/focus-layout'
-import { PersistedStateBoundary } from '@/components/shared/persisted-state-boundary'
-import { PomodoroGrid } from '@/components/shared/pomodoro-grid'
-import { PrimaryButton } from '@/components/shared/primary-button'
-import { ScreenHeader } from '@/components/shared/screen-header'
-import { Card, CardContent } from '@/components/ui/card'
-import type { AppState } from '@/lib/models'
+import { EmptyState } from '@/components/shared/empty-state';
+import { FocusLayout } from '@/components/shared/focus-layout';
+import { PersistedStateBoundary } from '@/components/shared/persisted-state-boundary';
+import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
+import { PrimaryButton } from '@/components/shared/primary-button';
+import { ScreenHeader } from '@/components/shared/screen-header';
+import { Card, CardContent } from '@/components/ui/card';
+import type { AppState } from '@/lib/models';
 
-function MilestoneContent({
-  state,
-  milestoneId,
-}: {
-  state: AppState
-  milestoneId: string
-}) {
-  const milestone = state.milestones.find((item) => item.id === milestoneId)
+function MilestoneContent({ state, milestoneId }: { state: AppState; milestoneId: string }) {
+  const milestone = state.milestones.find((item) => item.id === milestoneId);
   const journey = milestone
     ? state.journeys.find((item) => item.id === milestone.journeyId)
-    : undefined
+    : undefined;
 
   if (!milestone || !journey || !milestone.earnedAt) {
     return (
@@ -36,10 +30,10 @@ function MilestoneContent({
           }
         />
       </FocusLayout>
-    )
+    );
   }
 
-  const targetPomodoros = milestone.targetFocusedMinutes / 25
+  const targetPomodoros = milestone.targetFocusedMinutes / 25;
 
   return (
     <FocusLayout>
@@ -50,10 +44,7 @@ function MilestoneContent({
           description={`A milestone built from ${targetPomodoros} focused pomodoros.`}
           actions={
             <PrimaryButton asChild>
-              <Link
-                to="/journeys/$journeyId"
-                params={{ journeyId: journey.id }}
-              >
+              <Link to="/journeys/$journeyId" params={{ journeyId: journey.id }}>
                 Continue Journey
               </Link>
             </PrimaryButton>
@@ -77,19 +68,13 @@ function MilestoneContent({
         </Card>
       </div>
     </FocusLayout>
-  )
+  );
 }
 
-export function MilestoneDetailScreen({
-  milestoneId,
-}: {
-  milestoneId: string
-}) {
+export function MilestoneDetailScreen({ milestoneId }: { milestoneId: string }) {
   return (
     <PersistedStateBoundary>
-      {(state) => (
-        <MilestoneContent state={state} milestoneId={milestoneId} />
-      )}
+      {(state) => <MilestoneContent state={state} milestoneId={milestoneId} />}
     </PersistedStateBoundary>
-  )
+  );
 }

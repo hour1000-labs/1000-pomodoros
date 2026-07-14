@@ -1,30 +1,30 @@
-import { ArrowRight, Check, Clock3, Play } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router';
+import { ArrowRight, Check, Clock3, Play } from 'lucide-react';
 
-import { MilestoneProgress } from '@/components/shared/milestone-progress'
-import { PomodoroGrid } from '@/components/shared/pomodoro-grid'
-import { PrimaryButton } from '@/components/shared/primary-button'
-import { Card, CardContent } from '@/components/ui/card'
-import { learnGuitarMockData } from '@/lib/mock-data'
-import { deriveJourneyProgress } from '@/lib/progress'
+import { MilestoneProgress } from '@/components/shared/milestone-progress';
+import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
+import { PrimaryButton } from '@/components/shared/primary-button';
+import { Card, CardContent } from '@/components/ui/card';
+import { learnGuitarMockData } from '@/lib/mock-data';
+import { deriveJourneyProgress } from '@/lib/progress';
 
-import { PublicLayout } from './components/public-layout'
+import { PublicLayout } from './components/public-layout';
 
 const benefits = [
   'Know what to work on next',
   'Stay consistent',
   'See your effort accumulate',
   'Build meaningful skills',
-] as const
+] as const;
 
 export function LandingPage() {
-  const { journey, nextSteps, focusSessions, milestones } = learnGuitarMockData
-  const progress = deriveJourneyProgress(journey, focusSessions)
-  const nextStep = nextSteps.find((step) => step.status === 'current')
-  const nextMilestone = milestones.find((milestone) => milestone.earnedAt === null)
+  const { journey, nextSteps, focusSessions, milestones } = learnGuitarMockData;
+  const progress = deriveJourneyProgress(journey, focusSessions);
+  const nextStep = nextSteps.find((step) => step.status === 'current');
+  const nextMilestone = milestones.find((milestone) => milestone.earnedAt === null);
   const milestonePercent = nextMilestone
     ? (progress.focusedMinutes / nextMilestone.targetFocusedMinutes) * 100
-    : 100
+    : 100;
 
   return (
     <PublicLayout
@@ -47,7 +47,8 @@ export function LandingPage() {
             Turn focused work into visible progress.
           </h1>
           <p className="mb-7 max-w-[39rem] text-base leading-relaxed text-ink/60 md:text-lg">
-            Complete pomodoros, build skills, and see every hour you invest on the path toward mastery.
+            Complete pomodoros, build skills, and see every hour you invest on the path toward
+            mastery.
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <PrimaryButton asChild>
@@ -98,7 +99,11 @@ export function LandingPage() {
                     {Math.floor(progress.focusedMinutes / 60)}h {progress.focusedMinutes % 60}m
                   </p>
                 </div>
-                <span className="grid size-11 place-items-center rounded-full bg-pomodoro-red text-paper" aria-label="Focused effort recorded">
+                <span
+                  className="grid size-11 place-items-center rounded-full bg-pomodoro-red text-paper"
+                  role="img"
+                  aria-label="Focused effort recorded"
+                >
                   <Check aria-hidden="true" className="size-5" />
                 </span>
               </div>
@@ -108,10 +113,18 @@ export function LandingPage() {
                 Focus session
               </p>
               <div className="mb-4 flex items-center justify-between gap-4 border-b border-ink/20 pb-3">
-                <p className="mb-0 text-4xl font-bold tracking-[-0.04em] tabular-nums" aria-label="25 minute timer">
+                <p
+                  className="mb-0 text-4xl font-bold tracking-[-0.04em] tabular-nums"
+                  role="timer"
+                  aria-label="25 minute timer"
+                >
                   25:00
                 </p>
-                <span className="grid size-11 place-items-center rounded-full bg-ink text-paper" aria-label="Start focus session preview">
+                <span
+                  className="grid size-11 place-items-center rounded-full bg-ink text-paper"
+                  role="img"
+                  aria-label="Start focus session preview"
+                >
                   <Play aria-hidden="true" className="size-4 fill-current" />
                 </span>
               </div>
@@ -154,13 +167,21 @@ export function LandingPage() {
           <p className="mb-4 text-xs font-bold tracking-[0.16em] text-paper/65 uppercase">
             A simple practice loop
           </p>
-          <h2 id="benefits-heading" className="mb-10 max-w-[19ch] text-3xl leading-tight font-bold tracking-[-0.03em] md:text-4xl">
+          <h2
+            id="benefits-heading"
+            className="mb-10 max-w-[19ch] text-3xl leading-tight font-bold tracking-[-0.03em] md:text-4xl"
+          >
             Small sessions. A body of work you can see.
           </h2>
           <ol className="grid border-t border-paper/20 sm:grid-cols-2 lg:grid-cols-4">
             {benefits.map((benefit, index) => (
-              <li key={benefit} className="min-h-32 border-r border-b border-paper/20 p-5 last:border-r-0">
-                <span className="text-xs font-bold text-paper/65">{String(index + 1).padStart(2, '0')}</span>
+              <li
+                key={benefit}
+                className="min-h-32 border-r border-b border-paper/20 p-5 last:border-r-0"
+              >
+                <span className="text-xs font-bold text-paper/65">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
                 <h3 className="mt-7 mb-0 max-w-[14ch] text-base font-bold">{benefit}</h3>
               </li>
             ))}
@@ -176,5 +197,5 @@ export function LandingPage() {
         </div>
       </footer>
     </PublicLayout>
-  )
+  );
 }
