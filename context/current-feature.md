@@ -1,43 +1,61 @@
-# Current Feature: <feature name>
+# Current Feature: Add Motivation Onboarding
 
-<!-- One-sentence description of the feature or fix -->
+Add the optional motivation step to onboarding so users can record why their Journey matters or continue without a reason.
 
 ## Status
 
-<!-- Not Started | In Progress | Ready to Commit -->
-
-Not Started
+Ready to Commit
 
 ## Goal
 
-<!-- Describe what should change from the user's perspective. -->
+Users can add, revisit, or skip a short reason for pursuing their current Journey while moving reliably between the Journey and target onboarding steps.
 
 ## Acceptance Criteria
 
-<!-- The feature is done when every applicable item is checked. -->
-
-- [ ] ...
-- [ ] ...
-- [ ] ...
+- [x] `/onboarding/motivation` uses the distraction-free onboarding experience, shows “2 of 4,” displays the current Journey name, and uses the heading “Why does this matter to you?”.
+- [x] The screen provides one labeled optional textarea with a 240-character limit; the character count appears only after 180 characters, and the seeded “Learn guitar” state shows “I want to play my favorite songs confidently.”.
+- [x] Continue saves the entered reason to the onboarding draft and routes to `/onboarding/target`; “Skip for now” saves an empty reason and routes to the same destination.
+- [x] Back returns to `/onboarding/journey` without discarding the current text, and a previously saved reason is restored when the user returns to the motivation screen.
+- [x] Visiting the route without an onboarding Journey draft redirects to `/onboarding/journey`.
+- [x] The screen follows the supplied onboarding visual reference and project design system, remains usable from 320px upward and at 200% zoom, and keeps the textarea and primary action visible without scrolling at common mobile heights.
+- [x] The screen adds no motivational quotes, illustrations, testimonials, extra questions, or other out-of-scope controls.
+- [x] Motivation persistence, navigation, redirect, skip, restoration, and character-count boundaries are covered by automated tests.
 
 ## Plan
 
-1. ...
-2. ...
-3. ...
+1. Inspect the existing onboarding route, layout, draft repository, models, tests, and screenshot reference to identify the smallest reusable implementation path.
+2. Add the motivation route UI using the shared onboarding patterns, Journey context, optional textarea, conditional character count, and responsive design constraints.
+3. Connect draft hydration and guarding, then implement Continue, Skip for now, and Back persistence and navigation behavior.
+4. Add focused automated coverage for rendering, draft absence, persistence and restoration, navigation actions, and the 180/240-character boundaries.
+5. Run the required quality checks and verify the complete flow, accessibility, responsive layouts, visual reference, and browser console in a real browser.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] Motivation Continue, Skip for now, Back, restoration, and missing-draft redirect verified in the browser
+- [x] Character-count behavior at 180, 181, and 240 characters verified
+- [x] Mobile, desktop, 200% zoom, and common mobile-height layouts verified against the supplied screenshot
+- [x] Keyboard navigation, visible focus, textarea labeling, and 44px touch targets verified
+- [x] No relevant console errors
 
 ## Notes
 
-<!-- Record important decisions, blockers, scope changes, or follow-up work. -->
+- Source specification: `context/features/onboarding-add-motivation-spec.md`.
+- Visual reference: `context/screenshots/onboarding2-ui.png`; `context/DESIGN.md` remains the design-system source of truth.
+- Reuse the existing onboarding draft and client repository boundaries; components must not access `localStorage` directly.
+- The reason is optional, limited to 240 characters, and explicitly cleared when “Skip for now” is selected.
+- The “Learn guitar” sample is shown as the empty textarea placeholder, matching the existing onboarding sample-value pattern without persisting motivation the user did not enter.
+- The feature-specific four-step flow and “2 of 4” label override the older five-screen progress example in `context/DESIGN.md`.
+- The pending milestone-sharing decision in `context/decisions.md` does not affect this feature.
+- Excludes motivational quotes, illustrations, testimonials, additional questions, and unrelated onboarding steps.
+- Test-driven adjustment: below 641px viewport height, supporting copy is hidden and the textarea is shortened so the full form and primary action fit without scrolling; 320×568 finished with scroll dimensions exactly 320×568.
+- 2026-07-14 verification: `pnpm check` passed for 80 files; `pnpm test` passed 7 files and 40 tests; `pnpm build` passed client and SSR builds; and `git diff --check` passed.
+- Headed Playwright verification passed at 1280×800, 320×568, 320×667, 320×800, and 640×400 CSS pixels at DPR 2 for 200%-equivalent reflow. Continue, Skip, Back, restoration, missing-draft redirect, 180/181/240 character boundaries, keyboard focus, visible focus styling, accessible labeling, 48px action heights, overflow, and browser console output were checked with zero errors or warnings.
+- Review finding: at 375×812, entering 240 unbroken characters caused the textarea and form section to grow to 672px wide and the document to grow to 692px, shifting the interface off-screen. The computed textarea style remained `field-sizing: content`, so the earlier responsive evidence did not cover this maximum-content layout case. Responsive acceptance and verification remain open pending a fix and re-test.
+- Review fix: constrained the grid section and textarea to their available width. With 240 unbroken characters, headed-browser re-testing measured a 291px textarea inside a 335px section at 375px with document width fixed at 375px; at 320×568, both document dimensions matched the viewport and Continue ended at 546.8px. The full 40-test suite, Biome check, client build, SSR build, and browser console checks also passed.
+- 2026-07-14 re-review: no blocking findings remained after the maximum-content overflow fix. All acceptance criteria and verification items passed, every feature change mapped to the documented scope, and the feature advanced to `Ready to Commit`.
 
 ## History
 
