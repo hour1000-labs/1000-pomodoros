@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { CompletionFoundationScreen } from '@/components/foundation-screens'
+import { SessionCompleteScreen } from '@/features/focus/session-complete-screen'
 
 export const Route = createFileRoute('/focus/complete')({
-  component: CompletionFoundationScreen,
+  component: SessionCompleteScreen,
 })

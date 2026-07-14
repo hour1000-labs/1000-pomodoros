@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { JourneyFoundationScreen } from '@/components/foundation-screens'
+import { JourneyDetailScreen } from '@/features/journeys/journey-detail-screen'
 
 export const Route = createFileRoute('/journeys/$journeyId')({
   component: JourneyRoute,
@@ -9,5 +9,5 @@ export const Route = createFileRoute('/journeys/$journeyId')({
 function JourneyRoute() {
   const { journeyId } = Route.useParams()
 
-  return <JourneyFoundationScreen journeyId={journeyId} />
+  return <JourneyDetailScreen journeyId={journeyId} />
 }

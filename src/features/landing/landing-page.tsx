@@ -1,13 +1,14 @@
 import { ArrowRight, Check, Clock3, Play } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
-import { PublicLayout } from '@/components/layouts'
-import { MilestoneProgress } from '@/components/milestone-progress'
-import { PomodoroGrid } from '@/components/pomodoro-grid'
-import { PrimaryButton } from '@/components/primary-button'
+import { MilestoneProgress } from '@/components/shared/milestone-progress'
+import { PomodoroGrid } from '@/components/shared/pomodoro-grid'
+import { PrimaryButton } from '@/components/shared/primary-button'
 import { Card, CardContent } from '@/components/ui/card'
 import { learnGuitarMockData } from '@/lib/mock-data'
 import { deriveJourneyProgress } from '@/lib/progress'
+
+import { PublicLayout } from './components/public-layout'
 
 const benefits = [
   'Know what to work on next',

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { MilestoneFoundationScreen } from '@/components/foundation-screens'
+import { MilestoneDetailScreen } from '@/features/milestones/milestone-detail-screen'
 
 export const Route = createFileRoute('/milestones/$milestoneId')({
   component: MilestoneRoute,
@@ -9,5 +9,5 @@ export const Route = createFileRoute('/milestones/$milestoneId')({
 function MilestoneRoute() {
   const { milestoneId } = Route.useParams()
 
-  return <MilestoneFoundationScreen milestoneId={milestoneId} />
+  return <MilestoneDetailScreen milestoneId={milestoneId} />
 }

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { FocusFoundationScreen } from '@/components/foundation-screens'
+import { FocusSessionScreen } from '@/features/focus/focus-session-screen'
 
-export const Route = createFileRoute('/focus/')({ component: FocusFoundationScreen })
+export const Route = createFileRoute('/focus/')({ component: FocusSessionScreen })

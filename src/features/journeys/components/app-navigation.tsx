@@ -1,7 +1,7 @@
 import { Home, Map } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
-import { BrandMark } from '@/components/brand-mark'
+import { BrandMark } from '@/components/shared/brand-mark'
 import { cn } from '@/lib/utils'
 
 const navItemClass =

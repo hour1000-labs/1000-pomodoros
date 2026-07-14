@@ -2,16 +2,17 @@ import { ArrowRight } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useState, type FormEvent } from 'react'
 
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import { OnboardingLayout } from '@/components/layouts'
-import { LoadingState } from '@/components/loading-state'
-import { PrimaryButton } from '@/components/primary-button'
-import { RecoverableErrorState } from '@/components/recoverable-error-state'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { LoadingState } from '@/components/shared/loading-state'
+import { PrimaryButton } from '@/components/shared/primary-button'
+import { RecoverableErrorState } from '@/components/shared/recoverable-error-state'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAppState } from '@/hooks/use-app-state'
 import type { AppState, OnboardingDraft } from '@/lib/models'
 import { appRepository } from '@/lib/repository'
+
+import { OnboardingLayout } from './components/onboarding-layout'
 
 const JOURNEY_NAME_MAX_LENGTH = 80
 const DEFAULT_TARGET_MINUTES = 1_000 * 60

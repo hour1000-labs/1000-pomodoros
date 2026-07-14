@@ -1,7 +1,7 @@
 import { AlertCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { ConfirmDialog } from '@/components/confirm-dialog'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 
 export function RecoverableErrorState({
   title = 'We could not load your saved progress',

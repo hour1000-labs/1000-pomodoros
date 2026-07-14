@@ -1,4 +1,7 @@
-import { PomodoroBlock, type PomodoroBlockState } from '@/components/pomodoro-block'
+import {
+  PomodoroBlock,
+  type PomodoroBlockState,
+} from '@/components/shared/pomodoro-block'
 import { cn } from '@/lib/utils'
 
 const MINUTES_PER_POMODORO = 25

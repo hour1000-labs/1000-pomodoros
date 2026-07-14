@@ -2,7 +2,7 @@ import { ArrowRight, Timer } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { PrimaryButton } from '@/components/primary-button'
+import { PrimaryButton } from '@/components/shared/primary-button'
 
 export function ContinueCard({
   journeyId,

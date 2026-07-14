@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
-import { LoadingState } from '@/components/loading-state'
-import { RecoverableErrorState } from '@/components/recoverable-error-state'
+import { LoadingState } from '@/components/shared/loading-state'
+import { RecoverableErrorState } from '@/components/shared/recoverable-error-state'
 import { useAppState } from '@/hooks/use-app-state'
 import type { AppState } from '@/lib/models'
 

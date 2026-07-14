@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { MilestoneProgress } from '@/components/milestone-progress'
+import { MilestoneProgress } from '@/components/shared/milestone-progress'
 
 export function JourneyCard({
   journeyId,
