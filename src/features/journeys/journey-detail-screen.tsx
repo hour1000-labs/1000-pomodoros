@@ -60,14 +60,14 @@ function JourneyContent({ state, journeyId }: { state: AppState; journeyId: stri
           <CardContent className="p-6 sm:p-8">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="mb-1 text-3xl font-bold tracking-[-0.03em]">
+                <p className="mb-1 font-bold text-3xl tracking-[-0.03em]">
                   {progress.totalPomodoros.toLocaleString(undefined, {
                     maximumFractionDigits: 1,
                   })}
                 </p>
-                <p className="mb-0 text-sm text-ink/60">Pomodoros completed</p>
+                <p className="mb-0 text-ink/60 text-sm">Pomodoros completed</p>
               </div>
-              <p className="mb-0 text-sm text-ink/60">
+              <p className="mb-0 text-ink/60 text-sm">
                 {formatFocusedTime(progress.focusedMinutes)} focused
               </p>
             </div>
@@ -82,8 +82,8 @@ function JourneyContent({ state, journeyId }: { state: AppState; journeyId: stri
         <div className="space-y-6">
           <Card>
             <CardContent className="p-6">
-              <p className="mb-2 text-sm font-bold text-ink/60">Next step</p>
-              <p className="mb-0 text-lg font-bold">
+              <p className="mb-2 font-bold text-ink/60 text-sm">Next step</p>
+              <p className="mb-0 font-bold text-lg">
                 {nextStep?.title ?? 'Choose your next action'}
               </p>
             </CardContent>

@@ -52,7 +52,7 @@ function MilestoneContent({ state, milestoneId }: { state: AppState; milestoneId
         />
         <Card>
           <CardContent className="p-6">
-            <div className="mb-5 flex items-center gap-3 text-sm font-bold">
+            <div className="mb-5 flex items-center gap-3 font-bold text-sm">
               <span className="grid size-9 place-items-center rounded-full bg-ink text-paper">
                 <Check aria-hidden="true" className="size-4" />
               </span>

@@ -35,7 +35,7 @@ export function OnboardingFoundationScreen({ screen }: { screen: keyof typeof on
         <ScreenHeader eyebrow={copy.step} title={copy.title} description={copy.description} />
         <Card>
           <CardContent className="p-6">
-            <p className="mb-0 text-sm text-ink/60">
+            <p className="mb-0 text-ink/60 text-sm">
               This route is ready for its screen-specific onboarding feature.
             </p>
           </CardContent>

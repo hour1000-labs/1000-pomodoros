@@ -65,7 +65,7 @@ export function PomodoroGrid({
         })}
       </div>
       {safeTotal > visibleCount ? (
-        <figcaption className="mt-3 text-sm text-ink/60">
+        <figcaption className="mt-3 text-ink/60 text-sm">
           Showing pomodoros {safeStart + 1}–{safeStart + visibleCount} of{' '}
           {safeTotal.toLocaleString()}.
         </figcaption>

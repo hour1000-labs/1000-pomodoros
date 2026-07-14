@@ -39,11 +39,11 @@ function getJourneyNameError(value: string) {
 function ProgressPreview() {
   return (
     <aside className="hidden max-w-sm lg:block" aria-hidden="true">
-      <p className="mb-8 text-[0.75rem] font-bold tracking-[0.22em] text-ink/60 uppercase">
+      <p className="mb-8 font-bold text-[0.75rem] text-ink/60 uppercase tracking-[0.22em]">
         Your practice, made visible
       </p>
       <div className="mb-7 h-px w-full bg-ink" />
-      <p className="mb-10 max-w-[15ch] text-3xl leading-[1.08] font-bold tracking-[-0.035em]">
+      <p className="mb-10 max-w-[15ch] font-bold text-3xl leading-[1.08] tracking-[-0.035em]">
         Every big thing begins with one focused session.
       </p>
       <div className="grid w-fit grid-cols-8 gap-2">
@@ -58,7 +58,7 @@ function ProgressPreview() {
           />
         ))}
       </div>
-      <p className="mt-5 mb-0 text-[0.7rem] font-bold tracking-[0.18em] text-ink/60 uppercase">
+      <p className="mt-5 mb-0 font-bold text-[0.7rem] text-ink/60 uppercase tracking-[0.18em]">
         One block = 25 minutes
       </p>
     </aside>
@@ -150,27 +150,27 @@ function JourneyForm({ state }: { state: AppState }) {
 
         <section className="w-full max-w-[42rem] lg:justify-self-end">
           <div className="mb-7 flex items-center gap-4">
-            <p className="mb-0 shrink-0 text-[0.75rem] font-bold tracking-[0.18em] uppercase">
+            <p className="mb-0 shrink-0 font-bold text-[0.75rem] uppercase tracking-[0.18em]">
               1 of 4
             </p>
             <span className="h-px w-24 bg-ink/20" aria-hidden="true">
               <span className="block h-px w-1/4 bg-pomodoro-red" />
             </span>
-            <p className="mb-0 hidden text-[0.7rem] font-bold tracking-[0.16em] text-ink/60 uppercase sm:block">
+            <p className="mb-0 hidden font-bold text-[0.7rem] text-ink/60 uppercase tracking-[0.16em] sm:block">
               Create your Journey
             </p>
           </div>
 
-          <h1 className="mb-4 max-w-[15ch] text-4xl leading-[1.04] font-bold tracking-[-0.04em] sm:text-5xl lg:text-[3.5rem]">
+          <h1 className="mb-4 max-w-[15ch] font-bold text-4xl leading-[1.04] tracking-[-0.04em] sm:text-5xl lg:text-[3.5rem]">
             What do you want to make progress on?
           </h1>
-          <p className="mb-8 max-w-[58ch] text-base leading-relaxed text-ink/60 sm:text-lg">
+          <p className="mb-8 max-w-[58ch] text-base text-ink/60 leading-relaxed sm:text-lg">
             Start with one skill, project, or long-term goal. You can add more Journeys later.
           </p>
 
           <form noValidate onSubmit={handleSubmit}>
             <label
-              className="mb-2 block text-[0.75rem] font-bold tracking-[0.12em] uppercase"
+              className="mb-2 block font-bold text-[0.75rem] uppercase tracking-[0.12em]"
               htmlFor="journey-name"
             >
               Journey name
@@ -184,7 +184,7 @@ function JourneyForm({ state }: { state: AppState }) {
               autoFocus={savedDraft?.journeyName.trim().length === 0 || savedDraft === null}
               aria-describedby={showValidation ? 'journey-name-error' : undefined}
               aria-invalid={showValidation}
-              className="h-16 rounded-none border-2 border-ink px-5 text-xl font-bold shadow-[5px_5px_0_var(--pomodoro-red)] focus-visible:border-ink sm:text-2xl"
+              className="h-16 rounded-none border-2 border-ink px-5 font-bold text-xl shadow-[5px_5px_0_var(--pomodoro-red)] focus-visible:border-ink sm:text-2xl"
               onBlur={() => setHasBlurred(true)}
               onChange={(event) => {
                 setJourneyName(event.target.value);
@@ -194,7 +194,7 @@ function JourneyForm({ state }: { state: AppState }) {
             <div className="min-h-7 pt-2">
               {showValidation ? (
                 <p
-                  className="mb-0 text-sm font-bold text-pomodoro-red"
+                  className="mb-0 font-bold text-pomodoro-red text-sm"
                   id="journey-name-error"
                   role="alert"
                 >
@@ -204,7 +204,7 @@ function JourneyForm({ state }: { state: AppState }) {
             </div>
 
             <fieldset className="mt-4">
-              <legend className="mb-3 text-[0.7rem] font-bold tracking-[0.12em] text-ink/60 uppercase">
+              <legend className="mb-3 font-bold text-[0.7rem] text-ink/60 uppercase tracking-[0.12em]">
                 Or start with an idea
               </legend>
               <div className="flex flex-wrap gap-2">
@@ -213,7 +213,7 @@ function JourneyForm({ state }: { state: AppState }) {
                     key={example}
                     type="button"
                     variant="outline"
-                    className="rounded-full border-ink/25 bg-paper px-4 text-sm font-normal"
+                    className="rounded-full border-ink/25 bg-paper px-4 font-normal text-sm"
                     onClick={() => {
                       setJourneyName(example);
                       setSaveError(null);
@@ -226,7 +226,7 @@ function JourneyForm({ state }: { state: AppState }) {
             </fieldset>
 
             {saveError ? (
-              <p className="mt-5 mb-0 text-sm font-bold text-pomodoro-red" role="alert">
+              <p className="mt-5 mb-0 font-bold text-pomodoro-red text-sm" role="alert">
                 {saveError}
               </p>
             ) : null}

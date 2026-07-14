@@ -26,24 +26,24 @@ export function LandingFoundationScreen() {
           }
         />
         <Card className="gap-0 border-2 border-ink py-0 ring-0">
-          <div className="flex items-center justify-between border-b-2 border-ink px-5 py-4 text-xs font-bold">
+          <div className="flex items-center justify-between border-ink border-b-2 px-5 py-4 font-bold text-xs">
             <span>1000 Pomodoros</span>
             <span className="text-ink/60">Journey 01</span>
           </div>
           <CardContent className="grid p-0 sm:grid-cols-2">
-            <div className="border-b-2 border-ink p-5 sm:border-r-2 sm:border-b-0">
-              <p className="mb-2 text-xs font-bold text-ink/60">Current Journey</p>
-              <p className="mb-6 text-2xl leading-tight font-bold tracking-[-0.025em]">
+            <div className="border-ink border-b-2 p-5 sm:border-r-2 sm:border-b-0">
+              <p className="mb-2 font-bold text-ink/60 text-xs">Current Journey</p>
+              <p className="mb-6 font-bold text-2xl leading-tight tracking-[-0.025em]">
                 Learn guitar
               </p>
-              <div className="border-y border-ink/20 py-4">
-                <p className="mb-1 text-xs font-bold text-ink/60">Next step</p>
-                <p className="mb-0 text-sm font-bold">Practice the F chord transition</p>
+              <div className="border-ink/20 border-y py-4">
+                <p className="mb-1 font-bold text-ink/60 text-xs">Next step</p>
+                <p className="mb-0 font-bold text-sm">Practice the F chord transition</p>
               </div>
               <div className="mt-5 flex items-end justify-between gap-4">
                 <div>
-                  <p className="mb-1 text-xs font-bold text-ink/60">Focused time</p>
-                  <p className="mb-0 text-xl font-bold">17h 55m</p>
+                  <p className="mb-1 font-bold text-ink/60 text-xs">Focused time</p>
+                  <p className="mb-0 font-bold text-xl">17h 55m</p>
                 </div>
                 <span className="grid size-11 place-items-center rounded-full bg-pomodoro-red text-paper">
                   <Check aria-hidden="true" className="size-5" />
@@ -51,14 +51,14 @@ export function LandingFoundationScreen() {
               </div>
             </div>
             <div className="p-5">
-              <p className="mb-1 text-xs font-bold text-ink/60">Focus session</p>
-              <div className="mb-5 flex items-center justify-between gap-4 border-b border-ink/20 pb-4">
-                <p className="mb-0 text-4xl font-bold tracking-[-0.04em] tabular-nums">25:00</p>
+              <p className="mb-1 font-bold text-ink/60 text-xs">Focus session</p>
+              <div className="mb-5 flex items-center justify-between gap-4 border-ink/20 border-b pb-4">
+                <p className="mb-0 font-bold text-4xl tabular-nums tracking-[-0.04em]">25:00</p>
                 <span className="grid size-11 place-items-center rounded-full bg-ink text-paper">
                   <Play aria-hidden="true" className="size-4 fill-current" />
                 </span>
               </div>
-              <div className="mb-3 flex items-center justify-between gap-3 text-xs font-bold">
+              <div className="mb-3 flex items-center justify-between gap-3 font-bold text-xs">
                 <span className="text-ink/60">Your visible effort</span>
                 <span>43 / 50</span>
               </div>
@@ -68,8 +68,8 @@ export function LandingFoundationScreen() {
                   <Clock3 aria-hidden="true" className="size-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="mb-0 text-xs text-paper/65">Next milestone</p>
-                  <p className="mb-0 text-sm font-bold">50 pomodoros</p>
+                  <p className="mb-0 text-paper/65 text-xs">Next milestone</p>
+                  <p className="mb-0 font-bold text-sm">50 pomodoros</p>
                 </div>
               </div>
             </div>

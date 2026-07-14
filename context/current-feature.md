@@ -1,43 +1,60 @@
-# Current Feature: <feature name>
+# Current Feature: Auto-sort Tailwind classes with Biome
 
-<!-- One-sentence description of the feature or fix -->
+Configure Biome to consistently sort Tailwind classes during editor save actions and repository checks.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Not Started
+Ready to Commit
 
 ## Goal
 
 <!-- Describe what should change from the user's perspective. -->
 
+Developers can save or check project files and receive consistent Tailwind class ordering without adding a second formatter.
+
 ## Acceptance Criteria
 
 <!-- The feature is done when every applicable item is checked. -->
 
-- [ ] ...
-- [ ] ...
-- [ ] ...
+- [x] Biome reports unsorted Tailwind classes as errors and provides an automatic fix.
+- [x] Automatic sorting covers JSX `className` values and class strings passed to `cn`, `clsx`, and `cva`.
+- [x] The existing Biome fix-on-save workflow applies class sorting without introducing Prettier or another dependency.
+- [x] Existing Tailwind class strings are normalized without adding, removing, or otherwise changing their class tokens.
+- [x] Application behavior, tests, and production builds remain unchanged after class normalization.
 
 ## Plan
 
-1. ...
-2. ...
-3. ...
+1. Configure Biome's Tailwind class-sorting rule for the class patterns used by the project.
+2. Apply the sorter to existing source files while preserving every class token.
+3. Verify repository quality checks, tests, builds, and the mechanical scope of the generated diff.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] Affected UI verified in the browser, if applicable
+- [x] Mobile and desktop verified, if responsive UI changed
+- [x] No relevant console errors
+- [x] Every changed class string preserves the same class-token multiset
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
+
+- Use the existing Biome formatter and VS Code fix-on-save integration; adding Prettier is out of scope.
+- Biome's `useSortedClasses` rule is experimental, so this feature explicitly opts its fix into safe on-save application.
+- The implementation was made on `main` before this feature was loaded. The feature must still pass `test` and `review`; branch remediation can be handled by `feature start` if required.
+- Test evidence: `pnpm check` passed for 78 files; `pnpm test` passed 6 files and 34 tests; and `pnpm build` passed client and SSR builds.
+- A disposable fixture proved Biome reports and safely fixes unsorted `className`, `cn`, `clsx`, and `cva` strings. The fixture was removed after verification.
+- A TypeScript AST audit verified that all 108 changed string literals across 24 TSX files preserve the same token multiset.
+- Playwright smoke checks passed for landing, onboarding, home, Journey, and milestone surfaces at 1280x800 and 320x800 with no console warnings or errors.
+- Browser testing exposed an unrelated existing milestone headline (`4.166666666666667 hours`). This feature only reorders that screen's unchanged class tokens; fixing the headline is outside the current scope.
+- Review found a literal `$` inserted before the milestone `title` prop after testing. `pnpm check` now fails, and runtime verification must be repeated after that unrelated character is removed.
+- The stray `$` was removed during review remediation, and a fresh `pnpm check` passed for 78 files.
+- Remediation review reran `pnpm test` (6 files, 34 tests), `pnpm build` (client and SSR), and a targeted headed Playwright milestone check at 1280x800 with no console warnings or errors. The earlier 320x800 browser evidence remains applicable because the remediation restored the exact previously tested source.
 
 ## History
 

@@ -11,8 +11,8 @@ export function StatItem({
 }) {
   return (
     <div className={cn('min-w-0', className)}>
-      <p className="mb-1 text-2xl font-bold tracking-[-0.02em] text-ink">{value}</p>
-      <p className="mb-0 text-sm text-ink/60">{label}</p>
+      <p className="mb-1 font-bold text-2xl text-ink tracking-[-0.02em]">{value}</p>
+      <p className="mb-0 text-ink/60 text-sm">{label}</p>
     </div>
   );
 }

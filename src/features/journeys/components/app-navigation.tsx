@@ -12,7 +12,7 @@ export function AppNavigation({ journeyId, className }: { journeyId: string; cla
     <nav
       aria-label="Application"
       className={cn(
-        'fixed inset-x-0 bottom-0 z-40 border-t border-ink/12 bg-paper/95 px-3 py-2 backdrop-blur md:static md:border-x-0 md:border-t-0 md:border-b md:px-8 md:py-3',
+        'fixed inset-x-0 bottom-0 z-40 border-ink/12 border-t bg-paper/95 px-3 py-2 backdrop-blur md:static md:border-x-0 md:border-t-0 md:border-b md:px-8 md:py-3',
         className
       )}
     >

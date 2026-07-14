@@ -16,8 +16,8 @@ export function RecoverableErrorState({
   return (
     <section className="max-w-reading rounded-lg border border-ink/20 bg-paper p-6" role="alert">
       <AlertCircle aria-hidden="true" className="mb-4 size-6 text-pomodoro-red" />
-      <h2 className="mb-2 text-xl font-bold">{title}</h2>
-      <p className="mb-5 text-sm leading-relaxed text-ink/60">{description}</p>
+      <h2 className="mb-2 font-bold text-xl">{title}</h2>
+      <p className="mb-5 text-ink/60 text-sm leading-relaxed">{description}</p>
       <div className="flex flex-wrap gap-3">
         <Button variant="outline" onClick={onRetry}>
           Try again

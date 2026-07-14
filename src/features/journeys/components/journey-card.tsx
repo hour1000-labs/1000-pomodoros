@@ -23,14 +23,14 @@ export function JourneyCard({
     <Card>
       <CardContent className="grid gap-6 p-6 sm:grid-cols-[1fr_auto] sm:items-start">
         <Link to="/journeys/$journeyId" params={{ journeyId }} className="group min-w-0 rounded-md">
-          <span className="mb-2 flex items-center gap-2 text-xl font-bold">
+          <span className="mb-2 flex items-center gap-2 font-bold text-xl">
             {name}
             <ArrowRight
               aria-hidden="true"
               className="size-4 transition-transform group-hover:translate-x-1"
             />
           </span>
-          <span className="block text-sm text-ink/60">{focusedTime} focused</span>
+          <span className="block text-ink/60 text-sm">{focusedTime} focused</span>
           <span className="mt-4 block text-sm">
             <span className="font-bold">Next step:</span> {nextStep ?? 'Add your next action'}
           </span>

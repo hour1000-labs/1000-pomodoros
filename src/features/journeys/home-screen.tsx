@@ -50,7 +50,7 @@ function HomeContent({ state }: { state: AppState }) {
         <StatItem value={String(todayProgress.focusedMinutes)} label="Focused minutes" />
       </section>
       <section className="mt-12">
-        <h2 className="mb-5 text-2xl font-bold">Active Journey</h2>
+        <h2 className="mb-5 font-bold text-2xl">Active Journey</h2>
         <JourneyCard
           journeyId={journey.id}
           name={journey.name}
