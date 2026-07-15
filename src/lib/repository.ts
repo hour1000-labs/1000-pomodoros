@@ -80,7 +80,11 @@ export interface AppRepository {
   setActiveTimer(activeTimer: ActiveTimer | null): RepositorySaveResult;
   upsertMilestone(milestone: Milestone): RepositorySaveResult;
   setWeeklyGoal(weeklyGoal: WeeklyGoal | null): RepositorySaveResult;
-  finishOnboarding(journey: Journey, firstNextStep: NextStep): RepositorySaveResult;
+  finishOnboarding(
+    journey: Journey,
+    firstNextStep: NextStep,
+    firstMilestone: Milestone
+  ): RepositorySaveResult;
   completeSession(
     session: FocusSession,
     earnedMilestones?: readonly Milestone[]
@@ -469,11 +473,12 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     return update((state) => ({ ...state, weeklyGoal }));
   }
 
-  function finishOnboarding(journey: Journey, firstNextStep: NextStep) {
+  function finishOnboarding(journey: Journey, firstNextStep: NextStep, firstMilestone: Milestone) {
     return update((state) => ({
       ...state,
       journeys: upsertById(state.journeys, journey),
       nextSteps: upsertById(state.nextSteps, firstNextStep),
+      milestones: upsertById(state.milestones, firstMilestone),
       onboardingDraft: null,
       lastActiveJourneyId: journey.id,
     }));

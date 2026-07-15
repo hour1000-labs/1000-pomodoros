@@ -1,42 +1,69 @@
-# Current Feature: <feature name>
+# Current Feature: Add Next Step Onboarding
 
-<!-- One-sentence description of the feature or fix -->
+Add the final onboarding step so a user can define their first concrete action, create their Journey, and continue directly into focus setup.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Not Started
+Ready to Commit
 
 ## Goal
 
-<!-- Describe what should change from the user's perspective. -->
+Users can finish onboarding by choosing one actionable Next step and arrive at `/focus` with their newly created Journey and Next step selected, ready to start their first pomodoro.
 
 ## Acceptance Criteria
 
-<!-- The feature is done when every applicable item is checked. -->
-
-- [ ] ...
-- [ ] ...
+- [x] `/onboarding/next-step` renders the fourth onboarding step with the progress label “4 of 4,” the heading “What is the next thing you can work on?”, one labeled Next step input, and the helper copy “Choose one action you can make progress on in your next session.”
+- [x] The seeded “Learn guitar” onboarding draft shows “Practice the F chord transition” as the Next step sample value.
+- [x] The Next step is validated after trimming as required and between 1 and 120 characters; invalid submissions remain on the screen and expose an accessible, useful error.
+- [x] A Back action returns to `/onboarding/target` without losing the onboarding draft, and opening the route without an onboarding Journey draft redirects to `/onboarding/journey`.
+- [x] Submitting through the single primary “Start first pomodoro” action atomically creates the Journey, its first current Next step, and the default first milestone of 10 pomodoros from the onboarding draft.
+- [x] Submission is idempotent so repeated activation cannot create duplicate Journeys, Next steps, or first milestones, and the onboarding draft is cleared only after creation succeeds.
+- [x] A successful submission routes directly to `/focus` with the newly created Journey and Next step selected; onboarding does not end on Home or an empty dashboard.
+- [x] The screen follows the supplied onboarding visual reference and `context/DESIGN.md`, remains usable from 320px upward and at 200% zoom, and provides keyboard access, visible focus states, and minimum 44px touch targets.
+- [x] The implementation adds no subtasks, priorities, due dates, categories, scheduling controls, or other onboarding questions.
 
 ## Plan
 
-1. ...
-2. ...
-3. ...
+1. Replace the `/onboarding/next-step` placeholder with a feature-owned final-step screen that reads the persisted onboarding draft and handles missing-draft redirection.
+2. Build the responsive form and visual treatment with Journey context, exact progress/heading/helper copy, the seeded sample value, trimmed 1–120 character validation, Back navigation, and a guarded primary submission action.
+3. Extend the repository onboarding-completion operation as needed so Journey, first current Next step, 10-pomodoro milestone, active selection, and draft clearing are persisted atomically and idempotently, including recoverable failure behavior.
+4. Route successful completion to `/focus` with the created Journey and Next step selected using the existing persistence and focus-selection contracts.
+5. Add focused component and repository tests for rendering, restoration, validation boundaries, missing-draft redirect, Back, success/failure behavior, draft clearing order, selection handoff, and repeated submission.
+6. Verify the complete flow and responsive/accessibility behavior in a real browser, including repeated activation, 320px/mobile, desktop, 200% zoom, maximum-length input, overflow, focus, and console output.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] `git diff --check` passes
+- [x] Focused tests pass for Next step rendering/restoration, trimmed 1–120 character validation, redirect, Back, persistence failure, successful creation/selection, draft clearing, and repeated submission
+- [x] Browser flow passes from target selection through Next step submission to `/focus` with the created Journey and Next step selected
+- [x] Browser checks pass at 320px/mobile, desktop, and 200% zoom with no clipping or horizontal overflow, including a 120-character unbroken value
+- [x] Keyboard navigation, visible focus, accessible labels/errors, and minimum 44px touch targets are verified
+- [x] No relevant browser console errors or warnings
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
+
+- Source spec: `context/features/onboarding-add-next-step-spec.md`.
+- Visual reference: `context/screenshots/onboarding4-ui.png`; `context/DESIGN.md` remains the design-system source of truth where the screenshot and established product patterns differ.
+- The confirmed Next step model is an ordered list with the current item first and no version-one due dates. Pending scheduling and completed-step-display decisions do not affect this first current Next step and do not block the feature.
+- The default first milestone is exactly 10 pomodoros, or 250 focused minutes, and starts unearned.
+- Journey creation, first Next step creation, first milestone creation, active selection, and draft clearing must share one repository transaction so a failed save retains the draft and cannot leave partial onboarding data.
+- Stable IDs and/or an in-flight submission guard should make retries and repeated clicks idempotent without adding a second Journey, Next step, or milestone.
+- Implementation uses the onboarding draft's `startedAt` value to derive stable Journey, Next step, and milestone IDs, with an in-flight guard preventing repeated submission while the atomic write is pending.
+- Successful completion is tracked separately from an initially missing draft so the repository's synchronous draft-clearing notification routes to `/focus` instead of racing the missing-draft redirect to `/onboarding/journey`.
+- The Journey target continues to come from the existing onboarding draft; this feature does not change target selection or implement the timer’s running state.
+- Out of scope: subtasks, priorities, due dates, categories, scheduling controls, extra onboarding questions, Home/dashboard completion, and timer setup behavior beyond handing the selected Journey and Next step to `/focus`.
+- 2026-07-15 initial verification: `pnpm check` passed for 84 files; `pnpm test` passed 9 files and 52 tests; client and SSR `pnpm build` passed; and `git diff --check` passed.
+- Production-browser verification passed the full Journey → motivation → target → Next step → focus flow, empty trimmed-input validation, Back navigation and restoration, missing-draft redirect, Learn guitar sample value, and repeated submission without duplicate records.
+- Responsive browser evidence: 1280×800 matched the supplied composition; 320×568 with a 120-character unbroken value had `scrollWidth === innerWidth === 320`, no vertical overflow, a visible 48px primary action, and a visible 48px Back action; the 640×400 200%-equivalent viewport had no horizontal overflow and preserved vertical access to all controls.
+- Accessibility and runtime evidence: the input exposed its label, helper, invalid state, and alert; keyboard Tab reached the primary action with a visible focus ring; measured controls exceeded the 44px target minimum; and the production browser and preview terminal reported no relevant errors or warnings.
+- Post-verification change classification: documentation-only evidence recording and review-status updates in this file; they cannot affect runtime behavior, tests, bundling, or the browser results above, so that evidence remains valid. `pnpm check` and `git diff --check` were rerun and passed after the updates.
 
 ## History
 

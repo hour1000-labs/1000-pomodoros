@@ -196,7 +196,7 @@ describe('localStorage repository', () => {
     expect(matchingSessions[0]?.focusedMinutes).toBe(25);
   });
 
-  it('finishes onboarding without creating duplicate Journeys or Next steps', () => {
+  it('finishes onboarding atomically without creating duplicate records', () => {
     const storage = new MemoryStorage();
     const repository = createLocalStorageRepository({ getStorage: () => storage });
     repository.load();
@@ -221,9 +221,16 @@ describe('localStorage repository', () => {
       createdAt: draft.updatedAt,
       completedAt: null,
     };
+    const milestone: Milestone = {
+      id: 'milestone-portfolio-10-pomodoros',
+      journeyId: journey.id,
+      name: '10 pomodoros',
+      targetFocusedMinutes: 250,
+      earnedAt: null,
+    };
 
-    repository.finishOnboarding(journey, nextStep);
-    repository.finishOnboarding(journey, nextStep);
+    repository.finishOnboarding(journey, nextStep, milestone);
+    repository.finishOnboarding(journey, nextStep, milestone);
     const result = repository.load();
 
     if (result.status !== 'ready') {
@@ -232,7 +239,10 @@ describe('localStorage repository', () => {
 
     expect(result.state.journeys.filter(({ id }) => id === journey.id)).toHaveLength(1);
     expect(result.state.nextSteps.filter(({ id }) => id === nextStep.id)).toHaveLength(1);
+    expect(result.state.milestones.filter(({ id }) => id === milestone.id)).toHaveLength(1);
+    expect(result.state.milestones).toContainEqual(milestone);
     expect(result.state.onboardingDraft).toBeNull();
+    expect(result.state.lastActiveJourneyId).toBe(journey.id);
   });
 
   it('keeps invalid saved data intact and returns a recoverable error', () => {
