@@ -56,6 +56,9 @@ function CompletionContent({ state }: { state: AppState }) {
   return (
     <FocusLayout>
       <div className="grid w-full max-w-4xl gap-10 md:grid-cols-[1fr_0.8fr] md:items-center">
+        <p className="sr-only" role="status" aria-live="polite">
+          Focus session complete.
+        </p>
         <ScreenHeader
           eyebrow="Focus session complete"
           title={`${minutes / 25} pomodoro${minutes === 25 ? '' : 's'} complete.`}

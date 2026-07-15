@@ -196,6 +196,57 @@ describe('localStorage repository', () => {
     expect(result.state.lastActiveJourneyId).toBe(activeSession.journeyId);
   });
 
+  it('pauses a running session atomically from its persisted target timestamp', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    repository.startFocusSession(activeSession, activeTimer);
+
+    repository.pauseFocusSession(activeSession.id, '2026-07-12T19:06:15.000Z');
+    const result = repository.load();
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.activeTimer).toEqual({
+      ...activeTimer,
+      status: 'paused',
+      remainingSeconds: 1_125,
+      accumulatedFocusedSeconds: 375,
+      targetEndAt: null,
+      pausedAt: '2026-07-12T19:06:15.000Z',
+    });
+    expect(result.state.focusSessions.find(({ id }) => id === activeSession.id)?.status).toBe(
+      'paused'
+    );
+  });
+
+  it('completes an elapsed running session once and refuses early completion', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    repository.startFocusSession(activeSession, activeTimer);
+
+    repository.completeRunningFocusSession(activeSession.id, '2026-07-12T19:24:59.000Z');
+    expect(repository.load().status === 'ready' && repository.load().state.activeTimer).toEqual(
+      activeTimer
+    );
+
+    repository.completeRunningFocusSession(activeSession.id, '2026-07-12T19:25:00.000Z');
+    repository.completeRunningFocusSession(activeSession.id, '2026-07-12T19:26:00.000Z');
+    const result = repository.load();
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.activeTimer).toBeNull();
+    expect(result.state.lastCompletedSessionId).toBe(activeSession.id);
+    expect(result.state.focusSessions.filter(({ id }) => id === activeSession.id)).toEqual([
+      {
+        ...activeSession,
+        focusedMinutes: 25,
+        status: 'completed',
+        endedAt: activeTimer.targetEndAt,
+      },
+    ]);
+  });
+
   it('completes a session idempotently', () => {
     const storage = new MemoryStorage();
     const repository = createLocalStorageRepository({ getStorage: () => storage });

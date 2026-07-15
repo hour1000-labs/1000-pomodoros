@@ -1,6 +1,6 @@
-import { Navigate, useNavigate } from '@tanstack/react-router';
-import { Check, Clock3, Play } from 'lucide-react';
-import { type FormEvent, type ReactNode, useRef, useState } from 'react';
+import { Navigate, useBlocker, useNavigate } from '@tanstack/react-router';
+import { Check, Clock3, Maximize2, Minimize2, Pause, Play } from 'lucide-react';
+import { type FormEvent, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 import { FocusLayout } from '@/components/shared/focus-layout';
 import { LoadingState } from '@/components/shared/loading-state';
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useAppState } from '@/hooks/use-app-state';
+import { getRemainingSeconds } from '@/lib/focus-timer';
 import type { ActiveTimer, AppState, FocusSession, Journey, NextStep } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
 import { cn } from '@/lib/utils';
@@ -132,12 +133,285 @@ export function createFocusSessionRecords({
   };
 }
 
-function formatRemainingTime(seconds: number) {
+export function formatRemainingTime(seconds: number) {
   const safeSeconds = Math.max(0, Math.floor(seconds));
   const minutes = Math.floor(safeSeconds / 60);
   const remainingSeconds = safeSeconds % 60;
 
   return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
+function PausedSessionState({
+  activeTimer,
+  journey,
+  nextStep,
+}: {
+  activeTimer: ActiveTimer;
+  journey: Journey;
+  nextStep: NextStep | undefined;
+}) {
+  return (
+    <FocusLayout className="items-start py-6 sm:items-center">
+      <section className="w-full max-w-reading text-center" aria-labelledby="active-session-title">
+        <p className="mb-3 font-bold text-pomodoro-red text-xs uppercase tracking-[0.18em]">
+          Paused
+        </p>
+        <h1
+          className="mb-3 font-bold text-6xl tabular-nums leading-none tracking-[-0.055em] sm:text-8xl"
+          id="active-session-title"
+        >
+          {formatRemainingTime(activeTimer.remainingSeconds)}
+        </h1>
+        <p className="mb-1 font-bold text-lg">{journey.name}</p>
+        <p className="mb-0 text-ink/65">{nextStep?.title ?? 'Focused session'}</p>
+        <p className="sr-only" role="status" aria-live="polite">
+          Focus session paused.
+        </p>
+      </section>
+    </FocusLayout>
+  );
+}
+
+function getInitialTimerAnnouncement(activeTimer: ActiveTimer, remainingSeconds: number) {
+  if (remainingSeconds <= 60) return '1 minute remaining.';
+  if (remainingSeconds <= 300) return '5 minutes remaining.';
+  return activeTimer.accumulatedFocusedSeconds > 0
+    ? 'Focus session resumed.'
+    : 'Focus session running.';
+}
+
+function RunningSessionState({
+  activeTimer,
+  journey,
+  nextStep,
+  session,
+}: {
+  activeTimer: ActiveTimer;
+  journey: Journey;
+  nextStep: NextStep | undefined;
+  session: FocusSession;
+}) {
+  const navigate = useNavigate({ from: '/focus/' });
+  const initialRemaining = getRemainingSeconds(activeTimer.targetEndAt);
+  const [remainingSeconds, setRemainingSeconds] = useState(initialRemaining);
+  const [announcement, setAnnouncement] = useState(() =>
+    getInitialTimerAnnouncement(activeTimer, initialRemaining)
+  );
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [fullscreenSupported, setFullscreenSupported] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const announcedThresholds = useRef(
+    new Set([...(initialRemaining <= 300 ? [300] : []), ...(initialRemaining <= 60 ? [60] : [])])
+  );
+  const completionInFlight = useRef(false);
+  const pauseInFlight = useRef(false);
+  const allowNavigation = useRef(false);
+
+  useBlocker({
+    enableBeforeUnload: true,
+    shouldBlockFn: () => {
+      if (allowNavigation.current) return false;
+
+      return !globalThis.confirm(
+        'Leave this focus screen? Your timer will continue running, and you can return at any time.'
+      );
+    },
+  });
+
+  const completeSession = useCallback(
+    (completedAt: string) => {
+      if (completionInFlight.current) return;
+      completionInFlight.current = true;
+      setActionError(null);
+
+      const result = appRepository.completeRunningFocusSession(session.id, completedAt);
+      const completed =
+        result.status === 'saved' &&
+        result.state.activeTimer === null &&
+        result.state.lastCompletedSessionId === session.id;
+
+      if (!completed) {
+        completionInFlight.current = false;
+        setActionError('Your completed session could not be saved yet. Keep this screen open.');
+        return;
+      }
+
+      allowNavigation.current = true;
+      setAnnouncement('Focus session complete.');
+      void navigate({ to: '/focus/complete', replace: true });
+    },
+    [navigate, session.id]
+  );
+
+  const refreshTimer = useCallback(() => {
+    const now = Date.now();
+    const nextRemaining = getRemainingSeconds(activeTimer.targetEndAt, now);
+
+    setRemainingSeconds((previousRemaining) => {
+      if (
+        previousRemaining > 300 &&
+        nextRemaining <= 300 &&
+        !announcedThresholds.current.has(300)
+      ) {
+        announcedThresholds.current.add(300);
+        setAnnouncement('5 minutes remaining.');
+      }
+
+      if (previousRemaining > 60 && nextRemaining <= 60 && !announcedThresholds.current.has(60)) {
+        announcedThresholds.current.add(60);
+        setAnnouncement('1 minute remaining.');
+      }
+
+      return nextRemaining;
+    });
+
+    if (nextRemaining === 0) {
+      completeSession(new Date(now).toISOString());
+    }
+  }, [activeTimer.targetEndAt, completeSession]);
+
+  useEffect(() => {
+    refreshTimer();
+    const interval = globalThis.setInterval(refreshTimer, 1_000);
+
+    function refreshWhenVisible() {
+      if (document.visibilityState === 'visible') refreshTimer();
+    }
+
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      globalThis.clearInterval(interval);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [refreshTimer]);
+
+  useEffect(() => {
+    const supported =
+      document.fullscreenEnabled === true &&
+      typeof document.documentElement.requestFullscreen === 'function';
+    setFullscreenSupported(supported);
+
+    function syncFullscreenState() {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    }
+
+    document.addEventListener('fullscreenchange', syncFullscreenState);
+    return () => document.removeEventListener('fullscreenchange', syncFullscreenState);
+  }, []);
+
+  function pauseSession() {
+    if (pauseInFlight.current) return;
+    pauseInFlight.current = true;
+    setActionError(null);
+
+    const pausedAt = new Date().toISOString();
+
+    if (getRemainingSeconds(activeTimer.targetEndAt, new Date(pausedAt).getTime()) === 0) {
+      pauseInFlight.current = false;
+      completeSession(pausedAt);
+      return;
+    }
+
+    const result = appRepository.pauseFocusSession(session.id, pausedAt);
+    const paused =
+      result.status === 'saved' &&
+      result.state.activeTimer?.sessionId === session.id &&
+      result.state.activeTimer.status === 'paused';
+
+    if (!paused) {
+      pauseInFlight.current = false;
+      setActionError('Your timer could not be paused. It is still running. Try again.');
+    }
+  }
+
+  async function toggleFullscreen() {
+    setActionError(null);
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch {
+      setActionError('Fullscreen could not be changed in this browser.');
+    }
+  }
+
+  const elapsedFraction = Math.max(
+    0,
+    Math.min(1, 1 - remainingSeconds / (session.plannedMinutes * 60))
+  );
+  const ringStyle = {
+    background: `conic-gradient(var(--pomodoro-red) ${elapsedFraction * 100}%, color-mix(in srgb, var(--ink) 10%, var(--paper)) 0)`,
+  };
+
+  return (
+    <FocusLayout className="relative overflow-hidden py-5 sm:py-8 [@media(max-height:500px)]:py-4">
+      {fullscreenSupported ? (
+        <Button
+          type="button"
+          variant="ghost"
+          className="absolute top-3 right-3 h-11 px-3 text-ink/55 hover:text-ink sm:top-6 sm:right-6"
+          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          onClick={() => void toggleFullscreen()}
+        >
+          {isFullscreen ? <Minimize2 aria-hidden="true" /> : <Maximize2 aria-hidden="true" />}
+          <span className="hidden sm:inline [@media(max-height:500px)]:hidden">
+            {isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          </span>
+        </Button>
+      ) : null}
+
+      <section
+        className="grid w-full max-w-3xl justify-items-center gap-4 text-center sm:gap-6 [@media(max-height:500px)]:gap-3"
+        aria-labelledby="running-timer-title"
+      >
+        <div className="min-w-0 max-w-full [@media(max-height:500px)]:max-w-md">
+          <p className="mb-1 truncate font-bold text-base sm:text-lg">{journey.name}</p>
+          <p className="mb-0 line-clamp-2 max-w-[min(34rem,88vw)] text-ink/60 text-sm sm:text-base">
+            {nextStep?.title ?? 'Focused session'}
+          </p>
+        </div>
+
+        <div
+          className="grid size-[clamp(12.5rem,min(70vw,50dvh),25rem)] place-items-center rounded-full p-2"
+          style={ringStyle}
+        >
+          <div className="grid size-full place-content-center rounded-full bg-ink px-3 text-paper">
+            <p className="mb-2 font-bold text-[0.65rem] text-paper/60 uppercase tracking-[0.18em]">
+              Remaining
+            </p>
+            <h1
+              className="mb-0 font-bold text-[clamp(3.4rem,14vw,7.5rem)] tabular-nums leading-none tracking-[-0.065em]"
+              id="running-timer-title"
+            >
+              {formatRemainingTime(remainingSeconds)}
+            </h1>
+          </div>
+        </div>
+
+        <PrimaryButton
+          type="button"
+          className="min-w-36 shadow-[4px_4px_0_var(--ink)]"
+          onClick={pauseSession}
+        >
+          <Pause aria-hidden="true" />
+          Pause
+        </PrimaryButton>
+
+        {actionError ? (
+          <p className="mb-0 max-w-reading font-bold text-pomodoro-red text-sm" role="alert">
+            {actionError}
+          </p>
+        ) : null}
+
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {announcement}
+        </p>
+      </section>
+    </FocusLayout>
+  );
 }
 
 function ActiveSessionState({ state }: { state: AppState }) {
@@ -152,27 +426,17 @@ function ActiveSessionState({ state }: { state: AppState }) {
 
   if (!activeTimer || !session || !journey) return null;
 
-  const isPaused = activeTimer.status === 'paused';
+  if (activeTimer.status === 'paused') {
+    return <PausedSessionState activeTimer={activeTimer} journey={journey} nextStep={nextStep} />;
+  }
 
   return (
-    <FocusLayout className="items-start py-6 sm:items-center">
-      <section className="w-full max-w-reading text-center" aria-labelledby="active-session-title">
-        <p className="mb-3 font-bold text-pomodoro-red text-xs uppercase tracking-[0.18em]">
-          {isPaused ? 'Paused' : 'Focus session running'}
-        </p>
-        <h1
-          className="mb-3 font-bold text-6xl tabular-nums leading-none tracking-[-0.055em] sm:text-8xl"
-          id="active-session-title"
-        >
-          {formatRemainingTime(activeTimer.remainingSeconds)}
-        </h1>
-        <p className="mb-1 font-bold text-lg">{journey.name}</p>
-        <p className="mb-0 text-ink/65">{nextStep?.title ?? 'Focused session'}</p>
-        <p className="sr-only" role="status">
-          {isPaused ? 'Focus session paused' : 'Focus session running'}
-        </p>
-      </section>
-    </FocusLayout>
+    <RunningSessionState
+      activeTimer={activeTimer}
+      journey={journey}
+      nextStep={nextStep}
+      session={session}
+    />
   );
 }
 

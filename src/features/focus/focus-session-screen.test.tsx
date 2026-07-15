@@ -24,6 +24,12 @@ afterEach(() => {
   vi.restoreAllMocks();
   cleanup();
   window.localStorage.clear();
+  Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, value: false });
+  Reflect.deleteProperty(document.documentElement, 'requestFullscreen');
+  Object.defineProperty(Element.prototype, 'requestFullscreen', {
+    configurable: true,
+    value: undefined,
+  });
 });
 
 async function renderFocus(state: AppState, initialEntry = '/focus') {
@@ -76,6 +82,41 @@ function createSecondJourney() {
   };
 
   return { journey, currentNextStep, upcomingNextStep };
+}
+
+function createRunningState({
+  accumulatedFocusedSeconds = 0,
+  remainingSeconds = 1_500,
+  targetEndAt = new Date(Date.now() + remainingSeconds * 1_000).toISOString(),
+}: {
+  accumulatedFocusedSeconds?: number;
+  remainingSeconds?: number;
+  targetEndAt?: string;
+} = {}) {
+  const state = createSeedAppState();
+  const session: FocusSession = {
+    id: 'session-running',
+    journeyId: 'journey-learn-guitar',
+    nextStepId: 'next-step-f-chord',
+    plannedMinutes: 25,
+    focusedMinutes: 0,
+    status: 'running',
+    source: 'timer',
+    startedAt: new Date(Date.now() - accumulatedFocusedSeconds * 1_000).toISOString(),
+    endedAt: null,
+    reflection: '',
+  };
+  state.focusSessions.push(session);
+  state.activeTimer = {
+    sessionId: session.id,
+    status: 'running',
+    remainingSeconds,
+    accumulatedFocusedSeconds,
+    targetEndAt,
+    pausedAt: null,
+  };
+
+  return state;
 }
 
 describe('Timer Setup', () => {
@@ -269,6 +310,143 @@ describe('createFocusSessionRecords', () => {
       targetEndAt: '2026-07-15T18:50:00.000Z',
       pausedAt: null,
     });
+  });
+});
+
+describe('Running Focus Timer', () => {
+  it('renders the current Journey, Next step, timestamp-derived timer, and Pause action', async () => {
+    await renderFocus(createRunningState());
+
+    expect(await screen.findByRole('heading', { name: '25:00' })).toBeTruthy();
+    expect(screen.getByText('Learn guitar')).toBeTruthy();
+    expect(screen.getByText('Practice the F chord transition')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Enter fullscreen' })).toBeNull();
+    expect(screen.queryByRole('navigation')).toBeNull();
+    expect(screen.queryByText(/analytics|streak|history/i)).toBeNull();
+  });
+
+  it('pauses from the persisted timestamp and announces the paused state', async () => {
+    await renderFocus(createRunningState());
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Pause' }));
+    expect(await screen.findByText('Paused')).toBeTruthy();
+    expect(screen.getByRole('status').textContent).toContain('Focus session paused');
+
+    const saved = readSavedState();
+    expect(saved.activeTimer?.status).toBe('paused');
+    expect(saved.activeTimer?.targetEndAt).toBeNull();
+    expect(saved.focusSessions.find(({ id }) => id === 'session-running')?.status).toBe('paused');
+  });
+
+  it('keeps the timer running and reports an error when Pause cannot be persisted', async () => {
+    vi.spyOn(appRepository, 'pauseFocusSession').mockReturnValue({
+      status: 'unavailable',
+      state: null,
+    });
+    await renderFocus(createRunningState());
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Pause' }));
+
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      'Your timer could not be paused. It is still running. Try again.'
+    );
+    expect(readSavedState().activeTimer?.status).toBe('running');
+  });
+
+  it('announces a resumed running session without announcing every second', async () => {
+    await renderFocus(
+      createRunningState({ accumulatedFocusedSeconds: 375, remainingSeconds: 1_125 })
+    );
+
+    expect((await screen.findByRole('status')).textContent).toContain('Focus session resumed.');
+    expect(screen.getAllByRole('status')).toHaveLength(1);
+  });
+
+  it('announces the five- and one-minute boundaries once after delayed refreshes', async () => {
+    const baseTime = Date.now();
+    const now = vi.spyOn(Date, 'now').mockReturnValue(baseTime);
+    await renderFocus(
+      createRunningState({ targetEndAt: new Date(baseTime + 301_000).toISOString() })
+    );
+    const status = await screen.findByRole('status');
+
+    now.mockReturnValue(baseTime + 1_000);
+    fireEvent(document, new Event('visibilitychange'));
+    await waitFor(() => expect(status.textContent).toContain('5 minutes remaining.'));
+
+    now.mockReturnValue(baseTime + 2_000);
+    fireEvent(document, new Event('visibilitychange'));
+    expect(status.textContent).toContain('5 minutes remaining.');
+
+    now.mockReturnValue(baseTime + 241_000);
+    fireEvent(document, new Event('visibilitychange'));
+    await waitFor(() => expect(status.textContent).toContain('1 minute remaining.'));
+  });
+
+  it('blocks navigation with explanatory confirmation and keeps the timer running after leave', async () => {
+    const confirm = vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
+    const router = await renderFocus(createRunningState());
+    await screen.findByRole('heading', { name: '25:00' });
+
+    void router.navigate({ to: '/home' });
+    await waitFor(() => {
+      expect(confirm).toHaveBeenCalledWith(expect.stringContaining('timer will continue running'));
+      expect(router.state.location.pathname).toBe('/focus');
+    });
+
+    confirm.mockReturnValue(true);
+    void router.navigate({ to: '/home' });
+    await waitFor(() => expect(router.state.location.pathname).toBe('/home'));
+    expect(readSavedState().activeTimer?.status).toBe('running');
+  });
+
+  it('shows and operates the fullscreen control only when the API is available', async () => {
+    const requestFullscreen = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, value: true });
+    Object.defineProperty(Element.prototype, 'requestFullscreen', {
+      configurable: true,
+      value: requestFullscreen,
+    });
+
+    await renderFocus(createRunningState());
+    fireEvent.click(await screen.findByRole('button', { name: 'Enter fullscreen' }));
+
+    await waitFor(() => expect(requestFullscreen).toHaveBeenCalledTimes(1));
+  });
+
+  it('finalizes an elapsed timer once and routes to completion', async () => {
+    const complete = vi.spyOn(appRepository, 'completeRunningFocusSession');
+    const router = await renderFocus(
+      createRunningState({ targetEndAt: new Date(Date.now() - 1_000).toISOString() })
+    );
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/focus/complete'));
+    expect(complete).toHaveBeenCalledTimes(1);
+    const saved = readSavedState();
+    expect(saved.activeTimer).toBeNull();
+    expect(saved.focusSessions.find(({ id }) => id === 'session-running')).toMatchObject({
+      status: 'completed',
+      focusedMinutes: 25,
+    });
+  });
+
+  it('stays on the running screen when elapsed-session completion cannot be persisted', async () => {
+    vi.spyOn(appRepository, 'completeRunningFocusSession').mockReturnValue({
+      status: 'unavailable',
+      state: null,
+    });
+    const router = await renderFocus(
+      createRunningState({ targetEndAt: new Date(Date.now() - 1_000).toISOString() })
+    );
+
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      'Your completed session could not be saved yet. Keep this screen open.'
+    );
+    expect(router.state.location.pathname).toBe('/focus');
+    expect(readSavedState().activeTimer?.status).toBe('running');
   });
 });
 

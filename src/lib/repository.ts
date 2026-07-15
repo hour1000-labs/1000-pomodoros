@@ -1,3 +1,8 @@
+import {
+  completeRunningFocusSession as createCompletedRunningSession,
+  getRemainingSeconds,
+  pauseRunningFocusSession,
+} from './focus-timer';
 import { createSeedAppState } from './mock-data';
 import {
   type ActiveTimer,
@@ -79,6 +84,8 @@ export interface AppRepository {
   upsertFocusSession(session: FocusSession): RepositorySaveResult;
   setActiveTimer(activeTimer: ActiveTimer | null): RepositorySaveResult;
   startFocusSession(session: FocusSession, activeTimer: ActiveTimer): RepositorySaveResult;
+  pauseFocusSession(sessionId: string, pausedAt: string): RepositorySaveResult;
+  completeRunningFocusSession(sessionId: string, completedAt: string): RepositorySaveResult;
   upsertMilestone(milestone: Milestone): RepositorySaveResult;
   setWeeklyGoal(weeklyGoal: WeeklyGoal | null): RepositorySaveResult;
   finishOnboarding(
@@ -246,6 +253,41 @@ function upsertById<T extends { id: string }>(items: readonly T[], item: T) {
   }
 
   return items.map((existingItem, index) => (index === existingIndex ? item : existingItem));
+}
+
+function completeSessionInState(
+  state: AppState,
+  session: FocusSession,
+  earnedMilestones: readonly Milestone[] = []
+) {
+  const existingSession = state.focusSessions.find(({ id }) => id === session.id);
+  const completedSession =
+    existingSession?.status === 'completed'
+      ? existingSession
+      : { ...session, status: 'completed' as const };
+  const completionTime = completedSession.endedAt ?? completedSession.startedAt;
+  const journeys = state.journeys.map((journey) =>
+    journey.id === completedSession.journeyId
+      ? {
+          ...journey,
+          updatedAt: completionTime,
+          lastActiveAt: completionTime,
+        }
+      : journey
+  );
+
+  return {
+    ...state,
+    journeys,
+    focusSessions: upsertById(state.focusSessions, completedSession),
+    milestones: earnedMilestones.reduce(
+      (milestones, milestone) => upsertById(milestones, milestone),
+      state.milestones
+    ),
+    activeTimer: state.activeTimer?.sessionId === session.id ? null : state.activeTimer,
+    lastActiveJourneyId: completedSession.journeyId,
+    lastCompletedSessionId: session.id,
+  };
 }
 
 function toLoadError(
@@ -493,6 +535,48 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     });
   }
 
+  function pauseFocusSession(sessionId: string, pausedAt: string) {
+    return update((state) => {
+      const activeTimer = state.activeTimer;
+      const session = state.focusSessions.find(({ id }) => id === sessionId);
+
+      if (
+        activeTimer?.sessionId !== sessionId ||
+        activeTimer.status !== 'running' ||
+        session?.status !== 'running'
+      ) {
+        return state;
+      }
+
+      const paused = pauseRunningFocusSession(session, activeTimer, pausedAt);
+
+      return {
+        ...state,
+        activeTimer: paused.activeTimer,
+        focusSessions: upsertById(state.focusSessions, paused.session),
+      };
+    });
+  }
+
+  function completeRunningFocusSession(sessionId: string, completedAt: string) {
+    return update((state) => {
+      const activeTimer = state.activeTimer;
+      const session = state.focusSessions.find(({ id }) => id === sessionId);
+
+      if (
+        activeTimer?.sessionId !== sessionId ||
+        activeTimer.status !== 'running' ||
+        session?.status !== 'running' ||
+        getRemainingSeconds(activeTimer.targetEndAt, new Date(completedAt).getTime()) > 0
+      ) {
+        return state;
+      }
+
+      const completedSession = createCompletedRunningSession(session, activeTimer, completedAt);
+      return completeSessionInState(state, completedSession);
+    });
+  }
+
   function upsertMilestone(milestone: Milestone) {
     return update((state) => ({
       ...state,
@@ -516,37 +600,7 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
   }
 
   function completeSession(session: FocusSession, earnedMilestones: readonly Milestone[] = []) {
-    return update((state) => {
-      const existingSession = state.focusSessions.find(({ id }) => id === session.id);
-
-      const completedSession =
-        existingSession?.status === 'completed'
-          ? existingSession
-          : { ...session, status: 'completed' as const };
-      const completionTime = completedSession.endedAt ?? completedSession.startedAt;
-      const journeys = state.journeys.map((journey) =>
-        journey.id === completedSession.journeyId
-          ? {
-              ...journey,
-              updatedAt: completionTime,
-              lastActiveAt: completionTime,
-            }
-          : journey
-      );
-
-      return {
-        ...state,
-        journeys,
-        focusSessions: upsertById(state.focusSessions, completedSession),
-        milestones: earnedMilestones.reduce(
-          (milestones, milestone) => upsertById(milestones, milestone),
-          state.milestones
-        ),
-        activeTimer: state.activeTimer?.sessionId === session.id ? null : state.activeTimer,
-        lastActiveJourneyId: completedSession.journeyId,
-        lastCompletedSessionId: session.id,
-      };
-    });
+    return update((state) => completeSessionInState(state, session, earnedMilestones));
   }
 
   return {
@@ -561,6 +615,8 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     upsertFocusSession,
     setActiveTimer,
     startFocusSession,
+    pauseFocusSession,
+    completeRunningFocusSession,
     upsertMilestone,
     setWeeklyGoal,
     finishOnboarding,
