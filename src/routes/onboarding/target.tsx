@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { OnboardingFoundationScreen } from '@/features/onboarding/onboarding-foundation-screen';
+import { OnboardingChooseTarget } from '@/features/onboarding/onboarding-choose-target';
 
 export const Route = createFileRoute('/onboarding/target')({
-  component: () => <OnboardingFoundationScreen screen="target" />,
+  component: OnboardingChooseTarget,
 });
