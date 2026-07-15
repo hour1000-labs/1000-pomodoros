@@ -166,6 +166,10 @@ Before committing, merging, pushing, or deleting a branch:
 
 - Inspect `git status` and separate unrelated user changes.
 - Stage only files that belong to the current feature.
+- Use a lowercase Conventional Commit message in `type: description` format for every commit.
+  Choose the most specific applicable type: `feat`, `fix`, `docs`, `chore`,
+  `refactor`, `test`, `perf`, `build`, or `ci`. Never use an unprefixed commit
+  subject such as `Add ...` or `Record ...`.
 - Obtain confirmation before consequential Git operations unless the user already requested them explicitly.
 - Follow the repository's requested integration workflow; do not assume a direct merge to `main` is preferred over a pull request.
 

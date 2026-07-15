@@ -25,7 +25,15 @@ gate by editing a checkbox during this action.
    changes throughout branch switches and commits.
 2. Stage only files belonging to the feature; never use broad staging when
    unrelated changes are present.
-3. Commit with a descriptive message.
+3. Commit with a lowercase Conventional Commit message in `type: description`
+   format. Choose the most specific applicable type:
+   - `feat:` for new user-visible behavior.
+   - `fix:` for a bug fix.
+   - `refactor:` for behavior-preserving code restructuring.
+   - `chore:` for tooling or project housekeeping.
+   - `docs:`, `test:`, `perf:`, `build:`, or `ci:` when that is the primary
+     scope.
+   Never use an unprefixed subject such as `Add ...` or `Record ...`.
 4. Switch to local `main` and merge the documented feature branch. Prefer a
    fast-forward merge and stop rather than forcing or rewriting history if it
    cannot fast-forward.
@@ -48,7 +56,8 @@ gate by editing a checkbox during this action.
    - Verification restores the standard unchecked checklist.
    - Notes is empty except for its comment.
    - History retains all entries, including the new entry.
-7. Commit the history/reset separately on `main`.
+7. Commit the history/reset separately on `main` with
+   `docs: record <feature name> completion`.
 8. Delete the merged local feature branch with the safe branch-delete operation.
 9. Push `main` to its configured remote.
 10. Delete a remote feature branch only when the user explicitly requests it;
