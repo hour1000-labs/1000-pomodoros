@@ -69,8 +69,8 @@ describe('OnboardingAddNextStep', () => {
     expect(screen.getByText('4 of 4')).toBeTruthy();
     expect(screen.getAllByText('Learn guitar').length).toBeGreaterThan(0);
     expect(
-      screen.getAllByText('Choose one action you can make progress on in your next session.').length
-    ).toBeGreaterThan(0);
+      screen.getAllByText('Choose one action you can make progress on in your next session.')
+    ).toHaveLength(1);
 
     const input = screen.getByRole('textbox', { name: 'Next step' });
     expect(screen.getAllByRole('textbox')).toHaveLength(1);

@@ -218,9 +218,6 @@ function NextStepForm({
           <h1 className="mb-3 max-w-[14ch] font-bold text-4xl leading-[1.04] tracking-[-0.04em] sm:text-5xl lg:text-[3.5rem] [@media(max-height:720px)]:mb-2 [@media(max-height:720px)]:text-3xl">
             What is the next thing you can work on?
           </h1>
-          <p className="mb-5 max-w-[54ch] text-base text-ink/60 leading-relaxed sm:mb-7 sm:text-lg [@media(max-height:620px)]:hidden">
-            Choose one action you can make progress on in your next session.
-          </p>
 
           <form noValidate onSubmit={handleSubmit}>
             <label

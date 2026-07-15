@@ -1,42 +1,56 @@
-# Current Feature: <feature name>
+# Current Feature: UI Polish and pnpm 11 Cleanup
 
-<!-- One-sentence description of the feature or fix -->
+Remove repeated onboarding guidance, add pointer cursors to shared buttons, and migrate the dependency build allowlist to pnpm 11 settings.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Not Started
+Ready to Commit
 
 ## Goal
 
-<!-- Describe what should change from the user's perspective. -->
+Users get clearer onboarding copy and expected pointer feedback on buttons, while contributors can run pnpm commands without the obsolete-settings warning.
 
 ## Acceptance Criteria
 
-<!-- The feature is done when every applicable item is checked. -->
-
-- [ ] ...
-- [ ] ...
+- [x] `/onboarding/next-step` shows “Choose one action you can make progress on in your next session.” exactly once, as the Next step input helper text.
+- [x] The heading, Journey context, input, validation, actions, and responsive layout remain unchanged.
+- [x] All clickable controls built from the shared `Button` primitive use Tailwind's `cursor-pointer` utility; existing directly rendered clickable buttons retain the same cursor behavior.
+- [x] pnpm 11 reads the approved dependency build allowlist from `pnpm-workspace.yaml`, preserving approval for `esbuild` and `lightningcss` without the ignored `package.json#pnpm` warning.
 
 ## Plan
 
-1. ...
-2. ...
-3. ...
+1. Remove the redundant introductory copy above the Next step form while retaining the helper copy below the input.
+2. Tighten the focused rendering test to assert that the required guidance appears exactly once.
+3. Add Tailwind's `cursor-pointer` utility to the shared `Button` primitive and confirm all production raw buttons already handle clickable cursor state.
+4. Replace the removed `package.json#pnpm.onlyBuiltDependencies` field with pnpm 11's `allowBuilds` setting in `pnpm-workspace.yaml`.
+5. Run the full verification baseline because dependency build configuration changed, then confirm the affected screen and computed button cursor in a browser.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] Affected UI verified in the browser, if applicable
+- [x] Mobile and desktop verified, if responsive UI changed
+- [x] No relevant console errors
+- [x] Focused Next step component test passes
+- [x] Required guidance appears exactly once in the rendered screen
+- [x] Shared clickable buttons compute to `cursor: pointer` in the browser
+- [x] `pnpm install --frozen-lockfile` passes without the ignored `package.json#pnpm` warning
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
+
+- User feedback identifies the identical sentence above and below the input as redundant.
+- Retain the sentence below the input because the feature specification explicitly requires it as helper copy.
+- Production button inspection found that standard controls use `src/components/ui/button.tsx`; the only directly rendered application button is the selectable Pomodoro block, which already applies `cursor-pointer` when clickable.
+- pnpm 11 removed `onlyBuiltDependencies` in favor of the `allowBuilds` map in `pnpm-workspace.yaml`; `esbuild` and `lightningcss` remain explicitly allowed.
+- This fix does not change validation, persistence, navigation, data models, or dependency versions.
+- Initial verification passed: `pnpm install --frozen-lockfile`, `pnpm check` (84 files), `pnpm test` (9 files, 52 tests), `pnpm build` (client and SSR), and `git diff --check`.
+- Production-browser verification passed at desktop and 320×568 mobile widths: the guidance rendered exactly once, the shared Start and Back buttons exposed pointer cursors, the page had no horizontal overflow, and the console had no errors or warnings.
 
 ## History
 
