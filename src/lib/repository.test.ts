@@ -170,6 +170,32 @@ describe('localStorage repository', () => {
     expect(completedReload.state.lastCompletedSessionId).toBe(completedSession.id);
   });
 
+  it('starts one focus session atomically and ignores a duplicate active start', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    const listener = vi.fn();
+    repository.subscribe(listener);
+
+    const firstResult = repository.startFocusSession(activeSession, activeTimer);
+    const duplicateSession = { ...activeSession, id: 'session-duplicate' };
+    const duplicateTimer = { ...activeTimer, sessionId: duplicateSession.id };
+    const duplicateResult = repository.startFocusSession(duplicateSession, duplicateTimer);
+
+    expect(firstResult.status).toBe('saved');
+    expect(duplicateResult.status).toBe('saved');
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    const result = repository.load();
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.activeTimer).toEqual(activeTimer);
+    expect(result.state.focusSessions.filter(({ status }) => status === 'running')).toEqual([
+      activeSession,
+    ]);
+    expect(result.state.lastActiveJourneyId).toBe(activeSession.journeyId);
+  });
+
   it('completes a session idempotently', () => {
     const storage = new MemoryStorage();
     const repository = createLocalStorageRepository({ getStorage: () => storage });

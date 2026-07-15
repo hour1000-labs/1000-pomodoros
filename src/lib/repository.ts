@@ -78,6 +78,7 @@ export interface AppRepository {
   upsertNextStep(nextStep: NextStep): RepositorySaveResult;
   upsertFocusSession(session: FocusSession): RepositorySaveResult;
   setActiveTimer(activeTimer: ActiveTimer | null): RepositorySaveResult;
+  startFocusSession(session: FocusSession, activeTimer: ActiveTimer): RepositorySaveResult;
   upsertMilestone(milestone: Milestone): RepositorySaveResult;
   setWeeklyGoal(weeklyGoal: WeeklyGoal | null): RepositorySaveResult;
   finishOnboarding(
@@ -462,6 +463,36 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     return update((state) => ({ ...state, activeTimer }));
   }
 
+  function startFocusSession(
+    session: FocusSession,
+    activeTimer: ActiveTimer
+  ): RepositorySaveResult {
+    const result = load();
+
+    if (result.status === 'unavailable') {
+      return { status: 'unavailable', state: null };
+    }
+
+    if (result.status === 'error') {
+      return { status: 'error', state: null, error: result.error };
+    }
+
+    const hasActiveSession = result.state.focusSessions.some(
+      ({ status }) => status === 'running' || status === 'paused'
+    );
+
+    if (result.state.activeTimer !== null || hasActiveSession) {
+      return { status: 'saved', state: result.state };
+    }
+
+    return save({
+      ...result.state,
+      focusSessions: upsertById(result.state.focusSessions, session),
+      activeTimer,
+      lastActiveJourneyId: session.journeyId,
+    });
+  }
+
   function upsertMilestone(milestone: Milestone) {
     return update((state) => ({
       ...state,
@@ -529,6 +560,7 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     upsertNextStep,
     upsertFocusSession,
     setActiveTimer,
+    startFocusSession,
     upsertMilestone,
     setWeeklyGoal,
     finishOnboarding,
