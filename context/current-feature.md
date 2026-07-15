@@ -1,74 +1,42 @@
-# Current Feature: Choose Target Onboarding
+# Current Feature: <feature name>
 
-Add the third onboarding step so users can choose and save a concrete focused-time target before defining their first Next step.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
-Ready to Commit
+<!-- Not Started | In Progress | Ready to Commit -->
+
+Not Started
 
 ## Goal
 
-Users can choose a preset or custom focused-time target, understand its pomodoro equivalent, and continue onboarding with confidence that the experience will emphasize the next reachable milestone.
+<!-- Describe what should change from the user's perspective. -->
 
 ## Acceptance Criteria
 
 <!-- The feature is done when every applicable item is checked. -->
 
-- [x] `/onboarding/target` replaces the foundation placeholder with the step 3 target-selection screen, shows “3 of 4,” and uses the heading “How much focused time are you aiming for?” with the referenced design hierarchy.
-- [x] When no valid onboarding Journey draft exists, visiting `/onboarding/target` redirects to `/onboarding/journey` instead of presenting the target form.
-- [x] The screen presents accessible radio-group options for 10, 25, 100, and 1,000 hours plus Custom, using numbers without difficulty labels.
-- [x] A new draft defaults to 1,000 hours, and the selected 1,000-hour option shows “2,400 pomodoros.”
-- [x] Pomodoro equivalents are calculated from the selected target using `targetHours * 60 / 25`.
-- [x] Selecting Custom reveals one numeric hours input on the same screen and accepts only targets from 1 through 10,000 hours with clear validation feedback.
-- [x] Continue saves the valid selected target to the onboarding draft and routes to `/onboarding/next-step`.
-- [x] Back returns to `/onboarding/motivation`.
-- [x] The screen reassures users that the experience will focus on the next milestone rather than showing the full target by default.
-- [x] The target-selection flow remains usable with keyboard and screen-reader interaction and at supported mobile and desktop layouts.
+- [ ] ...
+- [ ] ...
 
 ## Plan
 
-1. Inspect the existing onboarding draft model, persistence repository, target route placeholder, shared onboarding layout, and adjacent onboarding-step patterns.
-2. Add target conversion and validation behavior for preset and custom hours while preserving the draft's existing Journey name and motivation.
-3. Build the responsive target-selection screen from the reference using an accessible radio group, conditional custom input, validation feedback, milestone reassurance, and existing shared UI patterns.
-4. Wire missing-draft redirection, draft saving, Continue navigation to `/onboarding/next-step`, and Back navigation to `/onboarding/motivation`.
-5. Add focused automated coverage for defaults, conversions, accessibility semantics, custom boundaries, persistence, redirects, and forward/back navigation.
-6. Run the required quality gates and verify the complete interaction in a real browser across mobile and desktop, including keyboard use, validation boundaries, overflow, zoom, and console output.
+1. ...
+2. ...
+3. ...
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] No relevant console errors
-- [x] Target presets, default selection, and pomodoro conversions verified
-- [x] Custom target values below 1, at 1, at 10,000, and above 10,000 verified
-- [x] Accessible radio-group and keyboard behavior verified
-- [x] Draft persistence, missing-draft redirect, Continue, and Back flows verified
-- [x] Supported 320px layout, common mobile heights, long Journey context, and 200% zoom verified without overflow or hidden primary actions
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
-- Source: `context/features/onboarding-choose-target-spec.md`.
-- Visual reference: `context/screenshots/onboarding3-ui.png`; follow `context/DESIGN.md` and reuse the established onboarding layout and repository-backed draft patterns.
-- One pomodoro is exactly 25 focused minutes. The confirmed product model stores Journey targets in minutes and allows users to change a Journey's final target later.
-- No pending decision in `context/decisions.md` materially blocks this feature; full-grid grouping and navigation remain outside this target-selection screen's scope.
-- Implementation keeps the existing persistence contract: targets are stored as minutes, preset selections derive from those minutes, and a saved non-preset value restores as Custom.
-- Custom targets allow numeric hour values, including decimals, within the specified inclusive 1–10,000 range; displayed pomodoros are derived with the required formula.
-- Excluded: difficulty labels, milestone/full-grid redesign, final Journey creation, first Next-step entry, timer behavior, and any extra onboarding questions or controls.
-- Initial verification passed `pnpm check` (82 files), `pnpm test` (8 files, 45 tests), `pnpm build` (client and SSR), and `git diff --check`.
-- Browser verification covered the 1,000-hour default, preset conversions, native radio arrow-key selection, Custom values below 1, at 1, at 10,000, and above 10,000 hours, persistence and forward routing, Back navigation, and missing-draft redirection.
-- Browser testing found that the initial short-height layout hid Continue at 320×568 and 1280×800. The localized behavioral remediation compacts target cards and supporting content at heights up to 900px while preserving the full reference treatment on taller screens.
-- Post-remediation revalidation reran `pnpm check`, the focused target suite (5 tests), `pnpm build`, `git diff --check`, and the affected production-browser matrix. The unaffected initial full-suite result was reused because the remediation changed only responsive presentation classes.
-- Final production-preview checks passed at 1280×800, 640×800 as the 1280-at-200%-zoom equivalent, and 320×568 with an 80-character unbroken Journey name, in both preset and Custom states: no horizontal or vertical overflow, Continue visible, and zero console errors or warnings.
-- Recording final evidence is documentation-only; `pnpm check` and `git diff --check` are rerun while the unaffected test, build, and browser evidence remains valid.
-- Review found that the `max-height: 900px` compact treatment also activates at common 1440×900 and 375×812 viewports. Despite ample unused space, it removes the Journey context and supporting copy, reduces the heading, hides unselected pomodoro conversions, and leaves selected and unselected target rows at unequal heights. This blocks the referenced-design-hierarchy criterion and keeps the feature In Progress.
-- Review also found that Custom validation leaves `aria-describedby` referencing `custom-target-helper` while that helper element is not rendered in the error state. The visible error remains announced through `custom-target-error`, but the stale reference should be removed or the helper should remain mounted.
-- The review remediation is localized behavioral work: outer spacing now compacts at heights up to 900px, card typography and spacing compact at heights up to 800px, and supporting context is hidden only at genuinely short heights up to 650px. Every preset keeps its pomodoro conversion, compact conversion text remains on one line, and the four cards retain equal heights without changing the 2×2 mobile grid.
-- Custom validation now points `aria-describedby` exclusively to the mounted error or helper element. The focused test asserts both states, and production-browser inspection confirmed every referenced ID exists.
-- Post-remediation revalidation passed `pnpm check` (82 files), `pnpm test` (8 files, 45 tests), `pnpm build` (client and SSR), and `git diff --check`. Production-browser checks passed at 1440×900, 375×812, 1280×800, and 320×568: the intended hierarchy remains visible on common viewports, all cards are equal-height with visible conversions, preset and Custom-error states fit without overflow or hidden actions, and the console has zero errors or warnings.
-- Remediation review found no remaining blocking issues. The review reran `pnpm check` and `git diff --check`, inspected the complete and remediation diffs, and independently verified 1440×900, 768×1024, 375×812, 320×568, the 640×800 200%-zoom equivalent, keyboard radio navigation and focus visibility, Custom error semantics, an 80-character unbroken Journey name, overflow boundaries, and console output. The recorded full test and production-build results remain applicable.
+<!-- Record important decisions, blockers, scope changes, or follow-up work. -->
 
 ## History
 
@@ -129,3 +97,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/chore/risk-based-feature-revalidation-policy`
 - Summary: Added proportional post-verification revalidation rules with universal cheap gates, risk-based targeted checks, evidence reuse, and incremental remediation review guidance.
 - Verification: Initial `pnpm check` (80 files), `pnpm test` (7 files, 40 tests), `pnpm build` (client and SSR), and `git diff --check` passed; documentation-only remediations passed repeated `pnpm check`, `git diff --check`, and focused cross-document contract audits.
+
+### 2026-07-15 — Choose Target Onboarding
+
+- Branch: `codex/feature/choose-target-onboarding`
+- Summary: Added the responsive third onboarding step with accessible preset and custom focused-time targets, pomodoro conversions, validation, draft persistence, and forward/back navigation.
+- Verification: `pnpm check` (82 files), `pnpm test` (8 files, 45 tests), `pnpm build` (client and SSR), `git diff --check`, and production-browser checks for navigation, persistence, keyboard and screen-reader semantics, validation boundaries, responsive layouts from 320px through desktop, 200% zoom, maximum-content overflow, and console output passed.
