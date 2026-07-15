@@ -101,6 +101,48 @@ Record the result of each check in `@context/current-feature.md`.
 - Record failures, blockers, and skipped checks under `## Notes`.
 - Never describe intended or inferred behavior as verified behavior.
 
+#### Post-verification revalidation
+
+Initial feature verification is unchanged: run every required command and
+applicable manual check before the first review. If files change after that
+evidence is recorded, repeat `feature test` and `feature review`, but revalidate
+according to what the remediation could affect instead of automatically
+discarding unrelated evidence.
+
+Before rerunning checks:
+
+1. Inspect the remediation diff separately from the complete feature diff.
+2. Classify the remediation by potential impact, not only by file extension.
+3. Record the class, rationale, checks rerun, and evidence reused under
+   `## Notes` in `@context/current-feature.md`.
+4. If the impact is uncertain, use the next higher-risk class.
+
+For every class, run `pnpm check` and `git diff --check`. Then add the checks
+required by the remediation class:
+
+Use these classes:
+
+- **Documentation-only** — prose or comments that cannot affect executable
+  behavior, generated inputs, configuration, or published artifacts. Run any
+  relevant documentation validation.
+- **Proven non-semantic** — formatting, mechanical ordering, or a narrowly
+  demonstrated restoration that does not change runtime tokens, types, data,
+  generated output, or behavior. Run a focused proof of semantic equivalence.
+  Reuse unaffected test, build, and browser evidence.
+- **Localized behavioral** — a bounded logic or UI change with a known impact
+  surface. Run the relevant targeted tests and applicable targeted browser or
+  runtime checks. Rerun `pnpm build` when compilation, bundling, routing, SSR,
+  or another production boundary could be affected.
+- **Broad or high-risk** — dependency, build configuration, routing,
+  persistence, shared infrastructure, security boundary, generated-code
+  contract, cross-cutting logic, or any change with uncertain reach. Rerun
+  `pnpm test`, `pnpm build`, and every applicable browser or runtime check.
+
+Previously recorded evidence remains valid only when the remediation cannot
+affect what that evidence proves. Do not uncheck unaffected verification items
+merely because the worktree changed; invalidate and rerun every item whose
+result could have changed.
+
 ### 6. Review
 
 Review the complete feature diff against every acceptance criterion.
@@ -111,6 +153,10 @@ Review the complete feature diff against every acceptance criterion.
 - Mark an acceptance criterion complete only when there is implementation and verification evidence.
 - Keep the status `In Progress` while any applicable criterion, verification item, or blocking issue remains.
 - Set the status to `Ready to Commit` only when the feature is complete and verified.
+- After remediation, review the remediation diff in detail and confirm the
+  complete feature diff still matches the contract. Reuse earlier
+  criterion-by-criterion findings only when their implementation and evidence
+  were not affected.
 
 ### 7. Complete
 
