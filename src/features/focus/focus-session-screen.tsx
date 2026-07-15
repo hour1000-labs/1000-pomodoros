@@ -1,7 +1,7 @@
 import { Navigate, useBlocker, useNavigate } from '@tanstack/react-router';
 import { Check, Clock3, Maximize2, Minimize2, Pause, Play } from 'lucide-react';
 import { type FormEvent, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-
+import { BrandMark } from '@/components/shared/brand-mark';
 import { FocusLayout } from '@/components/shared/focus-layout';
 import { LoadingState } from '@/components/shared/loading-state';
 import { PomodoroBlock } from '@/components/shared/pomodoro-block';
@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useAppState } from '@/hooks/use-app-state';
-import { getRemainingSeconds } from '@/lib/focus-timer';
+import { canFinishPausedFocusSession, getRemainingSeconds } from '@/lib/focus-timer';
 import type { ActiveTimer, AppState, FocusSession, Journey, NextStep } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
 import { cn } from '@/lib/utils';
@@ -145,27 +145,177 @@ function PausedSessionState({
   activeTimer,
   journey,
   nextStep,
+  onCancelled,
+  session,
 }: {
   activeTimer: ActiveTimer;
   journey: Journey;
   nextStep: NextStep | undefined;
+  onCancelled: () => void;
+  session: FocusSession;
 }) {
+  const navigate = useNavigate({ from: '/focus/' });
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState('Focus session paused.');
+  const actionInFlight = useRef(false);
+  const canFinish = canFinishPausedFocusSession(activeTimer);
+  const elapsedFraction = Math.max(
+    0,
+    Math.min(1, activeTimer.accumulatedFocusedSeconds / (session.plannedMinutes * 60))
+  );
+  const ringStyle = {
+    background: `conic-gradient(var(--pomodoro-red) ${elapsedFraction * 100}%, color-mix(in srgb, var(--ink) 12%, var(--paper)) 0)`,
+  };
+
+  function resumeSession() {
+    if (actionInFlight.current) return;
+    actionInFlight.current = true;
+    setActionError(null);
+
+    const result = appRepository.resumeFocusSession(session.id, new Date().toISOString());
+    const resumed =
+      result.status === 'saved' &&
+      result.state.activeTimer?.sessionId === session.id &&
+      result.state.activeTimer.status === 'running' &&
+      result.state.focusSessions.find(({ id }) => id === session.id)?.status === 'running';
+
+    if (resumed) {
+      setAnnouncement('Focus session resumed.');
+      return;
+    }
+
+    actionInFlight.current = false;
+    setActionError('Your timer could not be resumed. It is still paused. Try again.');
+  }
+
+  function finishSessionEarly() {
+    if (actionInFlight.current || !canFinish) return;
+    actionInFlight.current = true;
+    setActionError(null);
+
+    const result = appRepository.finishPausedFocusSession(session.id, new Date().toISOString());
+    const completed =
+      result.status === 'saved' &&
+      result.state.activeTimer === null &&
+      result.state.lastCompletedSessionId === session.id;
+
+    if (completed) {
+      setAnnouncement('Focus session finished early.');
+      void navigate({ to: '/focus/complete', replace: true });
+      return;
+    }
+
+    actionInFlight.current = false;
+    setActionError('Your focused progress could not be saved yet. Keep this screen open.');
+  }
+
+  function cancelSession() {
+    if (actionInFlight.current) return;
+    actionInFlight.current = true;
+    setActionError(null);
+
+    const result = appRepository.cancelFocusSession(session.id, new Date().toISOString());
+    const cancelled =
+      result.status === 'saved' &&
+      result.state.activeTimer === null &&
+      result.state.focusSessions.find(({ id }) => id === session.id)?.status === 'cancelled';
+
+    if (cancelled) {
+      onCancelled();
+      return;
+    }
+
+    actionInFlight.current = false;
+    setActionError('Your session could not be cancelled. It is still paused. Try again.');
+  }
+
+  function requestCancellation() {
+    const confirmed = globalThis.confirm(
+      'Cancel this focus session? Your focused time from this session will be discarded and no Journey progress will be added.'
+    );
+
+    if (confirmed) cancelSession();
+  }
+
   return (
-    <FocusLayout className="items-start py-6 sm:items-center">
-      <section className="w-full max-w-reading text-center" aria-labelledby="active-session-title">
-        <p className="mb-3 font-bold text-pomodoro-red text-xs uppercase tracking-[0.18em]">
-          Paused
-        </p>
-        <h1
-          className="mb-3 font-bold text-6xl tabular-nums leading-none tracking-[-0.055em] sm:text-8xl"
-          id="active-session-title"
+    <FocusLayout className="relative overflow-hidden py-5 sm:py-8 [@media(max-height:640px)]:py-4">
+      <BrandMark className="absolute top-2 left-4 sm:top-5 sm:left-8 [@media(max-height:640px)]:hidden" />
+
+      <section
+        className="grid w-full max-w-xl justify-items-center gap-3 pt-12 text-center sm:gap-4 [@media(max-height:640px)]:pt-0"
+        aria-labelledby="active-session-title"
+      >
+        <div className="min-w-0 max-w-full">
+          <p className="mb-1 truncate font-bold text-base sm:text-lg">{journey.name}</p>
+          <p className="mb-0 line-clamp-2 max-w-[min(34rem,88vw)] text-ink/60 text-sm sm:text-base">
+            {nextStep?.title ?? 'Focused session'}
+          </p>
+        </div>
+
+        <div
+          className="grid size-[clamp(12rem,min(68vw,43dvh),22rem)] place-items-center rounded-full p-2"
+          style={ringStyle}
         >
-          {formatRemainingTime(activeTimer.remainingSeconds)}
-        </h1>
-        <p className="mb-1 font-bold text-lg">{journey.name}</p>
-        <p className="mb-0 text-ink/65">{nextStep?.title ?? 'Focused session'}</p>
-        <p className="sr-only" role="status" aria-live="polite">
-          Focus session paused.
+          <div className="grid size-full place-content-center rounded-full border-2 border-ink bg-paper px-3">
+            <p className="mb-4 inline-flex items-center justify-center gap-2 justify-self-center rounded-full bg-ink px-4 py-2 font-bold text-[0.65rem] text-paper uppercase tracking-[0.18em]">
+              <span className="size-1.5 rounded-full bg-pomodoro-red" />
+              Paused
+            </p>
+            <h1
+              className="mb-2 font-bold text-[clamp(3.25rem,14vw,6.5rem)] tabular-nums leading-none tracking-[-0.065em]"
+              id="active-session-title"
+            >
+              {formatRemainingTime(activeTimer.remainingSeconds)}
+            </h1>
+            <p className="mb-0 font-bold text-[0.65rem] text-ink/50 uppercase tracking-[0.18em]">
+              Remaining
+            </p>
+          </div>
+        </div>
+
+        <div className="grid w-full max-w-md gap-3">
+          <PrimaryButton
+            type="button"
+            className="w-full shadow-[4px_4px_0_var(--ink)]"
+            onClick={resumeSession}
+          >
+            <Play aria-hidden="true" />
+            Resume
+          </PrimaryButton>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 w-full border-2 border-ink font-bold"
+            aria-describedby={canFinish ? undefined : 'finish-early-guidance'}
+            disabled={!canFinish}
+            onClick={finishSessionEarly}
+          >
+            Finish early
+          </Button>
+          <Button
+            type="button"
+            variant="link"
+            className="h-11 text-ink/55 underline"
+            onClick={requestCancellation}
+          >
+            Cancel session
+          </Button>
+        </div>
+
+        {!canFinish ? (
+          <p className="mb-0 max-w-reading text-ink/60 text-sm" id="finish-early-guidance">
+            Finish early becomes available after 5 focused minutes.
+          </p>
+        ) : null}
+
+        {actionError ? (
+          <p className="mb-0 max-w-reading font-bold text-pomodoro-red text-sm" role="alert">
+            {actionError}
+          </p>
+        ) : null}
+
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {announcement}
         </p>
       </section>
     </FocusLayout>
@@ -414,7 +564,7 @@ function RunningSessionState({
   );
 }
 
-function ActiveSessionState({ state }: { state: AppState }) {
+function ActiveSessionState({ state, onCancelled }: { state: AppState; onCancelled: () => void }) {
   const activeTimer = state.activeTimer;
   const session = activeTimer
     ? state.focusSessions.find(({ id }) => id === activeTimer.sessionId)
@@ -427,7 +577,15 @@ function ActiveSessionState({ state }: { state: AppState }) {
   if (!activeTimer || !session || !journey) return null;
 
   if (activeTimer.status === 'paused') {
-    return <PausedSessionState activeTimer={activeTimer} journey={journey} nextStep={nextStep} />;
+    return (
+      <PausedSessionState
+        activeTimer={activeTimer}
+        journey={journey}
+        nextStep={nextStep}
+        onCancelled={onCancelled}
+        session={session}
+      />
+    );
   }
 
   return (
@@ -530,15 +688,28 @@ function ProgressPreview({ minutes, journeyName }: { minutes: number; journeyNam
   );
 }
 
-function TimerSetup({ state, search }: { state: AppState; search: FocusSearch }) {
+function TimerSetup({
+  state,
+  search,
+  announcement,
+}: {
+  state: AppState;
+  search: FocusSearch;
+  announcement: string | null;
+}) {
   const navigate = useNavigate({ from: '/focus/' });
   const startInFlight = useRef(false);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const [durationChoice, setDurationChoice] = useState<DurationChoice>('25');
   const [customMinutes, setCustomMinutes] = useState('');
   const [customTouched, setCustomTouched] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const selection = resolveFocusSelection(state, search);
+
+  useEffect(() => {
+    if (announcement) headingRef.current?.focus();
+  }, [announcement]);
 
   if (!selection) return <Navigate to="/onboarding/journey" replace />;
 
@@ -623,7 +794,11 @@ function TimerSetup({ state, search }: { state: AppState; search: FocusSearch })
           <p className="mb-2 font-bold text-pomodoro-red text-xs uppercase tracking-[0.18em]">
             Ready when you are
           </p>
-          <h1 className="mb-2 max-w-[13ch] font-bold text-3xl leading-[1.02] tracking-[-0.045em] sm:text-4xl lg:text-6xl [@media(max-height:680px)]:mb-0 [@media(max-height:680px)]:max-w-none [@media(max-height:680px)]:text-xl">
+          <h1
+            ref={headingRef}
+            tabIndex={announcement ? -1 : undefined}
+            className="mb-2 max-w-[13ch] font-bold text-3xl leading-[1.02] tracking-[-0.045em] sm:text-4xl lg:text-6xl [@media(max-height:680px)]:mb-0 [@media(max-height:680px)]:max-w-none [@media(max-height:680px)]:text-xl"
+          >
             Start with one focused session.
           </h1>
           <p className="mb-0 text-ink/60 text-sm [@media(max-height:620px)]:hidden">
@@ -791,6 +966,11 @@ function TimerSetup({ state, search }: { state: AppState; search: FocusSearch })
           <p className="mt-2 mb-0 text-center font-bold text-[0.65rem] text-ink/45 uppercase tracking-[0.13em] [@media(max-height:680px)]:hidden">
             {selectedMinutes ?? 'Custom'} minutes · {journey.name}
           </p>
+          {announcement ? (
+            <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              {announcement}
+            </p>
+          ) : null}
         </form>
       </div>
     </FocusLayout>
@@ -799,6 +979,7 @@ function TimerSetup({ state, search }: { state: AppState; search: FocusSearch })
 
 export function FocusSessionScreen({ search }: { search: FocusSearch }) {
   const hydration = useAppState();
+  const [setupAnnouncement, setSetupAnnouncement] = useState<string | null>(null);
 
   if (hydration.status === 'loading') {
     return (
@@ -817,8 +998,13 @@ export function FocusSessionScreen({ search }: { search: FocusSearch }) {
   }
 
   if (hydration.state.activeTimer !== null) {
-    return <ActiveSessionState state={hydration.state} />;
+    return (
+      <ActiveSessionState
+        state={hydration.state}
+        onCancelled={() => setSetupAnnouncement('Focus session cancelled. No progress was added.')}
+      />
+    );
   }
 
-  return <TimerSetup state={hydration.state} search={search} />;
+  return <TimerSetup state={hydration.state} search={search} announcement={setupAnnouncement} />;
 }

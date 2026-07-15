@@ -1,5 +1,9 @@
 import {
+  canFinishPausedFocusSession,
+  cancelPausedFocusSession as createCancelledPausedSession,
+  completePausedFocusSession as createCompletedPausedSession,
   completeRunningFocusSession as createCompletedRunningSession,
+  resumePausedFocusSession as createResumedPausedSession,
   getRemainingSeconds,
   pauseRunningFocusSession,
 } from './focus-timer';
@@ -85,6 +89,9 @@ export interface AppRepository {
   setActiveTimer(activeTimer: ActiveTimer | null): RepositorySaveResult;
   startFocusSession(session: FocusSession, activeTimer: ActiveTimer): RepositorySaveResult;
   pauseFocusSession(sessionId: string, pausedAt: string): RepositorySaveResult;
+  resumeFocusSession(sessionId: string, resumedAt: string): RepositorySaveResult;
+  finishPausedFocusSession(sessionId: string, completedAt: string): RepositorySaveResult;
+  cancelFocusSession(sessionId: string, cancelledAt: string): RepositorySaveResult;
   completeRunningFocusSession(sessionId: string, completedAt: string): RepositorySaveResult;
   upsertMilestone(milestone: Milestone): RepositorySaveResult;
   setWeeklyGoal(weeklyGoal: WeeklyGoal | null): RepositorySaveResult;
@@ -558,6 +565,72 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     });
   }
 
+  function resumeFocusSession(sessionId: string, resumedAt: string) {
+    return update((state) => {
+      const activeTimer = state.activeTimer;
+      const session = state.focusSessions.find(({ id }) => id === sessionId);
+
+      if (
+        activeTimer?.sessionId !== sessionId ||
+        activeTimer.status !== 'paused' ||
+        session?.status !== 'paused'
+      ) {
+        return state;
+      }
+
+      const resumed = createResumedPausedSession(session, activeTimer, resumedAt);
+
+      return {
+        ...state,
+        activeTimer: resumed.activeTimer,
+        focusSessions: upsertById(state.focusSessions, resumed.session),
+      };
+    });
+  }
+
+  function finishPausedFocusSession(sessionId: string, completedAt: string) {
+    return update((state) => {
+      const activeTimer = state.activeTimer;
+      const session = state.focusSessions.find(({ id }) => id === sessionId);
+
+      if (
+        activeTimer?.sessionId !== sessionId ||
+        activeTimer.status !== 'paused' ||
+        session?.status !== 'paused' ||
+        !canFinishPausedFocusSession(activeTimer)
+      ) {
+        return state;
+      }
+
+      const completedSession = createCompletedPausedSession(session, activeTimer, completedAt);
+      return completeSessionInState(state, completedSession);
+    });
+  }
+
+  function cancelFocusSession(sessionId: string, cancelledAt: string) {
+    return update((state) => {
+      const activeTimer = state.activeTimer;
+      const session = state.focusSessions.find(({ id }) => id === sessionId);
+
+      if (
+        activeTimer?.sessionId !== sessionId ||
+        activeTimer.status !== 'paused' ||
+        session?.status !== 'paused'
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        activeTimer: null,
+        focusSessions: upsertById(
+          state.focusSessions,
+          createCancelledPausedSession(session, cancelledAt)
+        ),
+      };
+    });
+  }
+
   function completeRunningFocusSession(sessionId: string, completedAt: string) {
     return update((state) => {
       const activeTimer = state.activeTimer;
@@ -616,6 +689,9 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     setActiveTimer,
     startFocusSession,
     pauseFocusSession,
+    resumeFocusSession,
+    finishPausedFocusSession,
+    cancelFocusSession,
     completeRunningFocusSession,
     upsertMilestone,
     setWeeklyGoal,

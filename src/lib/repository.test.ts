@@ -219,6 +219,89 @@ describe('localStorage repository', () => {
     );
   });
 
+  it('resumes a paused session atomically without counting paused wall time', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    repository.startFocusSession(activeSession, activeTimer);
+    repository.pauseFocusSession(activeSession.id, '2026-07-12T19:06:15.000Z');
+
+    repository.resumeFocusSession(activeSession.id, '2026-07-12T20:00:00.000Z');
+    repository.resumeFocusSession(activeSession.id, '2026-07-12T20:01:00.000Z');
+    const result = repository.load();
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.activeTimer).toMatchObject({
+      sessionId: activeSession.id,
+      status: 'running',
+      remainingSeconds: 1_125,
+      accumulatedFocusedSeconds: 375,
+      targetEndAt: '2026-07-12T20:18:45.000Z',
+      pausedAt: null,
+    });
+    expect(result.state.focusSessions.find(({ id }) => id === activeSession.id)?.status).toBe(
+      'running'
+    );
+  });
+
+  it('finishes an eligible paused session once and rejects one below five minutes', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    repository.startFocusSession(activeSession, activeTimer);
+    repository.pauseFocusSession(activeSession.id, '2026-07-12T19:04:59.000Z');
+
+    repository.finishPausedFocusSession(activeSession.id, '2026-07-12T19:05:00.000Z');
+    expect(
+      repository.load().status === 'ready' && repository.load().state.activeTimer
+    ).not.toBeNull();
+
+    repository.resumeFocusSession(activeSession.id, '2026-07-12T19:05:00.000Z');
+    repository.pauseFocusSession(activeSession.id, '2026-07-12T19:05:01.000Z');
+    repository.finishPausedFocusSession(activeSession.id, '2026-07-12T19:05:02.000Z');
+    repository.finishPausedFocusSession(activeSession.id, '2026-07-12T19:05:03.000Z');
+    const result = repository.load();
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.activeTimer).toBeNull();
+    expect(result.state.lastCompletedSessionId).toBe(activeSession.id);
+    expect(result.state.focusSessions.filter(({ id }) => id === activeSession.id)).toEqual([
+      {
+        ...activeSession,
+        focusedMinutes: 5,
+        status: 'completed',
+        endedAt: '2026-07-12T19:05:02.000Z',
+      },
+    ]);
+  });
+
+  it('cancels a paused session once without awarding focused progress', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    repository.startFocusSession(activeSession, activeTimer);
+    repository.pauseFocusSession(activeSession.id, '2026-07-12T19:06:15.000Z');
+    const beforeCancel = repository.load();
+    if (beforeCancel.status !== 'ready') throw new Error('Expected persisted state to load');
+    const previousLastCompletedSessionId = beforeCancel.state.lastCompletedSessionId;
+
+    repository.cancelFocusSession(activeSession.id, '2026-07-12T19:07:00.000Z');
+    repository.cancelFocusSession(activeSession.id, '2026-07-12T19:08:00.000Z');
+    const result = repository.load();
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.activeTimer).toBeNull();
+    expect(result.state.lastCompletedSessionId).toBe(previousLastCompletedSessionId);
+    expect(result.state.focusSessions.filter(({ id }) => id === activeSession.id)).toEqual([
+      {
+        ...activeSession,
+        focusedMinutes: 0,
+        status: 'cancelled',
+        endedAt: '2026-07-12T19:07:00.000Z',
+      },
+    ]);
+  });
+
   it('completes an elapsed running session once and refuses early completion', () => {
     const storage = new MemoryStorage();
     const repository = createLocalStorageRepository({ getStorage: () => storage });

@@ -119,6 +119,28 @@ function createRunningState({
   return state;
 }
 
+function createPausedState({
+  accumulatedFocusedSeconds = 375,
+  remainingSeconds = 1_125,
+}: {
+  accumulatedFocusedSeconds?: number;
+  remainingSeconds?: number;
+} = {}) {
+  const state = createRunningState({ accumulatedFocusedSeconds, remainingSeconds });
+  const session = state.focusSessions.find(({ id }) => id === 'session-running');
+  if (!session || !state.activeTimer) throw new Error('Expected active focus session');
+
+  session.status = 'paused';
+  state.activeTimer = {
+    ...state.activeTimer,
+    status: 'paused',
+    targetEndAt: null,
+    pausedAt: new Date().toISOString(),
+  };
+
+  return state;
+}
+
 describe('Timer Setup', () => {
   it('renders the distraction-free ready state with the latest Journey and 25 minutes selected', async () => {
     await renderFocus(createSeedAppState());
@@ -255,33 +277,14 @@ describe('Timer Setup', () => {
   });
 
   it('restores a paused active session instead of showing setup', async () => {
-    const state = createSeedAppState();
-    const session: FocusSession = {
-      id: 'session-paused',
-      journeyId: 'journey-learn-guitar',
-      nextStepId: 'next-step-f-chord',
-      plannedMinutes: 25,
-      focusedMinutes: 0,
-      status: 'paused',
-      source: 'timer',
-      startedAt: '2026-07-15T18:00:00.000Z',
-      endedAt: null,
-      reflection: '',
-    };
-    state.focusSessions.push(session);
-    state.activeTimer = {
-      sessionId: session.id,
-      status: 'paused',
-      remainingSeconds: 1_125,
-      accumulatedFocusedSeconds: 375,
-      targetEndAt: null,
-      pausedAt: '2026-07-15T18:06:15.000Z',
-    };
-
-    await renderFocus(state);
+    await renderFocus(createPausedState());
 
     expect(await screen.findByRole('heading', { name: '18:45' })).toBeTruthy();
     expect(screen.getByText('Paused')).toBeTruthy();
+    expect(screen.getByText('1000 Pomodoros')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Finish early' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cancel session' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Start focus session' })).toBeNull();
   });
 });
@@ -447,6 +450,138 @@ describe('Running Focus Timer', () => {
     );
     expect(router.state.location.pathname).toBe('/focus');
     expect(readSavedState().activeTimer?.status).toBe('running');
+  });
+});
+
+describe('Paused Focus Timer', () => {
+  it('resumes from persisted time once and returns to the running timer', async () => {
+    const resume = vi.spyOn(appRepository, 'resumeFocusSession');
+    await renderFocus(createPausedState());
+
+    const button = await screen.findByRole('button', { name: 'Resume' });
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    expect(await screen.findByRole('button', { name: 'Pause' })).toBeTruthy();
+    expect(resume).toHaveBeenCalledTimes(1);
+    const saved = readSavedState();
+    expect(saved.activeTimer).toMatchObject({
+      status: 'running',
+      remainingSeconds: 1_125,
+      accumulatedFocusedSeconds: 375,
+      pausedAt: null,
+    });
+    expect(saved.focusSessions.find(({ id }) => id === 'session-running')?.status).toBe('running');
+  });
+
+  it('disables Finish early and explains the five-minute threshold before eligibility', async () => {
+    await renderFocus(
+      createPausedState({ accumulatedFocusedSeconds: 299, remainingSeconds: 1_201 })
+    );
+
+    const finish = await screen.findByRole('button', { name: 'Finish early' });
+    expect(finish.hasAttribute('disabled')).toBe(true);
+    expect(finish.getAttribute('aria-describedby')).toBe('finish-early-guidance');
+    expect(
+      screen.getByText('Finish early becomes available after 5 focused minutes.')
+    ).toBeTruthy();
+  });
+
+  it('finishes an eligible partial session once and routes to completion', async () => {
+    const finish = vi.spyOn(appRepository, 'finishPausedFocusSession');
+    const router = await renderFocus(createPausedState());
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Finish early' }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/focus/complete'));
+    expect(finish).toHaveBeenCalledTimes(1);
+    const saved = readSavedState();
+    expect(saved.activeTimer).toBeNull();
+    expect(saved.lastCompletedSessionId).toBe('session-running');
+    expect(saved.focusSessions.find(({ id }) => id === 'session-running')).toMatchObject({
+      status: 'completed',
+      focusedMinutes: 6.25,
+    });
+  });
+
+  it('dismisses cancellation unchanged, then confirms once without progress', async () => {
+    const cancel = vi.spyOn(appRepository, 'cancelFocusSession');
+    const confirm = vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
+    const state = createPausedState();
+    const previousLastCompletedSessionId = state.lastCompletedSessionId;
+    await renderFocus(state);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel session' }));
+    expect(confirm).toHaveBeenCalledWith(
+      'Cancel this focus session? Your focused time from this session will be discarded and no Journey progress will be added.'
+    );
+    expect(cancel).not.toHaveBeenCalled();
+    expect(readSavedState().activeTimer?.status).toBe('paused');
+
+    confirm.mockReturnValue(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel session' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Start with one focused session.' })
+    ).toBeTruthy();
+    expect(await screen.findByRole('status')).toHaveProperty(
+      'textContent',
+      'Focus session cancelled. No progress was added.'
+    );
+    await waitFor(() => {
+      expect(document.activeElement).toBe(
+        screen.getByRole('heading', { name: 'Start with one focused session.' })
+      );
+    });
+    expect(cancel).toHaveBeenCalledTimes(1);
+    const saved = readSavedState();
+    expect(saved.activeTimer).toBeNull();
+    expect(saved.lastCompletedSessionId).toBe(previousLastCompletedSessionId);
+    expect(saved.focusSessions.find(({ id }) => id === 'session-running')).toMatchObject({
+      status: 'cancelled',
+      focusedMinutes: 0,
+    });
+  });
+
+  it.each([
+    {
+      action: 'Resume',
+      method: 'resumeFocusSession' as const,
+      message: 'Your timer could not be resumed. It is still paused. Try again.',
+    },
+    {
+      action: 'Finish early',
+      method: 'finishPausedFocusSession' as const,
+      message: 'Your focused progress could not be saved yet. Keep this screen open.',
+    },
+  ])('keeps the paused state recoverable when $action persistence fails', async (testCase) => {
+    vi.spyOn(appRepository, testCase.method).mockReturnValue({
+      status: 'unavailable',
+      state: null,
+    });
+    await renderFocus(createPausedState());
+
+    fireEvent.click(await screen.findByRole('button', { name: testCase.action }));
+
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent', testCase.message);
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeTruthy();
+    expect(readSavedState().activeTimer?.status).toBe('paused');
+  });
+
+  it('keeps the paused state recoverable when Cancel persistence fails', async () => {
+    vi.spyOn(globalThis, 'confirm').mockReturnValue(true);
+    vi.spyOn(appRepository, 'cancelFocusSession').mockReturnValue({
+      status: 'unavailable',
+      state: null,
+    });
+    await renderFocus(createPausedState());
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel session' }));
+
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      'Your session could not be cancelled. It is still paused. Try again.'
+    );
+    expect(readSavedState().activeTimer?.status).toBe('paused');
   });
 });
 

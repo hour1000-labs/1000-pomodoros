@@ -2,6 +2,7 @@ import type { ActiveTimer, FocusSession } from './models';
 
 const MILLISECONDS_PER_SECOND = 1_000;
 const SECONDS_PER_MINUTE = 60;
+export const MINIMUM_COUNTED_FOCUS_SECONDS = 5 * SECONDS_PER_MINUTE;
 
 export function getRemainingSeconds(targetEndAt: string | null, now = Date.now()) {
   if (targetEndAt === null) return 0;
@@ -36,6 +37,58 @@ export function pauseRunningFocusSession(
       targetEndAt: null,
       pausedAt,
     },
+  };
+}
+
+export function resumePausedFocusSession(
+  session: FocusSession,
+  activeTimer: ActiveTimer,
+  resumedAt: string
+): { session: FocusSession; activeTimer: ActiveTimer } {
+  const resumedAtTime = new Date(resumedAt).getTime();
+  const safeResumedAtTime = Number.isFinite(resumedAtTime) ? resumedAtTime : Date.now();
+
+  return {
+    session: { ...session, status: 'running' },
+    activeTimer: {
+      ...activeTimer,
+      status: 'running',
+      targetEndAt: new Date(
+        safeResumedAtTime + activeTimer.remainingSeconds * MILLISECONDS_PER_SECOND
+      ).toISOString(),
+      pausedAt: null,
+    },
+  };
+}
+
+export function canFinishPausedFocusSession(activeTimer: ActiveTimer) {
+  return activeTimer.accumulatedFocusedSeconds >= MINIMUM_COUNTED_FOCUS_SECONDS;
+}
+
+export function completePausedFocusSession(
+  session: FocusSession,
+  activeTimer: ActiveTimer,
+  completedAt: string
+): FocusSession {
+  const focusedSeconds = Math.min(
+    session.plannedMinutes * SECONDS_PER_MINUTE,
+    activeTimer.accumulatedFocusedSeconds
+  );
+
+  return {
+    ...session,
+    focusedMinutes: focusedSeconds / SECONDS_PER_MINUTE,
+    status: 'completed',
+    endedAt: completedAt,
+  };
+}
+
+export function cancelPausedFocusSession(session: FocusSession, cancelledAt: string): FocusSession {
+  return {
+    ...session,
+    focusedMinutes: 0,
+    status: 'cancelled',
+    endedAt: cancelledAt,
   };
 }
 
