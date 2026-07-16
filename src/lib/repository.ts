@@ -19,6 +19,9 @@ import {
   type OnboardingDraft,
   type WeeklyGoal,
 } from './models';
+import { getFocusedMinutes } from './progress';
+
+export const SESSION_REFLECTION_MAX_LENGTH = 280;
 
 export const APP_STORAGE_KEY = '1000-pomodoros:app-state:v1';
 
@@ -104,6 +107,7 @@ export interface AppRepository {
     session: FocusSession,
     earnedMilestones?: readonly Milestone[]
   ): RepositorySaveResult;
+  updateSessionReflection(sessionId: string, reflection: string): RepositorySaveResult;
 }
 
 interface RepositoryOptions {
@@ -273,6 +277,20 @@ function completeSessionInState(
       ? existingSession
       : { ...session, status: 'completed' as const };
   const completionTime = completedSession.endedAt ?? completedSession.startedAt;
+  const focusSessions = upsertById(state.focusSessions, completedSession);
+  const previousFocusedMinutes = getFocusedMinutes(
+    state.focusSessions.filter(({ id }) => id !== completedSession.id),
+    completedSession.journeyId
+  );
+  const updatedFocusedMinutes = getFocusedMinutes(focusSessions, completedSession.journeyId);
+  const milestonesWithAutomaticAwards = state.milestones.map((milestone) =>
+    milestone.journeyId === completedSession.journeyId &&
+    milestone.earnedAt === null &&
+    previousFocusedMinutes < milestone.targetFocusedMinutes &&
+    updatedFocusedMinutes >= milestone.targetFocusedMinutes
+      ? { ...milestone, earnedAt: completionTime }
+      : milestone
+  );
   const journeys = state.journeys.map((journey) =>
     journey.id === completedSession.journeyId
       ? {
@@ -286,10 +304,10 @@ function completeSessionInState(
   return {
     ...state,
     journeys,
-    focusSessions: upsertById(state.focusSessions, completedSession),
+    focusSessions,
     milestones: earnedMilestones.reduce(
       (milestones, milestone) => upsertById(milestones, milestone),
-      state.milestones
+      milestonesWithAutomaticAwards
     ),
     activeTimer: state.activeTimer?.sessionId === session.id ? null : state.activeTimer,
     lastActiveJourneyId: completedSession.journeyId,
@@ -676,6 +694,21 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     return update((state) => completeSessionInState(state, session, earnedMilestones));
   }
 
+  function updateSessionReflection(sessionId: string, reflection: string) {
+    return update((state) => {
+      const session = state.focusSessions.find(({ id }) => id === sessionId);
+
+      if (session?.status !== 'completed' || reflection.length > SESSION_REFLECTION_MAX_LENGTH) {
+        return state;
+      }
+
+      return {
+        ...state,
+        focusSessions: upsertById(state.focusSessions, { ...session, reflection }),
+      };
+    });
+  }
+
   return {
     load,
     save,
@@ -697,6 +730,7 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     setWeeklyGoal,
     finishOnboarding,
     completeSession,
+    updateSessionReflection,
   };
 }
 

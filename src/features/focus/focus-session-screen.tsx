@@ -201,7 +201,11 @@ function PausedSessionState({
 
     if (completed) {
       setAnnouncement('Focus session finished early.');
-      void navigate({ to: '/focus/complete', replace: true });
+      void navigate({
+        to: '/focus/complete',
+        search: { sessionId: session.id },
+        replace: true,
+      });
       return;
     }
 
@@ -388,7 +392,11 @@ function RunningSessionState({
 
       allowNavigation.current = true;
       setAnnouncement('Focus session complete.');
-      void navigate({ to: '/focus/complete', replace: true });
+      void navigate({
+        to: '/focus/complete',
+        search: { sessionId: session.id },
+        replace: true,
+      });
     },
     [navigate, session.id]
   );

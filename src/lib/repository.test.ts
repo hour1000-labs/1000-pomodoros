@@ -356,6 +356,59 @@ describe('localStorage repository', () => {
     expect(matchingSessions[0]?.focusedMinutes).toBe(25);
   });
 
+  it('awards every crossed milestone in the same idempotent completion write', () => {
+    const storage = new MemoryStorage();
+    const state = createSeedAppState();
+    const crossedMilestone: Milestone = {
+      id: 'milestone-learn-guitar-1100-minutes',
+      journeyId: activeSession.journeyId,
+      name: '1,100 focused minutes',
+      targetFocusedMinutes: 1_100,
+      earnedAt: null,
+    };
+    storage.setItem(
+      APP_STORAGE_KEY,
+      JSON.stringify({ ...state, milestones: [...state.milestones, crossedMilestone] })
+    );
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+
+    repository.startFocusSession(activeSession, activeTimer);
+    repository.completeRunningFocusSession(activeSession.id, '2026-07-12T19:25:00.000Z');
+    repository.completeRunningFocusSession(activeSession.id, '2026-07-12T19:26:00.000Z');
+    const result = repository.load();
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.focusSessions.filter(({ id }) => id === activeSession.id)).toHaveLength(1);
+    expect(result.state.milestones.find(({ id }) => id === crossedMilestone.id)).toEqual({
+      ...crossedMilestone,
+      earnedAt: activeTimer.targetEndAt,
+    });
+  });
+
+  it('updates only the reflection on a completed session within the 280-character limit', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    const completedSession: FocusSession = {
+      ...activeSession,
+      focusedMinutes: 25,
+      status: 'completed',
+      endedAt: '2026-07-12T19:25:00.000Z',
+    };
+    repository.completeSession(completedSession);
+
+    repository.updateSessionReflection(completedSession.id, 'Practiced a clean transition.');
+    repository.updateSessionReflection(completedSession.id, 'x'.repeat(281));
+    repository.updateSessionReflection('missing-session', 'Should not replace completed data.');
+    const result = repository.load();
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.focusSessions.find(({ id }) => id === completedSession.id)).toEqual({
+      ...completedSession,
+      reflection: 'Practiced a clean transition.',
+    });
+  });
+
   it('finishes onboarding atomically without creating duplicate records', () => {
     const storage = new MemoryStorage();
     const repository = createLocalStorageRepository({ getStorage: () => storage });

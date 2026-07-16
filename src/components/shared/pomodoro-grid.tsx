@@ -10,6 +10,7 @@ export function PomodoroGrid({
   renderLimit = 100,
   latestIndex,
   milestoneIndexes = [],
+  highlightedIndexes = [],
   onSelect,
   className,
 }: {
@@ -19,6 +20,7 @@ export function PomodoroGrid({
   renderLimit?: number;
   latestIndex?: number;
   milestoneIndexes?: number[];
+  highlightedIndexes?: number[];
   onSelect?: (index: number) => void;
   className?: string;
 }) {
@@ -29,6 +31,7 @@ export function PomodoroGrid({
   const partialFraction =
     (Math.max(0, focusedMinutes) % MINUTES_PER_POMODORO) / MINUTES_PER_POMODORO;
   const milestoneSet = new Set(milestoneIndexes);
+  const highlightedSet = new Set(highlightedIndexes);
 
   function getState(index: number): PomodoroBlockState {
     if (latestIndex === index) return 'latest';
@@ -50,6 +53,7 @@ export function PomodoroGrid({
           const index = safeStart + offset;
           const state = getState(index);
           const fraction = state === 'partial' ? partialFraction : undefined;
+          const highlighted = highlightedSet.has(index);
 
           return (
             <PomodoroBlock
@@ -58,7 +62,8 @@ export function PomodoroGrid({
               fraction={fraction}
               label={`Pomodoro ${index + 1}: ${state}${
                 state === 'partial' ? `, ${Math.round(partialFraction * 100)}% filled` : ''
-              }`}
+              }${highlighted ? ', newly earned' : ''}`}
+              highlighted={highlighted}
               onSelect={onSelect ? () => onSelect(index) : undefined}
             />
           );

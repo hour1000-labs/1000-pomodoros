@@ -16,12 +16,14 @@ export function PomodoroBlock({
   state,
   label,
   fraction = state === 'partial' ? 0.5 : state === 'future' ? 0 : 1,
+  highlighted = false,
   onSelect,
   className,
 }: {
   state: PomodoroBlockState;
   label: string;
   fraction?: number;
+  highlighted?: boolean;
   onSelect?: () => void;
   className?: string;
 }) {
@@ -29,6 +31,8 @@ export function PomodoroBlock({
   const commonClass = cn(
     'relative aspect-square size-full min-h-4 min-w-4 max-w-7 overflow-hidden rounded-sm border',
     stateClass[state],
+    highlighted &&
+      'zoom-in-75 animate-in ring-2 ring-ink ring-offset-2 duration-300 motion-reduce:animate-none',
     onSelect && 'min-h-11 min-w-11 cursor-pointer focus-visible:outline-none',
     className
   );
@@ -60,6 +64,7 @@ export function PomodoroBlock({
       onClick={onSelect}
       aria-label={label}
       data-state={state}
+      data-newly-earned={highlighted || undefined}
     >
       {content}
     </button>
@@ -70,6 +75,7 @@ export function PomodoroBlock({
       role="img"
       aria-label={label}
       data-state={state}
+      data-newly-earned={highlighted || undefined}
     >
       {content}
     </span>

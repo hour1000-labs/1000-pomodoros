@@ -426,6 +426,7 @@ describe('Running Focus Timer', () => {
     );
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/focus/complete'));
+    expect(router.state.location.search).toEqual({ sessionId: 'session-running' });
     expect(complete).toHaveBeenCalledTimes(1);
     const saved = readSavedState();
     expect(saved.activeTimer).toBeNull();
@@ -494,6 +495,7 @@ describe('Paused Focus Timer', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Finish early' }));
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/focus/complete'));
+    expect(router.state.location.search).toEqual({ sessionId: 'session-running' });
     expect(finish).toHaveBeenCalledTimes(1);
     const saved = readSavedState();
     expect(saved.activeTimer).toBeNull();

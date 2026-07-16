@@ -71,4 +71,20 @@ describe('PomodoroGrid', () => {
     expect(onSelect).toHaveBeenCalledOnce();
     expect(onSelect).toHaveBeenCalledWith(0);
   });
+
+  it('identifies and animates every newly earned full or partial block', () => {
+    render(<PomodoroGrid focusedMinutes={32.5} totalPomodoros={4} highlightedIndexes={[0, 1]} />);
+
+    const completed = screen.getByRole('img', {
+      name: 'Pomodoro 1: complete, newly earned',
+    });
+    const partial = screen.getByRole('img', {
+      name: 'Pomodoro 2: partial, 30% filled, newly earned',
+    });
+
+    expect(completed.getAttribute('data-newly-earned')).toBe('true');
+    expect(partial.getAttribute('data-newly-earned')).toBe('true');
+    expect(completed.className).toContain('duration-300');
+    expect(completed.className).toContain('motion-reduce:animate-none');
+  });
 });
