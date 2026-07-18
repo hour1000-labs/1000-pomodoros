@@ -19,6 +19,7 @@ import {
   type OnboardingDraft,
   type WeeklyGoal,
 } from './models';
+import { getNextStepError } from './next-step';
 import { getFocusedMinutes } from './progress';
 
 export const SESSION_REFLECTION_MAX_LENGTH = 280;
@@ -88,6 +89,17 @@ export interface AppRepository {
   saveOnboardingDraft(draft: OnboardingDraft | null): RepositorySaveResult;
   upsertJourney(journey: Journey): RepositorySaveResult;
   upsertNextStep(nextStep: NextStep): RepositorySaveResult;
+  addNextStep(
+    journeyId: string,
+    title: string,
+    createdAt: string,
+    id: string
+  ): RepositorySaveResult;
+  completeCurrentNextStep(
+    journeyId: string,
+    nextStepId: string,
+    completedAt: string
+  ): RepositorySaveResult;
   upsertFocusSession(session: FocusSession): RepositorySaveResult;
   setActiveTimer(activeTimer: ActiveTimer | null): RepositorySaveResult;
   startFocusSession(session: FocusSession, activeTimer: ActiveTimer): RepositorySaveResult;
@@ -463,7 +475,13 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
       return { status: 'error', state: null, error: result.error };
     }
 
-    return save(updateState(result.state));
+    const nextState = updateState(result.state);
+
+    if (Object.is(nextState, result.state)) {
+      return { status: 'saved', state: result.state };
+    }
+
+    return save(nextState);
   }
 
   function reset(): RepositoryLoadResult {
@@ -517,6 +535,80 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
       ...state,
       nextSteps: upsertById(state.nextSteps, nextStep),
     }));
+  }
+
+  function addNextStep(journeyId: string, title: string, createdAt: string, id: string) {
+    return update((state) => {
+      if (
+        getNextStepError(title) !== null ||
+        !state.journeys.some((journey) => journey.id === journeyId) ||
+        state.nextSteps.some((nextStep) => nextStep.id === id)
+      ) {
+        return state;
+      }
+
+      const journeySteps = state.nextSteps.filter((nextStep) => nextStep.journeyId === journeyId);
+      const position = journeySteps.reduce(
+        (highestPosition, nextStep) => Math.max(highestPosition, nextStep.position),
+        -1
+      );
+      const hasCurrentStep = journeySteps.some((nextStep) => nextStep.status === 'current');
+      const nextStep: NextStep = {
+        id,
+        journeyId,
+        title: title.trim(),
+        description: '',
+        status: hasCurrentStep ? 'upcoming' : 'current',
+        position: position + 1,
+        createdAt,
+        completedAt: null,
+      };
+
+      return { ...state, nextSteps: [...state.nextSteps, nextStep] };
+    });
+  }
+
+  function completeCurrentNextStep(journeyId: string, nextStepId: string, completedAt: string) {
+    return update((state) => {
+      const expectedCurrentStep = state.nextSteps.find(
+        (nextStep) => nextStep.journeyId === journeyId && nextStep.id === nextStepId
+      );
+
+      if (expectedCurrentStep?.status !== 'current') {
+        return state;
+      }
+
+      const orderedIncompleteSteps = state.nextSteps
+        .filter(
+          (nextStep) =>
+            nextStep.journeyId === journeyId &&
+            (nextStep.status === 'current' || nextStep.status === 'upcoming')
+        )
+        .sort(
+          (left, right) =>
+            left.position - right.position ||
+            left.createdAt.localeCompare(right.createdAt) ||
+            left.id.localeCompare(right.id)
+        );
+      const promotedStep = orderedIncompleteSteps.find(
+        (nextStep) => nextStep.status === 'upcoming'
+      );
+
+      return {
+        ...state,
+        nextSteps: state.nextSteps.map((nextStep) => {
+          if (nextStep.id === expectedCurrentStep.id) {
+            return { ...nextStep, status: 'completed' as const, completedAt };
+          }
+
+          if (nextStep.id === promotedStep?.id) {
+            return { ...nextStep, status: 'current' as const };
+          }
+
+          return nextStep;
+        }),
+      };
+    });
   }
 
   function upsertFocusSession(session: FocusSession) {
@@ -718,6 +810,8 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     saveOnboardingDraft,
     upsertJourney,
     upsertNextStep,
+    addNextStep,
+    completeCurrentNextStep,
     upsertFocusSession,
     setActiveTimer,
     startFocusSession,

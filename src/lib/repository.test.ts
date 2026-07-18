@@ -252,8 +252,9 @@ describe('localStorage repository', () => {
     repository.pauseFocusSession(activeSession.id, '2026-07-12T19:04:59.000Z');
 
     repository.finishPausedFocusSession(activeSession.id, '2026-07-12T19:05:00.000Z');
+    const tooEarlyResult = repository.load();
     expect(
-      repository.load().status === 'ready' && repository.load().state.activeTimer
+      tooEarlyResult.status === 'ready' ? tooEarlyResult.state.activeTimer : null
     ).not.toBeNull();
 
     repository.resumeFocusSession(activeSession.id, '2026-07-12T19:05:00.000Z');
@@ -309,7 +310,8 @@ describe('localStorage repository', () => {
     repository.startFocusSession(activeSession, activeTimer);
 
     repository.completeRunningFocusSession(activeSession.id, '2026-07-12T19:24:59.000Z');
-    expect(repository.load().status === 'ready' && repository.load().state.activeTimer).toEqual(
+    const tooEarlyResult = repository.load();
+    expect(tooEarlyResult.status === 'ready' ? tooEarlyResult.state.activeTimer : null).toEqual(
       activeTimer
     );
 
@@ -456,6 +458,180 @@ describe('localStorage repository', () => {
     expect(result.state.milestones).toContainEqual(milestone);
     expect(result.state.onboardingDraft).toBeNull();
     expect(result.state.lastActiveJourneyId).toBe(journey.id);
+  });
+
+  it('adds a trimmed Next step at the end of its Journey without duplicating an id', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    const listener = vi.fn();
+    repository.subscribe(listener);
+
+    repository.addNextStep(
+      'journey-learn-guitar',
+      '  Learn the bridge slowly  ',
+      '2026-07-17T18:00:00.000Z',
+      'next-step-learn-bridge'
+    );
+    repository.addNextStep(
+      'journey-learn-guitar',
+      'A duplicate submission',
+      '2026-07-17T18:01:00.000Z',
+      'next-step-learn-bridge'
+    );
+    const result = repository.load();
+
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.nextSteps.filter(({ id }) => id === 'next-step-learn-bridge')).toEqual([
+      {
+        id: 'next-step-learn-bridge',
+        journeyId: 'journey-learn-guitar',
+        title: 'Learn the bridge slowly',
+        description: '',
+        status: 'upcoming',
+        position: 3,
+        createdAt: '2026-07-17T18:00:00.000Z',
+        completedAt: null,
+      },
+    ]);
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('makes an added Next step current when its Journey has no current step', () => {
+    const storage = new MemoryStorage();
+    const state = createSeedAppState();
+    storage.setItem(
+      APP_STORAGE_KEY,
+      JSON.stringify({
+        ...state,
+        nextSteps: state.nextSteps.map((nextStep) => ({
+          ...nextStep,
+          status: 'completed' as const,
+          completedAt: '2026-07-17T17:00:00.000Z',
+        })),
+      })
+    );
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+
+    repository.addNextStep(
+      'journey-learn-guitar',
+      'Practice a new song',
+      '2026-07-17T18:00:00.000Z',
+      'next-step-new-song'
+    );
+    const result = repository.load();
+
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.nextSteps.find(({ id }) => id === 'next-step-new-song')).toMatchObject({
+      status: 'current',
+      position: 3,
+    });
+  });
+
+  it('rejects invalid or unknown-Journey Next steps', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    const initial = repository.load();
+    if (initial.status !== 'ready') throw new Error('Expected persisted state to load');
+    const listener = vi.fn();
+    repository.subscribe(listener);
+
+    repository.addNextStep(
+      'journey-learn-guitar',
+      ' ',
+      '2026-07-17T18:00:00.000Z',
+      'next-step-empty'
+    );
+    repository.addNextStep(
+      'journey-learn-guitar',
+      'x'.repeat(121),
+      '2026-07-17T18:00:00.000Z',
+      'next-step-too-long'
+    );
+    repository.addNextStep(
+      'missing-journey',
+      'A valid title',
+      '2026-07-17T18:00:00.000Z',
+      'next-step-missing-journey'
+    );
+    const result = repository.load();
+
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.nextSteps).toEqual(initial.state.nextSteps);
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('completes the current Next step and promotes the first upcoming step atomically', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    const listener = vi.fn();
+    repository.subscribe(listener);
+
+    repository.completeCurrentNextStep(
+      'journey-learn-guitar',
+      'next-step-f-chord',
+      '2026-07-17T18:30:00.000Z'
+    );
+    repository.completeCurrentNextStep(
+      'journey-learn-guitar',
+      'next-step-f-chord',
+      '2026-07-17T18:31:00.000Z'
+    );
+    const result = repository.load();
+
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.nextSteps.find(({ id }) => id === 'next-step-f-chord')).toMatchObject({
+      status: 'completed',
+      completedAt: '2026-07-17T18:30:00.000Z',
+    });
+    expect(
+      result.state.nextSteps.find(({ id }) => id === 'next-step-strumming-pattern')
+    ).toMatchObject({ status: 'current', completedAt: null });
+    expect(
+      result.state.nextSteps.find(({ id }) => id === 'next-step-play-first-song')
+    ).toMatchObject({ status: 'upcoming', completedAt: null });
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves no current Next step after the final incomplete item is completed', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+
+    repository.completeCurrentNextStep(
+      'journey-learn-guitar',
+      'next-step-f-chord',
+      '2026-07-17T18:30:00.000Z'
+    );
+    repository.completeCurrentNextStep(
+      'journey-learn-guitar',
+      'next-step-strumming-pattern',
+      '2026-07-17T19:00:00.000Z'
+    );
+    repository.completeCurrentNextStep(
+      'journey-learn-guitar',
+      'next-step-play-first-song',
+      '2026-07-17T19:30:00.000Z'
+    );
+    repository.completeCurrentNextStep(
+      'journey-learn-guitar',
+      'next-step-play-first-song',
+      '2026-07-17T20:00:00.000Z'
+    );
+    const result = repository.load();
+
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    const journeySteps = result.state.nextSteps.filter(
+      ({ journeyId }) => journeyId === 'journey-learn-guitar'
+    );
+    expect(journeySteps.every(({ status }) => status === 'completed')).toBe(true);
+    expect(journeySteps.find(({ status }) => status === 'current')).toBeUndefined();
   });
 
   it('keeps invalid saved data intact and returns a recoverable error', () => {

@@ -9,12 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppState } from '@/hooks/use-app-state';
 import type { Journey, Milestone, NextStep, OnboardingDraft } from '@/lib/models';
+import { getNextStepError, NEXT_STEP_MAX_LENGTH } from '@/lib/next-step';
 import { appRepository } from '@/lib/repository';
 
 import { OnboardingLayout } from './components/onboarding-layout';
 
-const NEXT_STEP_MIN_LENGTH = 1;
-const NEXT_STEP_MAX_LENGTH = 120;
 const FIRST_MILESTONE_POMODOROS = 10;
 const MINUTES_PER_POMODORO = 25;
 const LEARN_GUITAR_SAMPLE_STEP = 'Practice the F chord transition';
@@ -30,19 +29,7 @@ function getInitialNextStep(draft: OnboardingDraft) {
     : '';
 }
 
-export function getNextStepError(value: string) {
-  const trimmedLength = value.trim().length;
-
-  if (trimmedLength < NEXT_STEP_MIN_LENGTH) {
-    return 'Enter one concrete action to start your first pomodoro.';
-  }
-
-  if (trimmedLength > NEXT_STEP_MAX_LENGTH) {
-    return `Keep your Next step to ${NEXT_STEP_MAX_LENGTH} characters or fewer.`;
-  }
-
-  return null;
-}
+export { getNextStepError };
 
 function getRecordSuffix(draft: OnboardingDraft) {
   return draft.startedAt.replace(/[^a-zA-Z0-9]/g, '').toLocaleLowerCase();
