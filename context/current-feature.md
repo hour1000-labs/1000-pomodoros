@@ -1,81 +1,41 @@
-# Current Feature: Journey Detail
+# Current Feature: <feature name>
 
-Build the primary Journey progress screen with inspectable visual effort, lightweight Next-step management, recent-session context, and a direct handoff into focus.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
-Ready to Commit
+<!-- Not Started | In Progress | Ready to Commit -->
+
+Not Started
 
 ## Goal
 
-Users can open a Journey, understand and inspect how their focused effort is accumulating, manage what they will do next, and start another session without losing context.
+<!-- Describe what should change from the user's perspective. -->
 
 ## Acceptance Criteria
 
-- [x] AC1 — `/journeys/$journeyId` resolves a persisted Journey by route parameter inside the responsive application layout and shows an actionable Journey-not-found state for an unknown ID.
-- [x] AC2 — The screen shows the Journey name, optional reason, total focused time, total pomodoros, current time-based milestone, next time-based milestone, percentage toward the next milestone, and remaining pomodoros to that milestone, all derived from persisted state.
-- [x] AC3 — The seeded “Learn guitar” state renders 43 pomodoros, 17 hours 55 minutes, and 72% progress toward the 25-hour milestone for screenshot verification.
-- [x] AC4 — The PomodoroGrid is the dominant product element and defaults to the 100-pomodoro section containing current progress, using 10 columns and clearly identifying the next milestone rather than rendering the full target first.
-- [x] AC5 — Pomodoro blocks implement the `context/DESIGN.md` complete, proportional partial, future, latest, and milestone treatments without relying on color alone; manual time counts normally and is labeled in inspection details rather than visually penalized in the overview.
-- [x] AC6 — Every progress-bearing block can be reached and activated with a keyboard and exposes its contributing session date, duration, Next step, and timer or manual source in an accessible Tooltip or Dialog; multiple contributing sessions are represented without fabricating a single source.
-- [x] AC7 — “View full Journey” switches or expands the same page into target-derived 100-pomodoro sections, including 24 sections for the default 2,400-pomodoro target, while pagination, virtualization, or progressive rendering prevents 2,400 interactive blocks from entering the initial DOM.
-- [x] AC8 — The current Next step appears prominently above one “Start 25:00” primary action, and activating Start opens `/focus` with that Journey and Next step selected through the existing focus-selection contract.
-- [x] AC9 — When the Journey has no current Next step, the screen replaces the unavailable Start action with a clear “Add a Next step” path rather than starting an unscoped session.
-- [x] AC10 — A lightweight ordered list shows upcoming incomplete Next steps below the primary progress content without displaying a completed-step history.
-- [x] AC11 — The user can add one valid Next step inline or in a small accessible dialog, and the new item is persisted without introducing task-manager fields or behaviors.
-- [x] AC12 — The user can mark the current Next step complete, persist its completion, and atomically promote the next incomplete item to current; an empty state appears when none remain.
-- [x] AC13 — Two or three recent completed sessions appear as supporting context only and show useful Journey-specific session information derived from persisted state.
-- [x] AC14 — Dedicated, actionable states cover zero progress, no Next step, no sessions, hydration, recoverable persistence failure, and an unknown Journey without inventing progress or activity.
-- [x] AC15 — On mobile, one sticky Start action remains reachable without covering grid content or conflicting with responsive application navigation; the page remains usable from 320px upward, at 200% zoom, with long Journey and Next-step text, and on desktop.
-- [x] AC16 — The screen preserves visible focus, appropriate accessible names and semantics, minimum 44px touch targets, WCAG AA contrast, and reduced-motion preferences across grid, dialogs, Next-step controls, and navigation.
-- [x] AC17 — The feature adds no subtasks, priorities, labels, due dates, dependencies, Kanban behavior, outcome-based milestones, Journey editing, personal milestones, manual-time creation, full session history, or additional route for the full-Journey view.
+<!-- The feature is done when every applicable item is checked. -->
+
+- [ ] ...
+- [ ] ...
 
 ## Plan
 
-1. Extend the Journey progress derivation and repository mutation layer for sectioned milestone progress, honest block-to-session inspection data, Next-step creation, and atomic completion/promotion (AC2, AC3, AC5, AC6, AC7, AC11, AC12, AC13).
-2. Evolve the shared PomodoroBlock and PomodoroGrid APIs to support accessible inspection, exact visual states, target-derived 100-block sections, and bounded progressive rendering while preserving existing consumers (AC4–AC7, AC14, AC16).
-3. Compose the persisted Journey Detail screen and route states with the application layout, header metrics, current milestone section, full-Journey disclosure, recent sessions, and empty/error experiences (AC1–AC7, AC13, AC14).
-4. Add the current and upcoming Next-step presentation plus accessible add and complete interactions backed by repository persistence (AC8–AC12, AC14, AC16, AC17).
-5. Wire the Journey and current Next step into the existing `/focus` selection flow and implement the non-overlapping sticky mobile Start treatment (AC8, AC9, AC15).
-6. Preserve and, where necessary, extend seeded data so the visual reference state remains exactly reproducible without overwriting returning-user progress (AC2, AC3, AC13, AC14).
-7. Add focused unit and integration coverage for derived progress, block attribution and interaction, full-view render bounds, routing, focus handoff, Next-step mutations, persistence failure, and empty states (AC1–AC14, AC16).
-8. Verify the complete Journey Detail experience against the screenshot and design system in real desktop and mobile browsers, including responsive, accessibility, maximum-content, empty, and large-target cases (AC3–AC17).
+1. ...
+2. ...
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] `git diff --check` passes
-- [x] Focused tests verify minute-to-pomodoro conversion, partial progress, milestone boundaries and rounding, including 1,075 minutes = 43 pomodoros = 17 hours 55 minutes and 72% of 25 hours
-- [x] Route and state tests verify valid, unknown, hydrating, recoverable-error, zero-progress, no-Next-step, and no-session cases
-- [x] PomodoroGrid tests verify 10-column current sections, complete/partial/future/latest/milestone states, manual-source details, multi-session attribution, accessible block activation, and existing-consumer compatibility
-- [x] Full-Journey tests prove target-derived 100-block grouping and that the initial DOM does not contain 2,400 interactive blocks
-- [x] Next-step tests verify validation, addition, persistence, current-step completion, promotion order, failure recovery, and the final empty state
-- [x] Focus-handoff tests verify `/focus` receives and restores the selected Journey and Next step without creating a duplicate session
-- [x] Desktop browser verification confirms the seeded metrics, dominant grid hierarchy, block inspection, full-Journey disclosure, Next-step flows, recent sessions, focus handoff, and visual-reference fidelity
-- [x] Mobile browser verification from 320px upward confirms responsive navigation, 10-column grid usability, sticky Start reachability, safe-area spacing, no covered content, and 44px touch targets
-- [x] Browser verification covers 200% zoom, keyboard-only use, visible focus and focus restoration, long Journey and Next-step text, reduced motion, zero progress, no Next step, no sessions, and the 2,400-pomodoro target
-- [x] No relevant browser console errors or warnings occur during the verified flows
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
-- Source specification: `context/features/journey-detail-spec.md`; visual reference: `context/screenshots/journey-detail-ui.png`; visual and interaction contract: `context/DESIGN.md`.
-- On 2026-07-17, the user approved feature-scoped use of the existing design defaults: complete/partial/future/latest/milestone block treatments, 100-pomodoro sections with 10 columns, an in-page progressively rendered full-Journey view, time-based milestones only, and no completed-step history on this screen.
-- The approval above unblocks Journey Detail without changing the broader pending entries in `context/decisions.md`; those decisions remain open for other product surfaces unless resolved separately.
-- The default view is the 100-pomodoro section containing current progress and the next time-based milestone. The full view derives its section count from the Journey target; 2,400 blocks and 24 sections apply to the default 1,000-hour target rather than being hard-coded for every Journey.
-- Progress is derived from eligible completed-session minutes. Partial blocks remain proportional to actual focused minutes, and manual sessions are disclosed in details without a punitive overview style.
-- When more than one session contributes minutes to a block, inspection must disclose the contributing sessions rather than assigning misleading singular metadata.
-- If no current Next step exists, the screen offers the scoped Add action and does not start focus with a missing Next-step selection.
-- The dedicated Journey Detail spec defines this feature slice. Journey icon/color editing, outcome-based and personal milestones, completed-step history, manual-time creation, and broader Journey-management capabilities from the product specification remain out of scope.
-- `feature load` documents scope only. No application implementation, branch creation, or verification checkbox completion occurs during this action.
-- `feature start` on 2026-07-17 created `codex/feature/journey-detail` and implemented the persisted progress derivation, inspectable and progressively rendered grid, Next-step add/complete flows, typed focus handoff, supporting session context, and non-overlapping mobile action dock. The feature remains `In Progress` pending the dedicated `feature test` and `feature review` actions.
-- `feature test` on 2026-07-18 added direct Journey Detail loading and recoverable-retry route coverage. The focused Journey Detail suite passed 13 tests; the full suite passed 14 files and 129 tests. `pnpm check` checked 97 files with no warnings, `pnpm exec tsc --noEmit` passed, the client and SSR production build passed, and `git diff --check` passed.
-- Live browser verification passed at 1440×900, 375×812, and 320×568, plus a 640×400 200%-zoom equivalent. It covered the seeded 43-pomodoro/17-hour-55-minute/72% state, 24-section progressive view with 300 initial blocks, keyboard block activation and focus restoration, Next-step validation/addition/completion, focus handoff without session creation, maximum unbroken text, reduced motion, zero/no-step/no-session states, and the unknown-Journey route. Mobile measurements found no document overflow, one visible dock action, 12px between the content viewport and dock, 19px between the dock and navigation, contained horizontal grid scrolling, and 44×44px progress controls.
-- Browser-computed colors passed WCAG AA contrast checks: ink at 60% on white was 4.64:1, ink at 65% was 5.50:1, and white/red combinations were 5.05:1. The browser console reported 0 errors and 0 warnings; Vitest separately printed jsdom's non-failing `Window.scrollTo()` not-implemented diagnostic.
-- Post-verification change classification: documentation-only. This working-file update records evidence and checks completed criteria without affecting executable behavior; `pnpm test`, `pnpm build`, TypeScript, and browser evidence remain applicable. `pnpm check`, `git diff --check`, and a focused current-feature structure audit were rerun after the documentation update.
-- `feature review` on 2026-07-18 found no blocking correctness, regression, accessibility, performance, dependency, or scope issues across AC1–AC17. A fresh live review at 1440×900, 768×900, and 375×812 confirmed the visual hierarchy, responsive reflow, contained mobile scrolling, distinct fixed action/navigation bands, progressive 300-block full view, dialog focus trapping and restoration, blank-input feedback, 44×44px minimum visible controls, and zero browser errors or warnings.
-- Post-review change classification: documentation-only. The status and review record do not affect executable behavior, so the passing test, TypeScript, build, and browser evidence above remain applicable; the universal `pnpm check`, `git diff --check`, and current-feature structure audit were rerun after this update.
+<!-- Record important decisions, blockers, scope changes, or follow-up work. -->
 
 ## History
 
@@ -178,3 +138,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/session-complete`
 - Summary: Added a refresh-safe completion experience with exact session credit, milestone awards, visible newly earned progress, optional reflection, and contextual progress or restart actions.
 - Verification: `pnpm check` (88 files), `pnpm test` (12 files, 99 tests), focused remediation tests (1 file, 9 tests), `pnpm build` (client and SSR), `git diff --check`, and production-browser checks for completion paths, refresh safety, attribution boundaries, actions, reflection, responsive layouts, accessibility, reduced motion, and console output passed.
+
+### 2026-07-18 — Journey Detail
+
+- Branch: `codex/feature/journey-detail`
+- Summary: Added the responsive Journey progress experience with inspectable Pomodoro sections, milestone context, scoped focus handoff, lightweight Next-step management, recent sessions, and resilient empty and persistence states.
+- Verification: `pnpm check` (97 files), `pnpm exec tsc --noEmit`, `pnpm test` (14 files, 129 tests), `pnpm build` (client and SSR), `git diff --check`, and live-browser checks from 320px through desktop plus a 200%-zoom equivalent for progress inspection, progressive full-Journey rendering, Next-step flows, focus handoff, responsive layout, accessibility, contrast, reduced motion, persistence states, and console output passed.
