@@ -1,71 +1,128 @@
-import { EmptyJourneyState } from '@/components/shared/empty-journey-state';
-import { ScreenHeader } from '@/components/shared/screen-header';
-import { getJourneyContext } from '@/lib/journey-context';
-import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data';
+import { Link, Navigate } from '@tanstack/react-router';
+import { ArrowRight } from 'lucide-react';
+
+import { EmptyState } from '@/components/shared/empty-state';
+import { Button } from '@/components/ui/button';
+import { useCurrentLocalDate } from '@/hooks/use-current-local-date';
 import type { AppState } from '@/lib/models';
-import { deriveProgressFromSessions, getSessionsForLocalDate } from '@/lib/progress';
 
 import { ApplicationLayout } from './components/application-layout';
 import { ApplicationStateBoundary } from './components/application-state-boundary';
 import { ContinueCard } from './components/continue-card';
+import { HomeRecentSessions } from './components/home-recent-sessions';
+import { HomeWeeklyProgress } from './components/home-weekly-progress';
 import { JourneyCard } from './components/journey-card';
 import { StatItem } from './components/stat-item';
 import { formatFocusedTime } from './format-focused-time';
+import { deriveHomeData } from './home-data';
 
-function ApplicationEmptyState() {
+function HomeContent({ now, state }: { now: Date; state: AppState }) {
+  if (state.journeys.length === 0) {
+    return <Navigate to="/onboarding/journey" replace />;
+  }
+
+  const home = deriveHomeData(state, now);
+  const navigationJourney =
+    state.journeys.find(({ id }) => id === state.lastActiveJourneyId) ?? state.journeys[0];
+  const continueJourney = home.continueJourney;
+
+  if (continueJourney === null) {
+    return (
+      <ApplicationLayout journeyId={navigationJourney.id}>
+        <h1 className="sr-only">Home</h1>
+        <EmptyState
+          title="No active Journeys"
+          description="Review a Journey when you are ready to choose what comes next."
+          action={
+            <Button asChild variant="outline">
+              <Link
+                to="/journeys/$journeyId"
+                params={{ journeyId: navigationJourney.id }}
+                aria-label={`Review ${navigationJourney.name} Journey`}
+              >
+                Review Journey
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
+            </Button>
+          }
+        />
+      </ApplicationLayout>
+    );
+  }
+
   return (
-    <ApplicationLayout journeyId={LEARN_GUITAR_JOURNEY_ID}>
-      <EmptyJourneyState />
-    </ApplicationLayout>
-  );
-}
-
-function HomeContent({ state }: { state: AppState }) {
-  const context = getJourneyContext(state);
-
-  if (!context) return <ApplicationEmptyState />;
-
-  const { journey, nextStep, progress } = context;
-  const todayProgress = deriveProgressFromSessions(
-    getSessionsForLocalDate(state.focusSessions, new Date()),
-    journey.id
-  );
-
-  return (
-    <ApplicationLayout journeyId={journey.id}>
-      <ScreenHeader
-        eyebrow="Home"
-        title="Keep your momentum"
-        description="One clear next action, then the progress that proves your effort is adding up."
-      />
-      <section className="mt-8">
+    <ApplicationLayout journeyId={continueJourney.journey.id}>
+      <section aria-labelledby="home-continue-heading">
         <ContinueCard
-          journeyId={journey.id}
-          journeyName={journey.name}
-          nextStep={nextStep?.title}
+          hasCompletedActivity={home.hasCompletedActivity}
+          journeyId={continueJourney.journey.id}
+          journeyName={continueJourney.journey.name}
+          nextStep={continueJourney.currentStep}
         />
       </section>
-      <section className="mt-10 grid grid-cols-2 gap-6 sm:max-w-md" aria-label="Today">
-        <StatItem value={String(todayProgress.fullPomodoros)} label="Pomodoros today" />
-        <StatItem value={String(todayProgress.focusedMinutes)} label="Focused minutes" />
+
+      <div className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+        <section
+          aria-labelledby="home-today-heading"
+          className="rounded-xl border border-ink/20 p-6"
+        >
+          <p className="mb-2 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.14em]">
+            Today
+          </p>
+          <h2
+            id="home-today-heading"
+            className="mb-8 max-w-[16ch] font-bold text-2xl tracking-[-0.025em]"
+          >
+            A little work, made visible.
+          </h2>
+          <dl className="grid grid-cols-2 gap-6">
+            <StatItem value={String(home.today.completedPomodoros)} label="Pomodoros" />
+            <StatItem value={String(home.today.focusedMinutes)} label="Focused minutes" />
+          </dl>
+        </section>
+
+        <HomeWeeklyProgress weekly={home.weekly} />
+      </div>
+
+      <section className="mt-16" aria-labelledby="active-journeys-heading">
+        <div className="mb-6 border-ink border-b-2 pb-4">
+          <p className="mb-2 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.14em]">
+            Keep moving
+          </p>
+          <h2 id="active-journeys-heading" className="mb-0 font-bold text-3xl tracking-[-0.03em]">
+            Active Journeys
+          </h2>
+        </div>
+        <div className="grid gap-7 lg:grid-cols-2">
+          {home.activeJourneys.map((summary) => (
+            <JourneyCard
+              key={summary.journey.id}
+              journeyId={summary.journey.id}
+              name={summary.journey.name}
+              focusedTime={formatFocusedTime(summary.progress.focusedMinutes)}
+              milestoneLabel={`Current milestone: ${
+                summary.currentMilestone?.name ?? 'Journey target'
+              }`}
+              milestonePercent={summary.currentMilestonePercentage}
+              nextStep={summary.currentStep}
+            />
+          ))}
+        </div>
       </section>
-      <section className="mt-12">
-        <h2 className="mb-5 font-bold text-2xl">Active Journey</h2>
-        <JourneyCard
-          journeyId={journey.id}
-          name={journey.name}
-          focusedTime={formatFocusedTime(progress.focusedMinutes)}
-          milestoneLabel="Next milestone: 25 hours"
-          milestonePercent={(progress.focusedMinutes / (25 * 60)) * 100}
-          nextStep={nextStep?.title}
-        />
-      </section>
+
+      <div className="mt-16">
+        <HomeRecentSessions now={now} sessions={home.recentSessions} />
+      </div>
     </ApplicationLayout>
   );
 }
 
 export function HomeScreen() {
+  const now = useCurrentLocalDate();
+
   return (
-    <ApplicationStateBoundary>{(state) => <HomeContent state={state} />}</ApplicationStateBoundary>
+    <ApplicationStateBoundary>
+      {(state) => <HomeContent now={now} state={state} />}
+    </ApplicationStateBoundary>
   );
 }

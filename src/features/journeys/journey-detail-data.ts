@@ -23,6 +23,15 @@ export interface JourneyRecentSession {
   nextStepTitle: string | null;
 }
 
+export interface JourneyMilestoneData {
+  sortedMilestones: Milestone[];
+  milestoneGoals: Milestone[];
+  currentMilestone: Milestone | null;
+  nextMilestone: Milestone | null;
+  nextMilestonePercentage: number;
+  remainingPomodoros: number;
+}
+
 export interface JourneyDetailData {
   journey: Journey;
   progress: JourneyProgress;
@@ -75,6 +84,68 @@ function getDisplayedMilestonePercentage(focusedMinutes: number, targetMinutes: 
 
   const roundedPercentage = Math.round((focusedMinutes / targetMinutes) * 100);
   return Math.min(focusedMinutes < targetMinutes ? 99 : 100, roundedPercentage);
+}
+
+export function deriveJourneyMilestoneData(
+  journey: Journey,
+  milestones: readonly Milestone[],
+  focusedMinutes: number
+): JourneyMilestoneData {
+  const sortedMilestones = milestones
+    .filter((milestone) => milestone.journeyId === journey.id)
+    .sort(
+      (left, right) =>
+        left.targetFocusedMinutes - right.targetFocusedMinutes || left.id.localeCompare(right.id)
+    );
+  const milestoneGoals = [...sortedMilestones];
+
+  if (
+    journey.targetMinutes > 0 &&
+    !milestoneGoals.some(
+      ({ targetFocusedMinutes }) => targetFocusedMinutes === journey.targetMinutes
+    )
+  ) {
+    milestoneGoals.push({
+      id: `journey-target-${journey.id}`,
+      journeyId: journey.id,
+      name: 'Journey target',
+      targetFocusedMinutes: journey.targetMinutes,
+      earnedAt: null,
+    });
+    milestoneGoals.sort(
+      (left, right) =>
+        left.targetFocusedMinutes - right.targetFocusedMinutes || left.id.localeCompare(right.id)
+    );
+  }
+
+  const currentMilestoneIndex = milestoneGoals.findIndex(
+    (milestone) => milestone.targetFocusedMinutes > focusedMinutes
+  );
+  const currentMilestone =
+    currentMilestoneIndex === -1
+      ? (milestoneGoals.at(-1) ?? null)
+      : (milestoneGoals[currentMilestoneIndex] ?? null);
+  const nextMilestone =
+    currentMilestoneIndex === -1 ? null : (milestoneGoals[currentMilestoneIndex + 1] ?? null);
+  const nextMilestonePercentage =
+    currentMilestone === null
+      ? 0
+      : getDisplayedMilestonePercentage(focusedMinutes, currentMilestone.targetFocusedMinutes);
+  const remainingPomodoros =
+    currentMilestone === null
+      ? 0
+      : Math.ceil(
+          Math.max(0, currentMilestone.targetFocusedMinutes - focusedMinutes) / POMODORO_MINUTES
+        );
+
+  return {
+    sortedMilestones,
+    milestoneGoals,
+    currentMilestone,
+    nextMilestone,
+    nextMilestonePercentage,
+    remainingPomodoros,
+  };
 }
 
 function deriveBlockContributions(
@@ -132,56 +203,14 @@ export function deriveJourneyDetailData(
   }
 
   const progress = deriveJourneyProgress(journey, state.focusSessions);
-  const sortedMilestones = state.milestones
-    .filter((milestone) => milestone.journeyId === journeyId)
-    .sort(
-      (left, right) =>
-        left.targetFocusedMinutes - right.targetFocusedMinutes || left.id.localeCompare(right.id)
-    );
-  const milestoneGoals = [...sortedMilestones];
-
-  if (
-    journey.targetMinutes > 0 &&
-    !milestoneGoals.some(
-      ({ targetFocusedMinutes }) => targetFocusedMinutes === journey.targetMinutes
-    )
-  ) {
-    milestoneGoals.push({
-      id: `journey-target-${journey.id}`,
-      journeyId: journey.id,
-      name: 'Journey target',
-      targetFocusedMinutes: journey.targetMinutes,
-      earnedAt: null,
-    });
-    milestoneGoals.sort(
-      (left, right) =>
-        left.targetFocusedMinutes - right.targetFocusedMinutes || left.id.localeCompare(right.id)
-    );
-  }
-
-  const currentMilestoneIndex = milestoneGoals.findIndex(
-    (milestone) => milestone.targetFocusedMinutes > progress.focusedMinutes
-  );
-  const currentMilestone =
-    currentMilestoneIndex === -1
-      ? (milestoneGoals.at(-1) ?? null)
-      : (milestoneGoals[currentMilestoneIndex] ?? null);
-  const nextMilestone =
-    currentMilestoneIndex === -1 ? null : (milestoneGoals[currentMilestoneIndex + 1] ?? null);
-  const nextMilestonePercentage =
-    currentMilestone === null
-      ? 0
-      : getDisplayedMilestonePercentage(
-          progress.focusedMinutes,
-          currentMilestone.targetFocusedMinutes
-        );
-  const remainingPomodoros =
-    currentMilestone === null
-      ? 0
-      : Math.ceil(
-          Math.max(0, currentMilestone.targetFocusedMinutes - progress.focusedMinutes) /
-            POMODORO_MINUTES
-        );
+  const {
+    sortedMilestones,
+    milestoneGoals,
+    currentMilestone,
+    nextMilestone,
+    nextMilestonePercentage,
+    remainingPomodoros,
+  } = deriveJourneyMilestoneData(journey, state.milestones, progress.focusedMinutes);
   const journeySteps = state.nextSteps
     .filter((nextStep) => nextStep.journeyId === journeyId)
     .sort(compareByPosition);

@@ -1,5 +1,5 @@
 import { Navigate, useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, ArrowRight, Play } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { type FormEvent, useRef, useState } from 'react';
 
 import { LoadingState } from '@/components/shared/loading-state';
@@ -166,7 +166,7 @@ function NextStepForm({
     const result = appRepository.finishOnboarding(journey, nextStep, milestone);
 
     if (result.status === 'saved') {
-      void navigate({ to: '/focus' });
+      void navigate({ to: '/home', replace: true });
       return;
     }
 
@@ -259,7 +259,7 @@ function NextStepForm({
                   You are ready
                 </p>
                 <p className="mb-0 max-w-[23ch] font-bold text-base leading-snug">
-                  Start a 25-minute session and make your first pomodoro visible.
+                  Create your Journey and see your first Next step ready on Home.
                 </p>
               </div>
               <PrimaryButton
@@ -267,8 +267,7 @@ function NextStepForm({
                 className="w-full shadow-[4px_4px_0_var(--ink)] sm:w-auto sm:min-w-56"
                 disabled={pendingAction !== null}
               >
-                <Play aria-hidden="true" className="size-4 fill-current" />
-                {pendingAction === 'submit' ? 'Creating Journey…' : 'Start first pomodoro'}
+                {pendingAction === 'submit' ? 'Creating Journey…' : 'Create Journey'}
                 <ArrowRight aria-hidden="true" className="size-4" />
               </PrimaryButton>
             </div>
@@ -315,7 +314,7 @@ export function OnboardingAddNextStep() {
     hydration.state.onboardingDraft.journeyName.trim().length === 0
   ) {
     if (completionInFlight.current && hydration.state.lastActiveJourneyId !== null) {
-      return <Navigate to="/focus" replace />;
+      return <Navigate to="/home" replace />;
     }
 
     return <Navigate to="/onboarding/journey" replace />;

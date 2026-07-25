@@ -31,8 +31,19 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
-function createState(draft: OnboardingDraft | null): AppState {
-  return { ...createSeedAppState(), onboardingDraft: draft };
+function createJourneyFreeState(draft: OnboardingDraft | null): AppState {
+  return {
+    ...createSeedAppState(),
+    journeys: [],
+    nextSteps: [],
+    focusSessions: [],
+    milestones: [],
+    weeklyGoal: null,
+    onboardingDraft: draft,
+    activeTimer: null,
+    lastActiveJourneyId: null,
+    lastCompletedSessionId: null,
+  };
 }
 
 async function renderNextStep(state: AppState) {
@@ -58,7 +69,7 @@ function readSavedState() {
 
 describe('OnboardingAddNextStep', () => {
   it('renders the final step with the Learn guitar sample value and exact guidance', async () => {
-    await renderNextStep(createState(baseDraft));
+    await renderNextStep(createJourneyFreeState(baseDraft));
 
     expect(
       await screen.findByRole('heading', {
@@ -76,13 +87,16 @@ describe('OnboardingAddNextStep', () => {
     expect(screen.getAllByRole('textbox')).toHaveLength(1);
     expect((input as HTMLInputElement).value).toBe(sampleNextStep);
     expect((input as HTMLInputElement).maxLength).toBe(120);
-    expect(screen.getByRole('button', { name: /Start first pomodoro/i })).toBeTruthy();
+    expect(
+      screen.getByText('Create your Journey and see your first Next step ready on Home.')
+    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Create Journey' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Back' })).toBeTruthy();
     expect(screen.queryByText(/priority|due date|category|schedule/i)).toBeNull();
   });
 
   it('redirects to Journey creation when no onboarding draft exists', async () => {
-    const router = await renderNextStep(createState(null));
+    const router = await renderNextStep(createJourneyFreeState(null));
 
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/onboarding/journey');
@@ -95,7 +109,7 @@ describe('OnboardingAddNextStep', () => {
     expect(getNextStepError('a'.repeat(121))).toContain('120 characters');
 
     await renderNextStep(
-      createState({ ...baseDraft, journeyName: 'Write a book', nextStepTitle: '' })
+      createJourneyFreeState({ ...baseDraft, journeyName: 'Write a book', nextStepTitle: '' })
     );
     const input = await screen.findByRole('textbox', { name: 'Next step' });
 
@@ -111,7 +125,7 @@ describe('OnboardingAddNextStep', () => {
   });
 
   it('saves the current input before going Back and restores it on return', async () => {
-    const router = await renderNextStep(createState(baseDraft));
+    const router = await renderNextStep(createJourneyFreeState(baseDraft));
     const input = await screen.findByRole('textbox', { name: 'Next step' });
 
     fireEvent.change(input, { target: { value: 'Practice a chord change slowly' } });
@@ -129,13 +143,13 @@ describe('OnboardingAddNextStep', () => {
     ).toBe('Practice a chord change slowly');
   });
 
-  it('creates the Journey, current Next step, and first milestone once before opening focus', async () => {
+  it('creates the Journey, current Next step, and first milestone once before opening Home', async () => {
     const finishOnboarding = vi.spyOn(appRepository, 'finishOnboarding');
-    const router = await renderNextStep(createState(baseDraft));
+    const router = await renderNextStep(createJourneyFreeState(baseDraft));
     const input = await screen.findByRole('textbox', { name: 'Next step' });
 
     fireEvent.change(input, { target: { value: '  Practice the intro slowly  ' } });
-    const submit = screen.getByRole('button', { name: /Start first pomodoro/i });
+    const submit = screen.getByRole('button', { name: 'Create Journey' });
     fireEvent.click(submit);
     fireEvent.click(submit);
     expect(screen.getByRole('button', { name: /Creating Journey/i }).hasAttribute('disabled')).toBe(
@@ -143,12 +157,15 @@ describe('OnboardingAddNextStep', () => {
     );
 
     await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/focus');
+      expect(router.state.location.pathname).toBe('/home');
     });
+    expect(router.history.length).toBe(1);
+    expect(router.history.canGoBack()).toBe(false);
     expect(finishOnboarding).toHaveBeenCalledTimes(1);
 
     const state = readSavedState();
     const journey = state.journeys.find(({ id }) => id.startsWith('journey-onboarding-'));
+    expect(state.journeys).toHaveLength(1);
     expect(journey?.name).toBe('Learn guitar');
     expect(journey?.reason).toBe(baseDraft.reason);
     expect(journey?.targetMinutes).toBe(baseDraft.targetMinutes);
@@ -156,6 +173,7 @@ describe('OnboardingAddNextStep', () => {
     expect(state.onboardingDraft).toBeNull();
 
     const nextSteps = state.nextSteps.filter(({ journeyId }) => journeyId === journey?.id);
+    expect(state.nextSteps).toHaveLength(1);
     expect(nextSteps).toHaveLength(1);
     expect(nextSteps[0]).toMatchObject({
       title: 'Practice the intro slowly',
@@ -164,13 +182,14 @@ describe('OnboardingAddNextStep', () => {
     });
 
     const milestones = state.milestones.filter(({ journeyId }) => journeyId === journey?.id);
+    expect(state.milestones).toHaveLength(1);
     expect(milestones).toHaveLength(1);
     expect(milestones[0]).toMatchObject({
       name: '10 pomodoros',
       targetFocusedMinutes: 250,
       earnedAt: null,
     });
-    expect(await screen.findByText('Practice the intro slowly')).toBeTruthy();
+    expect(state.focusSessions).toHaveLength(0);
   });
 
   it('retains the draft and stays put when atomic Journey creation fails', async () => {
@@ -178,9 +197,9 @@ describe('OnboardingAddNextStep', () => {
       status: 'unavailable',
       state: null,
     });
-    const router = await renderNextStep(createState(baseDraft));
+    const router = await renderNextStep(createJourneyFreeState(baseDraft));
 
-    fireEvent.click(await screen.findByRole('button', { name: /Start first pomodoro/i }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Create Journey' }));
 
     expect(
       await screen.findByText(
@@ -189,9 +208,9 @@ describe('OnboardingAddNextStep', () => {
     ).toBeTruthy();
     expect(router.state.location.pathname).toBe('/onboarding/next-step');
     expect(readSavedState().onboardingDraft).toEqual(baseDraft);
-    expect(
-      screen.getByRole('button', { name: /Start first pomodoro/i }).hasAttribute('disabled')
-    ).toBe(false);
+    expect(screen.getByRole('button', { name: 'Create Journey' }).hasAttribute('disabled')).toBe(
+      false
+    );
   });
 });
 
