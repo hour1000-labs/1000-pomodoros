@@ -30,6 +30,21 @@ pnpm dev
 
 The development server runs on [http://localhost:3000](http://localhost:3000).
 
+## GitHub Pages preview
+
+The `Deploy to GitHub Pages` workflow will publish the latest `main` branch to
+[the project preview](https://hour1000-labs.github.io/1000-pomodoros/) after a
+push. It can also be started manually from the repository's Actions tab.
+
+The one-time repository setup is:
+
+1. Open **Settings → Pages**.
+2. Set **Build and deployment → Source** to **GitHub Actions**.
+
+The workflow derives the project-path base URL from GitHub Pages at build time,
+so local development and the deployed preview use the correct asset and route
+paths independently.
+
 ## Verification
 
 ```bash
