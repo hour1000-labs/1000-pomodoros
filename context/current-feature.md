@@ -1,53 +1,41 @@
-# Current Feature: Add New Journey
+# Current Feature: <feature name>
 
-Returning users can create additional Journeys from Home through the existing onboarding flow.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Ready to Commit
+Not Started
 
 ## Goal
 
-From Home, a user can start and complete creation of another Journey without losing or replacing any existing Journey, with no Journey-count limit enforced in this version.
+<!-- Describe what should change from the user's perspective. -->
 
 ## Acceptance Criteria
 
 <!-- The feature is done when every applicable item is checked. -->
 
-- [x] The Home screen shows an accessible `Add Journey` action beside the `Active Journeys` heading.
-- [x] Activating `Add Journey` starts the existing four-step Journey onboarding flow with a fresh draft and preserves all existing Journeys and their associated data.
-- [x] The reused onboarding flow uses copy appropriate for creating any Journey, not only a user's first Journey, while preserving the existing validation, draft recovery, Back, Exit, and error-recovery behavior.
-- [x] Completing the flow creates the new Journey, its initial Next step, and its first milestone exactly once, then returns the user to Home with the new Journey available.
-- [x] Users can create any number of Journeys in this version; no free-tier or paywall limit is shown or enforced.
-- [x] The new action and flow remain usable with keyboard navigation, visible focus, long Journey names, 320px mobile layouts, desktop layouts, and 200% zoom.
+- [ ] ...
+- [ ] ...
 
 ## Plan
 
-1. Add an `Add Journey` action to the Home Active Journeys section without adding a new top-level navigation destination.
-2. Make the existing onboarding entry and completion behavior support additional Journeys with a fresh draft and non-first-Journey copy.
-3. Preserve atomic, idempotent Journey creation and verify existing Journeys remain unchanged.
-4. Add or update focused tests, then verify the complete creation flow at responsive and accessibility-sensitive viewport states.
+1. ...
+2. ...
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes — 21 files, 176 tests
-- [x] `pnpm build` passes — client and SSR builds
-- [x] `pnpm exec tsc --noEmit` passes
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] No relevant console errors
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
-
-- The entry point is intentionally Home's Active Journeys section; the application navigation remains destination-focused.
-- The existing `/onboarding/journey` flow is reused instead of introducing a separate Journey-creation route or modal.
-- Resolved 2026-08-06: allow unlimited Journeys for now. Free-tier limits and paid gating are out of scope for this feature.
-- Post-verification remediation class: localized behavioral. The initial fresh-draft effect also cleared the newly saved draft during step-one navigation; a one-time guard now clears only the stale draft present at entry. Revalidated with `pnpm check`, `pnpm exec tsc --noEmit`, focused tests (3 files, 24 tests), full `pnpm test`, `pnpm build`, `git diff --check`, and browser checks at 1280×800, 640×400, and 320×568. All passed; browser console had 0 errors and 0 warnings, and mobile/zoom-equivalent `scrollWidth` matched the viewport.
 
 ## History
 
@@ -186,3 +174,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/remove-onboarding-tomato-previews`
 - Summary: Removed the static tomato progress previews from all four onboarding screens and recentered the setup forms while preserving intentional progress visuals in the sample Journey and other product screens.
 - Verification: `pnpm check`, `pnpm test` (21 files, 173 tests), `pnpm build`, `git diff --check`, and browser checks at 1280×800 and 320×568 for the complete onboarding flow, zero onboarding tomato previews, no horizontal overflow or console errors, and preserved sample Journey tomato units passed.
+
+### 2026-08-06 — Add New Journey
+
+- Branch: `codex/feature/add-new-journey`
+- Summary: Added an Add Journey action to Home that starts a fresh, reusable onboarding flow for additional Journeys while preserving existing Journeys and records.
+- Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (21 files, 176 tests), `pnpm build` (client and SSR), `git diff --check`, and browser checks at 1280×800, 640×400, and 320×568 with no overflow or console errors/warnings passed.
