@@ -189,6 +189,37 @@ describe('OnboardingAddNextStep', () => {
     expect(state.focusSessions).toHaveLength(0);
   });
 
+  it('adds a new Journey while preserving existing Journeys and their records', async () => {
+    const state = createSeedAppState();
+    state.onboardingDraft = baseDraft;
+    const existingJourneyIds = state.journeys.map(({ id }) => id);
+    const existingNextStepIds = state.nextSteps.map(({ id }) => id);
+    const existingMilestoneIds = state.milestones.map(({ id }) => id);
+    const router = await renderNextStep(state);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Create Journey' }));
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/home');
+    });
+
+    const savedState = readSavedState();
+    expect(savedState.journeys).toHaveLength(existingJourneyIds.length + 1);
+    expect(savedState.nextSteps).toHaveLength(existingNextStepIds.length + 1);
+    expect(savedState.milestones).toHaveLength(existingMilestoneIds.length + 1);
+    expect(
+      existingJourneyIds.every((id) => savedState.journeys.some((journey) => journey.id === id))
+    ).toBe(true);
+    expect(
+      existingNextStepIds.every((id) => savedState.nextSteps.some((nextStep) => nextStep.id === id))
+    ).toBe(true);
+    expect(
+      existingMilestoneIds.every((id) =>
+        savedState.milestones.some((milestone) => milestone.id === id)
+      )
+    ).toBe(true);
+  });
+
   it('retains the draft and stays put when atomic Journey creation fails', async () => {
     vi.spyOn(appRepository, 'finishOnboarding').mockReturnValue({
       status: 'unavailable',

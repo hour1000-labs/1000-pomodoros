@@ -18,14 +18,14 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
-async function renderOnboarding(state?: AppState) {
+async function renderOnboarding(state?: AppState, initialEntry = '/onboarding/journey') {
   if (state) {
     window.localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(state));
   }
 
   const router = getRouter();
   router.update({
-    history: createMemoryHistory({ initialEntries: ['/onboarding/journey'] }),
+    history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
   await router.load();
   render(<RouterProvider router={router} />);
@@ -67,6 +67,46 @@ describe('OnboardingCreateJourney', () => {
     for (const example of ['Learn Spanish', 'Build my portfolio', 'Improve at chess']) {
       expect(screen.getByRole('button', { name: example })).toBeTruthy();
     }
+  });
+
+  it('starts a fresh additional Journey without replacing existing Journeys', async () => {
+    const state = createSeedAppState();
+    state.onboardingDraft = {
+      journeyName: 'Old draft',
+      reason: 'Old reason',
+      targetMinutes: 60_000,
+      nextStepTitle: 'Old step',
+      startedAt: '2026-07-13T17:00:00.000Z',
+      updatedAt: '2026-07-13T17:00:00.000Z',
+    };
+
+    await renderOnboarding(state, '/onboarding/journey?fresh=true');
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Name your next Journey',
+      })
+    ).toBeTruthy();
+    expect((screen.getByRole('textbox', { name: 'Journey name' }) as HTMLInputElement).value).toBe(
+      ''
+    );
+
+    await waitFor(() => {
+      const savedState = readSavedState();
+      expect(savedState.onboardingDraft).toBeNull();
+      expect(savedState.journeys).toHaveLength(1);
+    });
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Journey name' }), {
+      target: { value: 'Learn piano' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('2 of 4')).toBeTruthy();
+    });
+    expect(readSavedState().onboardingDraft?.journeyName).toBe('Learn piano');
   });
 
   it('delays validation and accepts trimmed names from 1–80 characters', async () => {

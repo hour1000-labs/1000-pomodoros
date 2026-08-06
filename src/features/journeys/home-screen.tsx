@@ -2,6 +2,7 @@ import { Link, Navigate } from '@tanstack/react-router';
 
 import { EmptyState } from '@/components/shared/empty-state';
 import { PrimaryButton } from '@/components/shared/primary-button';
+import { Button } from '@/components/ui/button';
 import { useCurrentLocalDate } from '@/hooks/use-current-local-date';
 import type { AppState } from '@/lib/models';
 
@@ -33,15 +34,22 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
           title="No active Journeys"
           description="Open a Journey to choose what comes next."
           action={
-            <PrimaryButton asChild>
-              <Link
-                to="/journeys/$journeyId"
-                params={{ journeyId: navigationJourney.id }}
-                aria-label={`Review ${navigationJourney.name} Journey`}
-              >
-                Review Journey
-              </Link>
-            </PrimaryButton>
+            <div className="flex flex-wrap gap-3">
+              <PrimaryButton asChild>
+                <Link
+                  to="/journeys/$journeyId"
+                  params={{ journeyId: navigationJourney.id }}
+                  aria-label={`Review ${navigationJourney.name} Journey`}
+                >
+                  Review Journey
+                </Link>
+              </PrimaryButton>
+              <Button asChild variant="outline">
+                <Link to="/onboarding/journey" search={{ fresh: true }}>
+                  Add Journey
+                </Link>
+              </Button>
+            </div>
           }
         />
       </ApplicationLayout>
@@ -77,10 +85,15 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
       </div>
 
       <section className="mt-16" aria-labelledby="active-journeys-heading">
-        <div className="mb-6 border-ink/15 border-b pb-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-ink/15 border-b pb-4">
           <h2 id="active-journeys-heading" className="mb-0 font-bold text-3xl tracking-[-0.03em]">
             Active Journeys
           </h2>
+          <Button asChild variant="outline">
+            <Link to="/onboarding/journey" search={{ fresh: true }}>
+              Add Journey
+            </Link>
+          </Button>
         </div>
         <div className="grid gap-7 lg:grid-cols-2">
           {home.activeJourneys.map((summary) => (

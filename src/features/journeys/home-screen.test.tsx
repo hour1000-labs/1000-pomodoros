@@ -157,6 +157,21 @@ describe('HomeScreen', () => {
     }
   });
 
+  it('offers Add Journey from the Active Journeys section with a fresh onboarding draft', async () => {
+    await renderHome(createSeedAppState());
+
+    const activeJourneysSection = await screen.findByRole('region', {
+      name: 'Active Journeys',
+    });
+    const addJourneyLink = within(activeJourneysSection).getByRole('link', {
+      name: 'Add Journey',
+    });
+    const addJourneyUrl = new URL(addJourneyLink.getAttribute('href') ?? '', 'http://localhost');
+
+    expect(addJourneyUrl.pathname).toBe('/onboarding/journey');
+    expect(addJourneyUrl.searchParams.get('fresh')).toBe('true');
+  });
+
   it('replace-redirects a Journey-free user to Journey onboarding', async () => {
     const router = await renderHome(createJourneyFreeState());
 
@@ -239,6 +254,7 @@ describe('HomeScreen', () => {
     expect(await screen.findByRole('heading', { name: 'No active Journeys' })).toBeTruthy();
     const reviewLink = screen.getByRole('link', { name: 'Review Learn guitar Journey' });
     expect(reviewLink.getAttribute('href')).toBe(`/journeys/${LEARN_GUITAR_JOURNEY_ID}`);
+    expect(screen.getByRole('link', { name: 'Add Journey' })).toBeTruthy();
     expect(screen.queryByRole('link', { name: /Start 25:00/ })).toBeNull();
   });
 

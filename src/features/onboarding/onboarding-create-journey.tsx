@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { ArrowRight } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { LoadingState } from '@/components/shared/loading-state';
@@ -31,8 +31,8 @@ function getJourneyNameError(value: string) {
   return null;
 }
 
-function JourneyForm({ state }: { state: AppState }) {
-  const savedDraft = state.onboardingDraft;
+function JourneyForm({ state, startFresh }: { state: AppState; startFresh: boolean }) {
+  const savedDraft = startFresh ? null : state.onboardingDraft;
   const navigate = useNavigate({ from: '/onboarding/journey' });
   const [journeyName, setJourneyName] = useState(savedDraft?.journeyName ?? '');
   const [hasBlurred, setHasBlurred] = useState(false);
@@ -42,6 +42,14 @@ function JourneyForm({ state }: { state: AppState }) {
   const validationError = getJourneyNameError(journeyName);
   const showValidation = (hasBlurred || submitted) && validationError !== null;
   const hasDraftData = savedDraft !== null || journeyName.trim().length > 0;
+  const hasClearedFreshDraft = useRef(!startFresh || state.onboardingDraft === null);
+
+  useEffect(() => {
+    if (startFresh && !hasClearedFreshDraft.current && state.onboardingDraft !== null) {
+      hasClearedFreshDraft.current = true;
+      appRepository.saveOnboardingDraft(null);
+    }
+  }, [startFresh, state.onboardingDraft]);
 
   function createDraft(trimmedName: string): OnboardingDraft {
     const now = new Date().toISOString();
@@ -121,7 +129,7 @@ function JourneyForm({ state }: { state: AppState }) {
           </div>
 
           <h1 className="mb-4 max-w-[15ch] font-bold text-4xl leading-[1.08] tracking-[-0.035em] sm:text-5xl">
-            Name your first Journey
+            {startFresh ? 'Name your next Journey' : 'Name your first Journey'}
           </h1>
           <p className="mb-8 max-w-[58ch] text-base text-ink/60 leading-relaxed sm:text-lg">
             Track focused work, one pomodoro at a time.
@@ -202,7 +210,7 @@ function JourneyForm({ state }: { state: AppState }) {
   );
 }
 
-export function OnboardingCreateJourney() {
+export function OnboardingCreateJourney({ startFresh = false }: { startFresh?: boolean }) {
   const hydration = useAppState();
 
   if (hydration.status === 'loading') {
@@ -221,5 +229,5 @@ export function OnboardingCreateJourney() {
     );
   }
 
-  return <JourneyForm state={hydration.state} />;
+  return <JourneyForm state={hydration.state} startFresh={startFresh} />;
 }
