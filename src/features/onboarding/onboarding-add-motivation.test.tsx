@@ -66,9 +66,8 @@ describe('OnboardingAddMotivation', () => {
     expect(screen.getByText('2 of 4')).toBeTruthy();
     expect(screen.getAllByText('Learn guitar').length).toBeGreaterThan(0);
     expect(screen.queryByRole('navigation')).toBeNull();
-    expect(document.querySelectorAll('aside [data-state]')).toHaveLength(32);
-    expect(document.querySelectorAll('aside [data-state="complete"]')).toHaveLength(9);
-    expect(document.querySelectorAll('aside [data-state="future"]')).toHaveLength(23);
+    expect(document.querySelector('aside')).toBeNull();
+    expect(document.querySelectorAll('[data-pomodoro-tomato]')).toHaveLength(0);
 
     const reason = screen.getByRole('textbox', { name: /Reason/i });
     expect(screen.getAllByRole('textbox')).toHaveLength(1);

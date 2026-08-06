@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { type FormEvent, useRef, useState } from 'react';
 
 import { LoadingState } from '@/components/shared/loading-state';
-import { PomodoroBlock } from '@/components/shared/pomodoro-block';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
 import { Button } from '@/components/ui/button';
@@ -18,11 +17,6 @@ import { OnboardingLayout } from './components/onboarding-layout';
 const FIRST_MILESTONE_POMODOROS = 10;
 const MINUTES_PER_POMODORO = 25;
 const LEARN_GUITAR_SAMPLE_STEP = 'Practice the F chord transition';
-const nextStepPreviewPomodoroIds = Array.from(
-  { length: FIRST_MILESTONE_POMODOROS },
-  (_, index) => `next-step-preview-pomodoro-${index + 1}`
-);
-
 function getInitialNextStep(draft: OnboardingDraft) {
   if (draft.nextStepTitle.length > 0) return draft.nextStepTitle;
   return draft.journeyName.trim().toLocaleLowerCase() === 'learn guitar'
@@ -73,29 +67,6 @@ export function createOnboardingRecords(
       earnedAt: null,
     },
   };
-}
-
-function NextStepPreview({ journeyName }: { journeyName: string }) {
-  return (
-    <aside className="hidden max-w-sm lg:block" aria-hidden="true">
-      <p className="mb-5 font-bold text-xl leading-tight [overflow-wrap:anywhere]">{journeyName}</p>
-      <div className="mb-6 border-ink/10 border-y py-4">
-        <p className="mb-1 text-ink/60 text-sm">First Focus session</p>
-        <p className="mb-0 font-bold text-4xl tabular-nums tracking-[-0.04em]">25:00</p>
-      </div>
-      <div className="grid w-fit grid-cols-5 gap-2">
-        {nextStepPreviewPomodoroIds.map((pomodoroId, index) => (
-          <PomodoroBlock
-            key={pomodoroId}
-            state="future"
-            label={`Pomodoro ${index + 1}, not started`}
-            className="size-7"
-          />
-        ))}
-      </div>
-      <p className="mt-4 mb-0 text-ink/60 text-sm">Your first Pomodoro is ready</p>
-    </aside>
-  );
 }
 
 function NextStepForm({
@@ -170,10 +141,8 @@ function NextStepForm({
 
   return (
     <OnboardingLayout>
-      <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24">
-        <NextStepPreview journeyName={draft.journeyName} />
-
-        <section className="w-full min-w-0 max-w-[42rem] lg:justify-self-end">
+      <div className="mx-auto w-full max-w-[42rem]">
+        <section className="w-full min-w-0">
           <div className="mb-6 flex items-center gap-3">
             <p className="mb-0 shrink-0 font-bold text-ink/60 text-sm">4 of 4</p>
             <span className="h-px w-24 bg-pomodoro-red" aria-hidden="true" />

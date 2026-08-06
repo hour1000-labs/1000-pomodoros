@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 
 import { LoadingState } from '@/components/shared/loading-state';
-import { PomodoroBlock } from '@/components/shared/pomodoro-block';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
 import { Button } from '@/components/ui/button';
@@ -20,11 +19,6 @@ const MIN_CUSTOM_HOURS = 1;
 const MAX_CUSTOM_HOURS = 10_000;
 const MINUTES_PER_HOUR = 60;
 const MINUTES_PER_POMODORO = 25;
-const targetPreviewPomodoroIds = Array.from(
-  { length: 32 },
-  (_, index) => `target-preview-pomodoro-${index + 1}`
-);
-
 type TargetSelection = (typeof TARGET_OPTIONS)[number] | 'custom';
 
 export function hoursToPomodoros(hours: number) {
@@ -54,25 +48,6 @@ function getInitialSelection(targetMinutes: number): TargetSelection {
   return TARGET_OPTIONS.includes(targetHours as (typeof TARGET_OPTIONS)[number])
     ? (targetHours as (typeof TARGET_OPTIONS)[number])
     : 'custom';
-}
-
-function TargetPreview({ journeyName }: { journeyName: string }) {
-  return (
-    <aside className="hidden max-w-sm lg:block" aria-hidden="true">
-      <p className="mb-5 font-bold text-xl leading-tight [overflow-wrap:anywhere]">{journeyName}</p>
-      <div className="grid w-fit grid-cols-8 gap-2">
-        {targetPreviewPomodoroIds.map((pomodoroId, index) => (
-          <PomodoroBlock
-            key={pomodoroId}
-            state={index < 9 ? 'complete' : 'future'}
-            label={`Pomodoro ${index + 1}, ${index < 9 ? 'complete' : 'not started'}`}
-            className="size-7"
-          />
-        ))}
-      </div>
-      <p className="mt-4 mb-0 text-ink/60 text-sm">One Pomodoro = 25 minutes</p>
-    </aside>
-  );
 }
 
 function TargetOption({
@@ -162,10 +137,8 @@ function TargetForm({ draft }: { draft: OnboardingDraft }) {
 
   return (
     <OnboardingLayout>
-      <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24">
-        <TargetPreview journeyName={draft.journeyName} />
-
-        <section className="w-full min-w-0 max-w-[42rem] lg:justify-self-end">
+      <div className="mx-auto w-full max-w-[42rem]">
+        <section className="w-full min-w-0">
           <div className="mb-6 flex items-center gap-3">
             <p className="mb-0 shrink-0 font-bold text-ink/60 text-sm">3 of 4</p>
             <span className="h-px w-24 bg-ink/20" aria-hidden="true">

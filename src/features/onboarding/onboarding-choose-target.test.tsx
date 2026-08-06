@@ -67,9 +67,8 @@ describe('OnboardingChooseTarget', () => {
     expect(screen.getByText('3 of 4')).toBeTruthy();
     expect(screen.getAllByText('Learn guitar').length).toBeGreaterThan(0);
     expect(screen.getByText('You can change it later.')).toBeTruthy();
-    expect(document.querySelectorAll('aside [data-state]')).toHaveLength(32);
-    expect(document.querySelectorAll('aside [data-state="complete"]')).toHaveLength(9);
-    expect(document.querySelectorAll('aside [data-state="future"]')).toHaveLength(23);
+    expect(document.querySelector('aside')).toBeNull();
+    expect(document.querySelectorAll('[data-pomodoro-tomato]')).toHaveLength(0);
 
     const targetGroup = screen.getByRole('group', { name: 'Focus target' });
     const radios = within(targetGroup).getAllByRole('radio');

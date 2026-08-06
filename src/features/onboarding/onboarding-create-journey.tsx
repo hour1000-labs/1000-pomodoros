@@ -4,7 +4,6 @@ import { type FormEvent, useState } from 'react';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { LoadingState } from '@/components/shared/loading-state';
-import { PomodoroBlock } from '@/components/shared/pomodoro-block';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
 import { Button } from '@/components/ui/button';
@@ -18,11 +17,6 @@ import { OnboardingLayout } from './components/onboarding-layout';
 const JOURNEY_NAME_MAX_LENGTH = 80;
 const DEFAULT_TARGET_MINUTES = 1_000 * 60;
 const journeyExamples = ['Learn Spanish', 'Build my portfolio', 'Improve at chess'];
-const progressPreviewPomodoroIds = Array.from(
-  { length: 32 },
-  (_, index) => `progress-preview-pomodoro-${index + 1}`
-);
-
 function getJourneyNameError(value: string) {
   const trimmedValue = value.trim();
 
@@ -35,25 +29,6 @@ function getJourneyNameError(value: string) {
   }
 
   return null;
-}
-
-function ProgressPreview() {
-  return (
-    <aside className="hidden max-w-sm lg:block" aria-hidden="true">
-      <p className="mb-5 font-bold text-lg">9 Pomodoros</p>
-      <div className="grid w-fit grid-cols-8 gap-2">
-        {progressPreviewPomodoroIds.map((pomodoroId, index) => (
-          <PomodoroBlock
-            key={pomodoroId}
-            state={index < 9 ? 'complete' : 'future'}
-            label={`Pomodoro ${index + 1}, ${index < 9 ? 'complete' : 'not started'}`}
-            className="size-7"
-          />
-        ))}
-      </div>
-      <p className="mt-4 mb-0 text-ink/60 text-sm">One Pomodoro = 25 minutes</p>
-    </aside>
-  );
 }
 
 function JourneyForm({ state }: { state: AppState }) {
@@ -136,10 +111,8 @@ function JourneyForm({ state }: { state: AppState }) {
 
   return (
     <OnboardingLayout headerAction={exitAction}>
-      <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24">
-        <ProgressPreview />
-
-        <section className="w-full max-w-[42rem] lg:justify-self-end">
+      <div className="mx-auto w-full max-w-[42rem]">
+        <section className="w-full">
           <div className="mb-6 flex items-center gap-3">
             <p className="mb-0 shrink-0 font-bold text-ink/60 text-sm">1 of 4</p>
             <span className="h-px w-24 bg-ink/20" aria-hidden="true">
