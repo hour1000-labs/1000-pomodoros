@@ -4,6 +4,7 @@ import { type FormEvent, useState } from 'react';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { LoadingState } from '@/components/shared/loading-state';
+import { PomodoroBlock } from '@/components/shared/pomodoro-block';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
 import { Button } from '@/components/ui/button';
@@ -17,9 +18,9 @@ import { OnboardingLayout } from './components/onboarding-layout';
 const JOURNEY_NAME_MAX_LENGTH = 80;
 const DEFAULT_TARGET_MINUTES = 1_000 * 60;
 const journeyExamples = ['Learn Spanish', 'Build my portfolio', 'Improve at chess'];
-const progressPreviewBlockIds = Array.from(
+const progressPreviewPomodoroIds = Array.from(
   { length: 32 },
-  (_, index) => `progress-preview-block-${index + 1}`
+  (_, index) => `progress-preview-pomodoro-${index + 1}`
 );
 
 function getJourneyNameError(value: string) {
@@ -39,28 +40,18 @@ function getJourneyNameError(value: string) {
 function ProgressPreview() {
   return (
     <aside className="hidden max-w-sm lg:block" aria-hidden="true">
-      <p className="mb-8 font-bold text-[0.75rem] text-ink/60 uppercase tracking-[0.22em]">
-        Your practice, made visible
-      </p>
-      <div className="mb-7 h-px w-full bg-ink" />
-      <p className="mb-10 max-w-[15ch] font-bold text-3xl leading-[1.08] tracking-[-0.035em]">
-        Every big thing begins with one focused session.
-      </p>
+      <p className="mb-5 font-bold text-lg">9 Pomodoros</p>
       <div className="grid w-fit grid-cols-8 gap-2">
-        {progressPreviewBlockIds.map((blockId, index) => (
-          <span
-            className={
-              index < 9
-                ? 'size-7 rounded-sm border border-ink bg-pomodoro-red'
-                : 'size-7 rounded-sm border border-ink/70 bg-paper'
-            }
-            key={blockId}
+        {progressPreviewPomodoroIds.map((pomodoroId, index) => (
+          <PomodoroBlock
+            key={pomodoroId}
+            state={index < 9 ? 'complete' : 'future'}
+            label={`Pomodoro ${index + 1}, ${index < 9 ? 'complete' : 'not started'}`}
+            className="size-7"
           />
         ))}
       </div>
-      <p className="mt-5 mb-0 font-bold text-[0.7rem] text-ink/60 uppercase tracking-[0.18em]">
-        One block = 25 minutes
-      </p>
+      <p className="mt-4 mb-0 text-ink/60 text-sm">One Pomodoro = 25 minutes</p>
     </aside>
   );
 }
@@ -133,8 +124,8 @@ function JourneyForm({ state }: { state: AppState }) {
         </Button>
       }
       title="Exit onboarding?"
-      description="Your Journey draft will be discarded and you will return to the landing page."
-      confirmLabel="Discard and exit"
+      description="This deletes your Journey draft and returns to the landing page."
+      confirmLabel="Discard draft"
       onConfirm={discardDraftAndExit}
     />
   ) : (
@@ -145,34 +136,26 @@ function JourneyForm({ state }: { state: AppState }) {
 
   return (
     <OnboardingLayout headerAction={exitAction}>
-      <div className="grid w-full items-center gap-12 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1fr)] lg:gap-20 xl:gap-28">
+      <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24">
         <ProgressPreview />
 
         <section className="w-full max-w-[42rem] lg:justify-self-end">
-          <div className="mb-7 flex items-center gap-4">
-            <p className="mb-0 shrink-0 font-bold text-[0.75rem] uppercase tracking-[0.18em]">
-              1 of 4
-            </p>
+          <div className="mb-6 flex items-center gap-3">
+            <p className="mb-0 shrink-0 font-bold text-ink/60 text-sm">1 of 4</p>
             <span className="h-px w-24 bg-ink/20" aria-hidden="true">
               <span className="block h-px w-1/4 bg-pomodoro-red" />
             </span>
-            <p className="mb-0 hidden font-bold text-[0.7rem] text-ink/60 uppercase tracking-[0.16em] sm:block">
-              Create your Journey
-            </p>
           </div>
 
-          <h1 className="mb-4 max-w-[15ch] font-bold text-4xl leading-[1.04] tracking-[-0.04em] sm:text-5xl lg:text-[3.5rem]">
-            What do you want to make progress on?
+          <h1 className="mb-4 max-w-[15ch] font-bold text-4xl leading-[1.08] tracking-[-0.035em] sm:text-5xl">
+            Name your first Journey
           </h1>
           <p className="mb-8 max-w-[58ch] text-base text-ink/60 leading-relaxed sm:text-lg">
-            Start with one skill, project, or long-term goal. You can add more Journeys later.
+            Track focused work, one pomodoro at a time.
           </p>
 
           <form noValidate onSubmit={handleSubmit}>
-            <label
-              className="mb-2 block font-bold text-[0.75rem] uppercase tracking-[0.12em]"
-              htmlFor="journey-name"
-            >
+            <label className="mb-2 block font-bold text-sm" htmlFor="journey-name">
               Journey name
             </label>
             <Input
@@ -184,7 +167,7 @@ function JourneyForm({ state }: { state: AppState }) {
               autoFocus={savedDraft?.journeyName.trim().length === 0 || savedDraft === null}
               aria-describedby={showValidation ? 'journey-name-error' : undefined}
               aria-invalid={showValidation}
-              className="h-16 rounded-none border-2 border-ink px-5 font-bold text-xl shadow-[5px_5px_0_var(--pomodoro-red)] focus-visible:border-ink sm:text-2xl"
+              className="h-14 rounded-lg border-ink/50 px-4 font-bold text-lg focus-visible:border-ink sm:text-xl"
               onBlur={() => setHasBlurred(true)}
               onChange={(event) => {
                 setJourneyName(event.target.value);
@@ -204,16 +187,14 @@ function JourneyForm({ state }: { state: AppState }) {
             </div>
 
             <fieldset className="mt-4">
-              <legend className="mb-3 font-bold text-[0.7rem] text-ink/60 uppercase tracking-[0.12em]">
-                Or start with an idea
-              </legend>
+              <legend className="mb-3 text-ink/60 text-sm">Try an example</legend>
               <div className="flex flex-wrap gap-2">
                 {journeyExamples.map((example) => (
                   <Button
                     key={example}
                     type="button"
                     variant="outline"
-                    className="rounded-full border-ink/25 bg-paper px-4 font-normal text-sm"
+                    className="border-ink/50 bg-paper px-4 font-normal text-sm"
                     onClick={() => {
                       setJourneyName(example);
                       setSaveError(null);
@@ -234,7 +215,7 @@ function JourneyForm({ state }: { state: AppState }) {
             <div className="mt-9 flex justify-end">
               <PrimaryButton
                 type="submit"
-                className="min-w-36 shadow-[4px_4px_0_var(--ink)]"
+                className="min-w-36"
                 disabled={journeyName.trim().length === 0 || isSaving}
               >
                 {isSaving ? 'Saving…' : 'Continue'}

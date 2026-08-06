@@ -45,53 +45,41 @@ async function renderLandingPage(state: AppState) {
 }
 
 describe('LandingPage', () => {
-  it('presents the exact promise and routes both primary actions to onboarding for a Journey-free state', async () => {
+  it('presents the core promise and one primary action for a Journey-free state', async () => {
     await renderLandingPage(createJourneyFreeState());
 
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: 'Turn focused work into visible progress.',
+        name: 'Track focused work, one pomodoro at a time',
       })
     ).toBeTruthy();
     expect(
-      screen.getByText(
-        'Complete pomodoros, build skills, and see every hour you invest on the path toward mastery.'
-      )
+      screen.getByText('Choose a Journey, start a Focus session, and see your progress grow.')
     ).toBeTruthy();
 
     const onboardingLinks = screen.getAllByRole('link', {
-      name: 'Start your first journey',
+      name: 'Start your first Journey',
     });
-    expect(onboardingLinks).toHaveLength(2);
+    expect(onboardingLinks).toHaveLength(1);
     expect(
       onboardingLinks.every((link) => link.getAttribute('href') === '/onboarding/journey')
     ).toBe(true);
-    expect(screen.getByRole('link', { name: 'See how it works' }).getAttribute('href')).toBe(
-      '#product-demonstration'
-    );
+    expect(screen.queryByRole('link', { name: 'See how it works' })).toBeNull();
   });
 
-  it('labels the seeded product demonstration and limits benefits to four', async () => {
+  it('shows one concise, accessible product preview', async () => {
     await renderLandingPage(createJourneyFreeState());
 
-    const demonstration = await screen.findByLabelText(
-      'Product demonstration for the Learn guitar Journey'
-    );
+    const demonstration = await screen.findByLabelText('Learn guitar Journey preview');
     expect(
       within(demonstration).getByRole('heading', { level: 2, name: 'Learn guitar' })
     ).toBeTruthy();
     expect(within(demonstration).getByText('Practice the F chord transition')).toBeTruthy();
-    expect(within(demonstration).getByLabelText('25 minute timer')).toBeTruthy();
-    expect(within(demonstration).getByLabelText('43 complete pomodoros out of 50')).toBeTruthy();
+    expect(within(demonstration).getByLabelText('25-minute Focus session')).toBeTruthy();
+    expect(within(demonstration).getByLabelText(/43 complete pomodoros out of 50/i)).toBeTruthy();
     expect(within(demonstration).getByText('25 focused hours')).toBeTruthy();
-
-    const benefits = screen.getByRole('heading', {
-      level: 2,
-      name: 'Small sessions. A body of work you can see.',
-    }).nextElementSibling;
-    expect(benefits?.querySelectorAll('li')).toHaveLength(4);
-    expect(screen.getByText('What will your next', { exact: false })).toBeTruthy();
+    expect(screen.getAllByRole('heading')).toHaveLength(2);
   });
 
   it('replace-redirects persisted Journey owners to Home', async () => {
@@ -105,7 +93,7 @@ describe('LandingPage', () => {
     expect(
       screen.queryByRole('heading', {
         level: 1,
-        name: 'Turn focused work into visible progress.',
+        name: 'Track focused work, one pomodoro at a time',
       })
     ).toBeNull();
   });

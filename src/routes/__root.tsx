@@ -18,7 +18,7 @@ export const Route = createRootRoute({
       },
       {
         name: 'description',
-        content: 'Turn focused work into visible progress toward mastery.',
+        content: 'Track focused work, one pomodoro at a time.',
       },
       { title: '1000 Pomodoros' },
     ],

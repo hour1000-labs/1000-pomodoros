@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowLeft, PauseCircle, Play, Plus } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { EmptyState } from '@/components/shared/empty-state';
@@ -29,7 +29,7 @@ function JourneyNotFoundState({ state }: { state: AppState }) {
       <EmptyState
         className="w-full"
         title="Journey not found"
-        description="This Journey is unavailable or may have been removed. Return Home to choose another path."
+        description="This Journey may have been removed."
         action={
           <PrimaryButton asChild>
             <Link to="/home">
@@ -45,13 +45,12 @@ function JourneyNotFoundState({ state }: { state: AppState }) {
 
 function StartAction({ journeyId, nextStep }: { journeyId: string; nextStep: NextStep }) {
   return (
-    <PrimaryButton asChild className="w-full shadow-[4px_4px_0_var(--ink)]">
+    <PrimaryButton asChild className="w-full">
       <Link
         to="/focus"
         search={{ journeyId, nextStepId: nextStep.id }}
         aria-label={`Start 25:00 for ${nextStep.title}`}
       >
-        <Play aria-hidden="true" />
         Start 25:00
       </Link>
     </PrimaryButton>
@@ -71,15 +70,11 @@ function JourneyContent({ state, journeyId }: { state: AppState; journeyId: stri
   ) : undefined;
   const mobileDock =
     journey.status === 'active' ? (
-      <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 h-15 bg-paper px-5 pt-3 md:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 h-15 border-ink/10 border-t bg-paper px-5 pt-3 md:hidden">
         {currentStep ? (
           <StartAction journeyId={journey.id} nextStep={currentStep} />
         ) : (
-          <PrimaryButton
-            type="button"
-            className="w-full shadow-[4px_4px_0_var(--ink)]"
-            onClick={() => setAddOpen(true)}
-          >
+          <PrimaryButton type="button" className="w-full" onClick={() => setAddOpen(true)}>
             <Plus aria-hidden="true" />
             Add a Next step
           </PrimaryButton>
@@ -89,41 +84,32 @@ function JourneyContent({ state, journeyId }: { state: AppState; journeyId: stri
 
   return (
     <ApplicationLayout journeyId={journey.id} className="pb-12 md:pb-16" mobileDock={mobileDock}>
-      <header className="border-ink border-b pb-8">
+      <header className="border-ink/15 border-b pb-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
-            <p className="mb-4 font-bold text-[0.68rem] text-pomodoro-red uppercase tracking-[0.18em]">
-              A Journey in practice
-            </p>
             <h1 className="mb-3 max-w-[18ch] font-bold text-5xl leading-[1.02] tracking-[-0.045em] [overflow-wrap:anywhere] sm:text-6xl">
               {journey.name}
             </h1>
             {journey.reason ? (
-              <p className="mb-0 max-w-[60ch] text-ink/60 text-lg leading-relaxed">
-                “{journey.reason}”
-              </p>
+              <p className="mb-0 max-w-[60ch] text-ink/60 leading-relaxed">{journey.reason}</p>
             ) : null}
           </div>
-          <div className="grid shrink-0 grid-cols-2 gap-x-8 gap-y-2 border-ink border-y py-4 md:min-w-72">
+          <dl className="grid shrink-0 grid-cols-2 gap-8 border-ink/15 border-t pt-4 md:min-w-72 md:border-t-0 md:border-l md:pt-0 md:pl-8">
             <div>
-              <p className="mb-1 font-bold text-[0.62rem] text-ink/65 uppercase tracking-[0.14em]">
-                Pomodoros
-              </p>
-              <p className="mb-0 font-bold text-2xl tabular-nums">
+              <dt className="mb-1 font-bold text-ink/60 text-sm">Pomodoros</dt>
+              <dd className="mb-0 font-bold text-2xl tabular-nums">
                 {progress.totalPomodoros.toLocaleString(undefined, {
                   maximumFractionDigits: 1,
                 })}
-              </p>
+              </dd>
             </div>
             <div>
-              <p className="mb-1 font-bold text-[0.62rem] text-ink/65 uppercase tracking-[0.14em]">
-                Focused time
-              </p>
-              <p className="mb-0 font-bold text-lg tabular-nums">
+              <dt className="mb-1 font-bold text-ink/60 text-sm">Focused time</dt>
+              <dd className="mb-0 font-bold text-lg tabular-nums">
                 {formatFocusedTime(progress.focusedMinutes)}
-              </p>
+              </dd>
             </div>
-          </div>
+          </dl>
         </div>
       </header>
 
@@ -155,12 +141,9 @@ function JourneyContent({ state, journeyId }: { state: AppState; journeyId: stri
             onRequestAdd={() => setAddOpen(true)}
           />
           {journey.status !== 'active' ? (
-            <div className="mt-5 flex gap-3 rounded-lg border border-ink/15 bg-ink/[0.03] p-4">
-              <PauseCircle aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-ink/65" />
-              <p className="mb-0 text-ink/60 text-sm">
-                This Journey is {journey.status}. Focus sessions can start again when it is active.
-              </p>
-            </div>
+            <p className="mt-5 mb-0 rounded-lg border border-ink/15 p-4 text-ink/60 text-sm">
+              This Journey is {journey.status}. Make it active to start a Focus session.
+            </p>
           ) : null}
         </div>
       </section>

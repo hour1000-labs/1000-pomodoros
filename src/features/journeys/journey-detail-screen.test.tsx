@@ -114,9 +114,15 @@ describe('JourneyDetailScreen', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Learn guitar' })).toBeTruthy();
     expect(screen.getByText('17 hours 55 minutes')).toBeTruthy();
-    expect(screen.getByText('43', { selector: 'p' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '43 Pomodoros' })).toBeTruthy();
     expect(screen.getByText('72% · 17 pomodoros remaining')).toBeTruthy();
     expect(screen.getByText('25 focused hours')).toBeTruthy();
+    const legend = screen.getByRole('list', { name: 'Pomodoro grid legend' });
+    expect(within(legend).getByText('Complete')).toBeTruthy();
+    expect(within(legend).getByText('Partial')).toBeTruthy();
+    expect(within(legend).getByText('Future')).toBeTruthy();
+    expect(within(legend).getByText('Latest')).toBeTruthy();
+    expect(within(legend).getByText('Milestone')).toBeTruthy();
     expect(document.querySelectorAll('[data-pomodoro-index]')).toHaveLength(100);
 
     fireEvent.click(screen.getByRole('button', { name: 'View full Journey' }));
@@ -173,7 +179,7 @@ describe('JourneyDetailScreen', () => {
     }
   });
 
-  it('opens block details from inspectable progress', async () => {
+  it('opens Pomodoro details from inspectable progress', async () => {
     await renderJourney(createSeedAppState());
 
     const block = document.querySelector<HTMLButtonElement>('[data-pomodoro-index="0"]');
@@ -200,7 +206,7 @@ describe('JourneyDetailScreen', () => {
     expect(block.getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('lists every contributor when timer and manual sessions share one block', async () => {
+  it('lists every contributor when timer and manual sessions share one Pomodoro', async () => {
     const state = createSeedAppState();
     const timerSession: FocusSession = {
       id: 'session-timer-partial',
@@ -231,9 +237,8 @@ describe('JourneyDetailScreen', () => {
     fireEvent.click(block);
 
     const dialog = await screen.findByRole('dialog', { name: 'Pomodoro 1' });
-    expect(
-      within(dialog).getByText('2 focus sessions contributed minutes to this block.')
-    ).toBeTruthy();
+    expect(within(dialog).getByText('2 Focus sessions added time to this Pomodoro.')).toBeTruthy();
+    expect(dialog.textContent).not.toMatch(/\bblock\b/i);
     expect(within(dialog).getByText('Timer')).toBeTruthy();
     expect(within(dialog).getByText('Added manually')).toBeTruthy();
     expect(within(dialog).getAllByText('Practice the F chord transition')).toHaveLength(2);
@@ -358,7 +363,7 @@ describe('JourneyDetailScreen', () => {
     await renderJourney(state);
 
     expect(
-      await screen.findByText('Your first completed focus session will begin filling this record.')
+      await screen.findByText('Finish a Focus session to add your first Pomodoro.')
     ).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Choose what comes next' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'No upcoming steps' })).toBeTruthy();
@@ -369,6 +374,20 @@ describe('JourneyDetailScreen', () => {
     ).toBeGreaterThan(0);
     expect(document.querySelectorAll('[data-pomodoro-index]')).toHaveLength(100);
     expect(screen.queryByRole('button', { name: /^Pomodoro 1:/ })).toBeNull();
+  });
+
+  it('keeps an inactive Journey readable without offering a Focus session', async () => {
+    const state = createSeedAppState();
+    state.journeys = state.journeys.map((journey) => ({ ...journey, status: 'paused' }));
+
+    await renderJourney(state);
+
+    expect(
+      await screen.findByText('This Journey is paused. Make it active to start a Focus session.')
+    ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Practice the F chord transition' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /Start 25:00/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Mark complete' })).toBeTruthy();
   });
 
   it('shows an actionable not-found state for an unknown Journey ID', async () => {

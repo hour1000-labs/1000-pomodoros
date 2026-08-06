@@ -146,12 +146,13 @@ describe('Timer Setup', () => {
     await renderFocus(createSeedAppState());
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Start with one focused session.' })
+      await screen.findByRole('heading', { level: 1, name: 'Start a focus session' })
     ).toBeTruthy();
     expect(screen.getAllByText('Learn guitar').length).toBeGreaterThan(0);
     expect(screen.getByText('Practice the F chord transition')).toBeTruthy();
     expect((screen.getByRole('radio', { name: /25/ }) as HTMLInputElement).checked).toBe(true);
-    expect(screen.getByText(/25 focused minutes fills one pomodoro block/i)).toBeTruthy();
+    expect(screen.getByText(/1 Pomodoro is 25 focused minutes/i)).toBeTruthy();
+    expect(screen.queryByText(/pomodoro block/i)).toBeNull();
     expect(screen.getByRole('button', { name: 'Start focus session' })).toBeTruthy();
     expect(
       screen.getByRole('button', { name: 'Change Journey' }).getAttribute('aria-haspopup')
@@ -223,6 +224,10 @@ describe('Timer Setup', () => {
     fireEvent.change(input, { target: { value: '5' } });
     expect(screen.queryByRole('alert')).toBeNull();
     expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(screen.getByRole('img', { name: 'Pomodoro preview: 20% filled' })).toHaveProperty(
+      'dataset.fillPercent',
+      '20'
+    );
   });
 
   it('persists one running session and restores the active state after repeated Start clicks', async () => {
@@ -267,7 +272,7 @@ describe('Timer Setup', () => {
 
     expect(
       await screen.findByText(
-        'Your focus session could not be started. Nothing was recorded. Try again.'
+        "We couldn't start your focus session. Nothing was recorded. Try again."
       )
     ).toBeTruthy();
     expect(
@@ -353,7 +358,7 @@ describe('Running Focus Timer', () => {
 
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
-      'Your timer could not be paused. It is still running. Try again.'
+      "We couldn't pause the timer. It is still running. Try again."
     );
     expect(readSavedState().activeTimer?.status).toBe('running');
   });
@@ -395,7 +400,7 @@ describe('Running Focus Timer', () => {
 
     void router.navigate({ to: '/home' });
     await waitFor(() => {
-      expect(confirm).toHaveBeenCalledWith(expect.stringContaining('timer will continue running'));
+      expect(confirm).toHaveBeenCalledWith(expect.stringContaining('timer will keep running'));
       expect(router.state.location.pathname).toBe('/focus');
     });
 
@@ -447,7 +452,7 @@ describe('Running Focus Timer', () => {
 
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
-      'Your completed session could not be saved yet. Keep this screen open.'
+      "We couldn't save this completed session. Keep this screen open and try again."
     );
     expect(router.state.location.pathname).toBe('/focus');
     expect(readSavedState().activeTimer?.status).toBe('running');
@@ -515,23 +520,21 @@ describe('Paused Focus Timer', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Cancel session' }));
     expect(confirm).toHaveBeenCalledWith(
-      'Cancel this focus session? Your focused time from this session will be discarded and no Journey progress will be added.'
+      'Cancel this focus session? This discards its focused time and adds no Journey progress.'
     );
     expect(cancel).not.toHaveBeenCalled();
     expect(readSavedState().activeTimer?.status).toBe('paused');
 
     confirm.mockReturnValue(true);
     fireEvent.click(screen.getByRole('button', { name: 'Cancel session' }));
-    expect(
-      await screen.findByRole('heading', { name: 'Start with one focused session.' })
-    ).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Start a focus session' })).toBeTruthy();
     expect(await screen.findByRole('status')).toHaveProperty(
       'textContent',
       'Focus session cancelled. No progress was added.'
     );
     await waitFor(() => {
       expect(document.activeElement).toBe(
-        screen.getByRole('heading', { name: 'Start with one focused session.' })
+        screen.getByRole('heading', { name: 'Start a focus session' })
       );
     });
     expect(cancel).toHaveBeenCalledTimes(1);
@@ -548,12 +551,12 @@ describe('Paused Focus Timer', () => {
     {
       action: 'Resume',
       method: 'resumeFocusSession' as const,
-      message: 'Your timer could not be resumed. It is still paused. Try again.',
+      message: "We couldn't resume the timer. It is still paused. Try again.",
     },
     {
       action: 'Finish early',
       method: 'finishPausedFocusSession' as const,
-      message: 'Your focused progress could not be saved yet. Keep this screen open.',
+      message: "We couldn't save your progress. Keep this screen open and try again.",
     },
   ])('keeps the paused state recoverable when $action persistence fails', async (testCase) => {
     vi.spyOn(appRepository, testCase.method).mockReturnValue({
@@ -581,7 +584,7 @@ describe('Paused Focus Timer', () => {
 
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
-      'Your session could not be cancelled. It is still paused. Try again.'
+      "We couldn't cancel the session. It is still paused. Try again."
     );
     expect(readSavedState().activeTimer?.status).toBe('paused');
   });

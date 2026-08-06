@@ -88,7 +88,7 @@ describe('Session Complete', () => {
     expect(formatPomodoroCount(requested?.earnedPomodoros ?? 0)).toBe('0.3');
   });
 
-  it('keeps an older completion attributed to its own blocks and milestones', async () => {
+  it('keeps an older completion attributed to its own Pomodoros and milestones', async () => {
     const state = createSeedAppState();
     const requestedSession = addCompletedSession(state);
     const laterSession: FocusSession = {
@@ -122,7 +122,7 @@ describe('Session Complete', () => {
     expect(screen.queryByRole('img', { name: /Pomodoro 45:.*newly earned/ })).toBeNull();
   });
 
-  it('renders real multi-pomodoro credit and identifies every newly earned block', async () => {
+  it('renders real multi-pomodoro credit and identifies every newly earned Pomodoro', async () => {
     const state = createSeedAppState();
     const session = addCompletedSession(state, { focusedMinutes: 50 });
 
@@ -133,7 +133,9 @@ describe('Session Complete', () => {
     ).toBeTruthy();
     expect(screen.getByText('50 focused minutes')).toBeTruthy();
     expect(screen.getByText('Practice the F chord transition')).toBeTruthy();
-    expect(screen.getByText('45 pomodoros')).toBeTruthy();
+    expect(screen.getByText(/45 of .* Pomodoros/)).toBeTruthy();
+    expect(screen.getByText('2 newly earned Pomodoros are outlined.')).toBeTruthy();
+    expect(screen.queryByText(/newly earned blocks?/i)).toBeNull();
     expect(screen.getByRole('img', { name: 'Pomodoro 44: complete, newly earned' })).toHaveProperty(
       'dataset.newlyEarned',
       'true'
@@ -164,7 +166,7 @@ describe('Session Complete', () => {
     ).toBeTruthy();
   });
 
-  it('keeps every affected block visible when a session crosses a 100-block boundary', async () => {
+  it('keeps every affected Pomodoro visible when a session crosses a 100-Pomodoro boundary', async () => {
     const state = createSeedAppState();
     state.focusSessions = Array.from(
       { length: 99 },

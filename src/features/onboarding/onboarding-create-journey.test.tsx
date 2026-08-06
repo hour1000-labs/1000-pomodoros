@@ -48,11 +48,15 @@ describe('OnboardingCreateJourney', () => {
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: 'What do you want to make progress on?',
+        name: 'Name your first Journey',
       })
     ).toBeTruthy();
     expect(screen.getByText('1 of 4')).toBeTruthy();
+    expect(screen.getByText('Track focused work, one pomodoro at a time.')).toBeTruthy();
     expect(screen.queryByRole('navigation')).toBeNull();
+    expect(document.querySelectorAll('aside [data-state]')).toHaveLength(32);
+    expect(document.querySelectorAll('aside [data-state="complete"]')).toHaveLength(9);
+    expect(document.querySelectorAll('aside [data-state="future"]')).toHaveLength(23);
 
     const journeyName = screen.getByRole('textbox', { name: 'Journey name' });
     expect(screen.getAllByRole('textbox')).toHaveLength(1);

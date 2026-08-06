@@ -1,8 +1,7 @@
 import { Link, Navigate } from '@tanstack/react-router';
-import { ArrowRight } from 'lucide-react';
 
 import { EmptyState } from '@/components/shared/empty-state';
-import { Button } from '@/components/ui/button';
+import { PrimaryButton } from '@/components/shared/primary-button';
 import { useCurrentLocalDate } from '@/hooks/use-current-local-date';
 import type { AppState } from '@/lib/models';
 
@@ -32,18 +31,17 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
         <h1 className="sr-only">Home</h1>
         <EmptyState
           title="No active Journeys"
-          description="Review a Journey when you are ready to choose what comes next."
+          description="Open a Journey to choose what comes next."
           action={
-            <Button asChild variant="outline">
+            <PrimaryButton asChild>
               <Link
                 to="/journeys/$journeyId"
                 params={{ journeyId: navigationJourney.id }}
                 aria-label={`Review ${navigationJourney.name} Journey`}
               >
                 Review Journey
-                <ArrowRight aria-hidden="true" className="size-4" />
               </Link>
-            </Button>
+            </PrimaryButton>
           }
         />
       </ApplicationLayout>
@@ -64,16 +62,10 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
       <div className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <section
           aria-labelledby="home-today-heading"
-          className="rounded-xl border border-ink/20 p-6"
+          className="rounded-xl border border-ink/15 p-6"
         >
-          <p className="mb-2 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.14em]">
+          <h2 id="home-today-heading" className="mb-7 font-bold text-2xl tracking-[-0.025em]">
             Today
-          </p>
-          <h2
-            id="home-today-heading"
-            className="mb-8 max-w-[16ch] font-bold text-2xl tracking-[-0.025em]"
-          >
-            A little work, made visible.
           </h2>
           <dl className="grid grid-cols-2 gap-6">
             <StatItem value={String(home.today.completedPomodoros)} label="Pomodoros" />
@@ -85,10 +77,7 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
       </div>
 
       <section className="mt-16" aria-labelledby="active-journeys-heading">
-        <div className="mb-6 border-ink border-b-2 pb-4">
-          <p className="mb-2 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.14em]">
-            Keep moving
-          </p>
+        <div className="mb-6 border-ink/15 border-b pb-4">
           <h2 id="active-journeys-heading" className="mb-0 font-bold text-3xl tracking-[-0.03em]">
             Active Journeys
           </h2>

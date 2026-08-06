@@ -1,4 +1,4 @@
-import { Check, ListPlus, Plus } from 'lucide-react';
+import { Check, Plus } from 'lucide-react';
 import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { EmptyState } from '@/components/shared/empty-state';
@@ -79,15 +79,10 @@ export function JourneyDetailNextSteps({
   return (
     <>
       <section aria-labelledby="next-steps-heading">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-ink border-b pb-3">
-          <div>
-            <p className="mb-1 font-bold text-[0.68rem] text-ink/65 uppercase tracking-[0.16em]">
-              Keep moving
-            </p>
-            <h2 id="next-steps-heading" className="mb-0 font-bold text-2xl tracking-[-0.025em]">
-              Next steps
-            </h2>
-          </div>
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-ink/15 border-b pb-3">
+          <h2 id="next-steps-heading" className="mb-0 font-bold text-2xl tracking-[-0.025em]">
+            Next steps
+          </h2>
           <Button type="button" variant="outline" onClick={() => changeAddOpen(true)}>
             <Plus aria-hidden="true" />
             Add Next step
@@ -97,14 +92,8 @@ export function JourneyDetailNextSteps({
         {upcomingSteps.length === 0 ? (
           <EmptyState
             className="min-h-44"
-            icon={<ListPlus aria-hidden="true" className="size-5" />}
             title="No upcoming steps"
-            description="Add another concrete action when you know what should follow the current step."
-            action={
-              <Button type="button" variant="outline" onClick={() => changeAddOpen(true)}>
-                Add an upcoming step
-              </Button>
-            }
+            description="Add the next concrete action when you are ready."
           />
         ) : (
           <ol className="m-0 list-none p-0" aria-label="Upcoming Next steps">
@@ -115,7 +104,7 @@ export function JourneyDetailNextSteps({
               >
                 <span
                   aria-hidden="true"
-                  className="font-bold text-[0.72rem] text-pomodoro-red tabular-nums"
+                  className="font-bold text-[0.72rem] text-ink/60 tabular-nums"
                 >
                   {String(index + 1).padStart(2, '0')}
                 </span>
@@ -140,7 +129,7 @@ export function JourneyDetailNextSteps({
             Add a Next step
           </h2>
           <p id="journey-add-next-step-description" className="mb-0 text-muted-foreground text-sm">
-            Keep it concrete enough to begin in one focused session.
+            Choose one action you can start now.
           </p>
         </div>
         <form noValidate onSubmit={handleAdd}>
@@ -177,7 +166,7 @@ export function JourneyDetailNextSteps({
               {addError}
             </p>
           ) : null}
-          <div className="-mx-4 mt-5 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end">
+          <div className="-mx-4 mt-5 -mb-4 flex flex-col-reverse gap-2 border-ink/15 border-t p-4 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={() => changeAddOpen(false)}>
               Cancel
             </Button>
@@ -241,18 +230,14 @@ export function JourneyDetailCurrentStep({
   }
 
   return (
-    <aside className="min-w-0 border-ink border-t pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-7">
-      <p className="mb-3 font-bold text-[0.68rem] text-ink/65 uppercase tracking-[0.16em]">
-        Current Next step
-      </p>
+    <aside className="min-w-0 border-ink/15 border-t pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-7">
+      <p className="mb-3 font-bold text-ink/60 text-sm">Next step</p>
       {currentStep ? (
         <>
           <h2 className="mb-3 font-bold text-2xl leading-tight tracking-[-0.025em] [overflow-wrap:anywhere]">
             {currentStep.title}
           </h2>
-          <p className="mb-5 text-ink/60 text-sm leading-relaxed">
-            Your next 25-minute session will add another block to this Journey.
-          </p>
+          <p className="mb-5 text-ink/60 text-sm">Finish the session to add a Pomodoro.</p>
           {primaryAction ? <div className="mb-3 hidden md:block">{primaryAction}</div> : null}
           <Button
             type="button"
@@ -275,9 +260,7 @@ export function JourneyDetailCurrentStep({
           <h2 className="mb-3 font-bold text-2xl leading-tight tracking-[-0.025em]">
             Choose what comes next
           </h2>
-          <p className="mb-5 text-ink/60 text-sm leading-relaxed">
-            Add one concrete action before starting another focused session.
-          </p>
+          <p className="mb-5 text-ink/60 text-sm">Add one action to work on next.</p>
           <PrimaryButton
             type="button"
             className="hidden w-full md:inline-flex"

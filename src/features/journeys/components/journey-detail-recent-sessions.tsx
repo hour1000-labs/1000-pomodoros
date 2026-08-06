@@ -1,5 +1,3 @@
-import { Clock3 } from 'lucide-react';
-
 import { EmptyState } from '@/components/shared/empty-state';
 import type { FocusSession } from '@/lib/models';
 
@@ -28,20 +26,17 @@ export function JourneyDetailRecentSessions({
 }) {
   return (
     <section aria-labelledby="recent-sessions-heading">
-      <div className="mb-5 flex items-baseline justify-between gap-4 border-ink border-b pb-3">
+      <div className="mb-5 border-ink/15 border-b pb-3">
         <h2 id="recent-sessions-heading" className="mb-0 font-bold text-2xl tracking-[-0.025em]">
           Recent sessions
         </h2>
-        <span className="font-bold text-[0.65rem] text-ink/65 uppercase tracking-[0.16em]">
-          Last {sessions.length}
-        </span>
       </div>
 
       {sessions.length === 0 ? (
         <EmptyState
           className="min-h-44"
           title="No sessions yet"
-          description="Your completed focus sessions will appear here after the first five focused minutes."
+          description="Finish at least five focused minutes to add a session."
         />
       ) : (
         <ol className="m-0 list-none p-0">
@@ -52,15 +47,14 @@ export function JourneyDetailRecentSessions({
             >
               <time
                 dateTime={session.endedAt ?? session.startedAt}
-                className="font-bold text-[0.68rem] text-ink/65 uppercase tracking-[0.13em]"
+                className="font-bold text-ink/60 text-sm"
               >
                 {formatSessionDate(session.endedAt ?? session.startedAt)}
               </time>
               <p className="mb-0 min-w-0 font-bold leading-snug [overflow-wrap:anywhere]">
                 {nextStepTitle ?? 'Next step unavailable'}
               </p>
-              <span className="inline-flex items-center gap-1 font-bold text-sm sm:justify-self-end">
-                <Clock3 aria-hidden="true" className="size-3.5 text-pomodoro-red" />
+              <span className="font-bold text-sm sm:justify-self-end">
                 {formatDuration(session.focusedMinutes)}
                 {session.source === 'manual' ? (
                   <span className="text-ink/65">· Added manually</span>

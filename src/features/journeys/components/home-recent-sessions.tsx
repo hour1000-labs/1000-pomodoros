@@ -1,5 +1,3 @@
-import { Clock3 } from 'lucide-react';
-
 import { EmptyState } from '@/components/shared/empty-state';
 
 import type { HomeRecentSession } from '../home-data';
@@ -41,26 +39,20 @@ export function HomeRecentSessions({
 }) {
   return (
     <section aria-labelledby="home-recent-sessions-heading">
-      <div className="mb-5 flex items-end justify-between gap-4 border-ink border-b-2 pb-4">
-        <div>
-          <p className="mb-2 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.14em]">
-            Recently completed
-          </p>
-          <h2
-            id="home-recent-sessions-heading"
-            className="mb-0 font-bold text-3xl tracking-[-0.03em]"
-          >
-            Your sessions
-          </h2>
-        </div>
-        <Clock3 aria-hidden="true" className="size-5 text-pomodoro-red" />
+      <div className="mb-5 border-ink/15 border-b pb-4">
+        <h2
+          id="home-recent-sessions-heading"
+          className="mb-0 font-bold text-3xl tracking-[-0.03em]"
+        >
+          Recent sessions
+        </h2>
       </div>
 
       {sessions.length === 0 ? (
         <EmptyState
           className="min-h-52"
-          title="Your sessions will appear here"
-          description="Complete at least five focused minutes and the work will become part of your record."
+          title="No sessions yet"
+          description="Finish at least five focused minutes to add a session."
         />
       ) : (
         <ol className="m-0 list-none p-0">
@@ -71,7 +63,7 @@ export function HomeRecentSessions({
             >
               <time
                 dateTime={session.endedAt ?? session.startedAt}
-                className="font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.13em]"
+                className="font-bold text-ink/60 text-sm"
               >
                 {formatSessionDay(session.endedAt ?? session.startedAt, now)}
               </time>
@@ -84,7 +76,7 @@ export function HomeRecentSessions({
                   {session.source === 'manual' ? ' · Added manually' : ''}
                 </p>
               </div>
-              <span className="inline-flex items-center gap-1 font-bold text-pomodoro-red text-sm tabular-nums sm:justify-self-end">
+              <span className="font-bold text-sm tabular-nums sm:justify-self-end">
                 {formatDuration(session.focusedMinutes)}
               </span>
             </li>

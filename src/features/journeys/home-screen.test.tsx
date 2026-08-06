@@ -105,12 +105,10 @@ describe('HomeScreen', () => {
     const continueSection = await screen.findByRole('region', {
       name: 'Practice the F chord transition',
     });
-    const todaySection = screen.getByRole('region', {
-      name: 'A little work, made visible.',
-    });
-    const weeklySection = screen.getByRole('region', { name: 'Weekly progress' });
+    const todaySection = screen.getByRole('region', { name: 'Today' });
+    const weeklySection = screen.getByRole('region', { name: 'This week' });
     const activeJourneysSection = screen.getByRole('region', { name: 'Active Journeys' });
-    const recentSessionsSection = screen.getByRole('region', { name: 'Your sessions' });
+    const recentSessionsSection = screen.getByRole('region', { name: 'Recent sessions' });
 
     expect(within(todaySection).getByText('2')).toBeTruthy();
     expect(within(todaySection).getByText('50')).toBeTruthy();
@@ -169,20 +167,18 @@ describe('HomeScreen', () => {
     expect(router.history.canGoBack()).toBe(false);
   });
 
-  it('uses the exact fresh-start phrase and calm activity empty state before any session', async () => {
+  it('uses concise fresh-start and activity empty states before any session', async () => {
     const state = createSeedAppState();
     state.focusSessions = [];
     state.lastCompletedSessionId = null;
 
     await renderHome(state);
 
-    expect(await screen.findByText('Your next pomodoro starts here')).toBeTruthy();
+    expect(await screen.findByText('Your first Pomodoro starts here.')).toBeTruthy();
 
-    const todaySection = screen.getByRole('region', {
-      name: 'A little work, made visible.',
-    });
+    const todaySection = screen.getByRole('region', { name: 'Today' });
     expect(within(todaySection).getAllByText('0')).toHaveLength(2);
-    expect(screen.getByRole('heading', { name: 'Your sessions will appear here' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'No sessions yet' })).toBeTruthy();
   });
 
   it('rolls Today statistics over when the local calendar day changes while Home stays open', async () => {
@@ -192,9 +188,7 @@ describe('HomeScreen', () => {
 
     await renderHome(createSeedAppState());
 
-    const todaySection = screen.getByRole('region', {
-      name: 'A little work, made visible.',
-    });
+    const todaySection = screen.getByRole('region', { name: 'Today' });
     expect(within(todaySection).getByText('2')).toBeTruthy();
     expect(within(todaySection).getByText('50')).toBeTruthy();
 
@@ -210,9 +204,9 @@ describe('HomeScreen', () => {
     await renderHome(state);
 
     const weeklySection = await screen.findByRole('region', {
-      name: 'No weekly goal yet',
+      name: 'No weekly goal',
     });
-    expect(within(weeklySection).getByRole('heading', { name: 'No weekly goal yet' })).toBeTruthy();
+    expect(within(weeklySection).getByRole('heading', { name: 'No weekly goal' })).toBeTruthy();
     expect(within(weeklySection).queryByRole('progressbar')).toBeNull();
   });
 
@@ -233,6 +227,18 @@ describe('HomeScreen', () => {
         (link) => link.getAttribute('href') === `/journeys/${LEARN_GUITAR_JOURNEY_ID}`
       )
     ).toBe(true);
+    expect(screen.queryByRole('link', { name: /Start 25:00/ })).toBeNull();
+  });
+
+  it('offers one Journey review action when every Journey is inactive', async () => {
+    const state = createSeedAppState();
+    state.journeys = state.journeys.map((journey) => ({ ...journey, status: 'paused' }));
+
+    await renderHome(state);
+
+    expect(await screen.findByRole('heading', { name: 'No active Journeys' })).toBeTruthy();
+    const reviewLink = screen.getByRole('link', { name: 'Review Learn guitar Journey' });
+    expect(reviewLink.getAttribute('href')).toBe(`/journeys/${LEARN_GUITAR_JOURNEY_ID}`);
     expect(screen.queryByRole('link', { name: /Start 25:00/ })).toBeNull();
   });
 

@@ -65,9 +65,8 @@ describe('MilestoneDetailScreen', () => {
 
     await renderMilestone(createMilestoneReachedAppState());
 
-    expect(
-      await screen.findByRole('heading', { name: 'We could not load your saved progress' })
-    ).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Could not load milestone' })).toBeTruthy();
+    expect(screen.getByText('Your saved progress is unchanged. Try again.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Reset saved progress' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
@@ -81,16 +80,19 @@ describe('MilestoneDetailScreen', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: '25 hours' })).toBeTruthy();
     expect(screen.getByText('Learn guitar')).toBeTruthy();
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'You showed up for 60 pomodoros.')
-    ).toBeTruthy();
+    expect(screen.getByText('Milestone reached')).toBeTruthy();
+    expect(screen.getByText('60 of 60 Pomodoros')).toBeTruthy();
     expect(screen.getByText('Reached July 12, 2026')).toBeTruthy();
     expect(screen.getByRole('heading', { level: 2, name: '25 focused hours' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 2, name: '50 focused hours' })).toBeTruthy();
     expect(screen.getByText('25 hours remaining')).toBeTruthy();
     expect(
-      screen.getByRole('progressbar', { name: 'Progress from this milestone: 0%' })
+      screen.getByRole('progressbar', { name: 'Progress to next milestone: 0%' })
     ).toBeTruthy();
+    expect(
+      screen.getByText('Each Pomodoro is 25 minutes. The milestone Pomodoro is marked.')
+    ).toBeTruthy();
+    expect(screen.queryByText(/\bblocks?\b/i)).toBeNull();
 
     const completedGrid = screen.getByRole('figure', {
       name: '60 complete pomodoros out of 60',
@@ -139,13 +141,39 @@ describe('MilestoneDetailScreen', () => {
       await screen.findByRole('heading', { level: 1, name: '8 hours 20 minutes' })
     ).toBeTruthy();
     expect(screen.getByText('Compose a song')).toBeTruthy();
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'You showed up for 20 pomodoros.')
-    ).toBeTruthy();
+    expect(screen.getByText('20 of 20 Pomodoros')).toBeTruthy();
     expect(screen.getByText('Reached June 1, 2026')).toBeTruthy();
     expect(screen.getByRole('heading', { level: 2, name: '500 focused minutes' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 2, name: '16 hours 40 minutes' })).toBeTruthy();
     expect(screen.getByText('8 hours 20 minutes remaining')).toBeTruthy();
+  });
+
+  it('keeps a large milestone bounded to its final 100-Pomodoro section', async () => {
+    const state = createMilestoneReachedAppState();
+    const milestone = state.milestones.find(({ id }) => id === LEARN_GUITAR_25_HOUR_MILESTONE_ID);
+
+    if (!milestone) throw new Error('Expected seeded milestone');
+
+    milestone.name = '1,000 focused hours';
+    milestone.targetFocusedMinutes = 60_000;
+
+    await renderMilestone(state);
+
+    expect(await screen.findByRole('heading', { level: 1, name: '1000 hours' })).toBeTruthy();
+
+    const completedGrid = screen.getByRole('figure', {
+      name: '2400 complete pomodoros out of 2400',
+    });
+    const visiblePomodoros = completedGrid.querySelectorAll('[data-pomodoro-index]');
+
+    expect(visiblePomodoros).toHaveLength(100);
+    expect(visiblePomodoros.item(0).getAttribute('data-pomodoro-index')).toBe('2300');
+    expect(visiblePomodoros.item(99).getAttribute('data-pomodoro-index')).toBe('2399');
+    expect(
+      within(completedGrid).getByRole('img', {
+        name: 'Pomodoro 2400: complete, milestone',
+      })
+    ).toBeTruthy();
   });
 
   it.each([
@@ -171,10 +199,12 @@ describe('MilestoneDetailScreen', () => {
   ])('keeps the $name state non-celebratory', async ({ milestoneId, createState }) => {
     await renderMilestone(createState(), milestoneId);
 
-    expect(await screen.findByRole('heading', { name: 'Milestone not found' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Milestone unavailable' })).toBeTruthy();
     expect(screen.queryByRole('heading', { level: 1, name: '25 hours' })).toBeNull();
-    expect(screen.queryByText(/You showed up for/i)).toBeNull();
     expect(screen.queryByText('Milestone reached')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Return Home' }).getAttribute('href')).toBe('/home');
+    expect(
+      screen.getByText('This milestone has not been earned yet or is no longer available.')
+    ).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Go home' }).getAttribute('href')).toBe('/home');
   });
 });

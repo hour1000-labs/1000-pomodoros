@@ -74,22 +74,19 @@ describe('OnboardingAddNextStep', () => {
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: 'What is the next thing you can work on?',
+        name: 'Add your first Next step',
       })
     ).toBeTruthy();
     expect(screen.getByText('4 of 4')).toBeTruthy();
     expect(screen.getAllByText('Learn guitar').length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText('Choose one action you can make progress on in your next session.')
-    ).toHaveLength(1);
+    expect(screen.getAllByText('Choose one action for your first Focus session.')).toHaveLength(1);
+    expect(document.querySelectorAll('aside [data-state]')).toHaveLength(10);
+    expect(document.querySelectorAll('aside [data-state="future"]')).toHaveLength(10);
 
     const input = screen.getByRole('textbox', { name: 'Next step' });
     expect(screen.getAllByRole('textbox')).toHaveLength(1);
     expect((input as HTMLInputElement).value).toBe(sampleNextStep);
     expect((input as HTMLInputElement).maxLength).toBe(120);
-    expect(
-      screen.getByText('Create your Journey and see your first Next step ready on Home.')
-    ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Create Journey' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Back' })).toBeTruthy();
     expect(screen.queryByText(/priority|due date|category|schedule/i)).toBeNull();

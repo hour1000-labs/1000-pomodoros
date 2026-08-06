@@ -60,14 +60,17 @@ describe('OnboardingAddMotivation', () => {
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: 'Why does this matter to you?',
+        name: 'Why does it matter?',
       })
     ).toBeTruthy();
     expect(screen.getByText('2 of 4')).toBeTruthy();
     expect(screen.getAllByText('Learn guitar').length).toBeGreaterThan(0);
     expect(screen.queryByRole('navigation')).toBeNull();
+    expect(document.querySelectorAll('aside [data-state]')).toHaveLength(32);
+    expect(document.querySelectorAll('aside [data-state="complete"]')).toHaveLength(9);
+    expect(document.querySelectorAll('aside [data-state="future"]')).toHaveLength(23);
 
-    const reason = screen.getByRole('textbox', { name: /Your reason/i });
+    const reason = screen.getByRole('textbox', { name: /Reason/i });
     expect(screen.getAllByRole('textbox')).toHaveLength(1);
     expect((reason as HTMLTextAreaElement).value).toBe(sampleReason);
     expect((reason as HTMLTextAreaElement).maxLength).toBe(240);
@@ -84,7 +87,7 @@ describe('OnboardingAddMotivation', () => {
 
   it('shows the character count only after 180 characters through the 240 limit', async () => {
     await renderMotivation(createState(baseDraft));
-    const reason = await screen.findByRole('textbox', { name: /Your reason/i });
+    const reason = await screen.findByRole('textbox', { name: /Reason/i });
 
     expect((reason as HTMLTextAreaElement).placeholder).toBe(sampleReason);
     fireEvent.change(reason, { target: { value: 'a'.repeat(180) } });
@@ -100,7 +103,7 @@ describe('OnboardingAddMotivation', () => {
 
   it('saves the reason and preserves the draft before continuing to target selection', async () => {
     const router = await renderMotivation(createState(baseDraft));
-    const reason = await screen.findByRole('textbox', { name: /Your reason/i });
+    const reason = await screen.findByRole('textbox', { name: /Reason/i });
 
     fireEvent.change(reason, { target: { value: 'Play songs with my family.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
@@ -129,7 +132,7 @@ describe('OnboardingAddMotivation', () => {
 
   it('saves current text before going Back and restores it on return', async () => {
     const router = await renderMotivation(createState(baseDraft));
-    const reason = await screen.findByRole('textbox', { name: /Your reason/i });
+    const reason = await screen.findByRole('textbox', { name: /Reason/i });
 
     fireEvent.change(reason, { target: { value: 'Keep learning something difficult.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
@@ -140,7 +143,7 @@ describe('OnboardingAddMotivation', () => {
     expect(readSavedState().onboardingDraft?.reason).toBe('Keep learning something difficult.');
 
     await router.navigate({ to: '/onboarding/motivation' });
-    const restoredReason = await screen.findByRole('textbox', { name: /Your reason/i });
+    const restoredReason = await screen.findByRole('textbox', { name: /Reason/i });
     expect((restoredReason as HTMLTextAreaElement).value).toBe(
       'Keep learning something difficult.'
     );

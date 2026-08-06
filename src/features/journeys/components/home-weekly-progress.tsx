@@ -1,5 +1,3 @@
-import { Target } from 'lucide-react';
-
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 
@@ -14,21 +12,15 @@ export function HomeWeeklyProgress({ weekly }: { weekly: WeeklyProgress | null }
   if (weekly === null) {
     return (
       <section aria-labelledby="weekly-progress-heading">
-        <Card className="h-full border border-ink/20 py-0 ring-0">
+        <Card className="h-full border border-ink/15 py-0 ring-0">
           <CardContent className="flex h-full min-h-52 flex-col justify-center p-6">
-            <p className="mb-3 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.14em]">
-              This week
-            </p>
             <h2
               id="weekly-progress-heading"
               className="mb-3 font-bold text-2xl tracking-[-0.025em]"
             >
-              No weekly goal yet
+              No weekly goal
             </h2>
-            <p className="mb-0 max-w-[34ch] text-ink/60 text-sm leading-relaxed">
-              Your focused sessions still count. A weekly target can be added when that setting is
-              available.
-            </p>
+            <p className="mb-0 text-ink/60 text-sm">Focused sessions still count.</p>
           </CardContent>
         </Card>
       </section>
@@ -42,31 +34,18 @@ export function HomeWeeklyProgress({ weekly }: { weekly: WeeklyProgress | null }
 
   return (
     <section aria-labelledby="weekly-progress-heading">
-      <Card className="h-full border-2 border-ink py-0 shadow-[5px_5px_0_var(--ink)] ring-0">
+      <Card className="h-full border border-ink/15 py-0 ring-0">
         <CardContent className="p-6">
-          <div className="mb-7 flex items-center justify-between gap-4">
-            <div>
-              <p className="mb-2 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.14em]">
-                This week
-              </p>
-              <h2
-                id="weekly-progress-heading"
-                className="mb-0 font-bold text-2xl tracking-[-0.025em]"
-              >
-                Weekly progress
-              </h2>
-            </div>
-            <Target aria-hidden="true" className="size-5 text-pomodoro-red" />
-          </div>
+          <h2 id="weekly-progress-heading" className="mb-7 font-bold text-2xl tracking-[-0.025em]">
+            This week
+          </h2>
 
           <div className="mb-4 flex items-end justify-between gap-4">
             <p className="mb-0 font-bold text-4xl tabular-nums tracking-[-0.04em]">
               {weekly.completedPomodoros}{' '}
-              <span className="text-ink/50 text-xl">/ {weekly.targetPomodoros}</span>
+              <span className="text-ink/60 text-xl">/ {weekly.targetPomodoros}</span>
             </p>
-            <p className="mb-1 text-right font-bold text-xs uppercase tracking-[0.12em]">
-              Pomodoros
-            </p>
+            <p className="mb-1 text-right font-bold text-ink/60 text-sm">Pomodoros</p>
           </div>
 
           <Progress
@@ -77,15 +56,11 @@ export function HomeWeeklyProgress({ weekly }: { weekly: WeeklyProgress | null }
 
           <dl className="mt-6 grid grid-cols-2 border-ink/15 border-t pt-4">
             <div className="border-ink/15 border-r pr-4">
-              <dt className="mb-1 font-bold text-[0.65rem] text-ink/60 uppercase tracking-[0.12em]">
-                Remaining
-              </dt>
+              <dt className="mb-1 font-bold text-ink/60 text-sm">Remaining</dt>
               <dd className="mb-0 font-bold text-lg tabular-nums">{weekly.remainingPomodoros}</dd>
             </div>
             <div className="pl-4">
-              <dt className="mb-1 font-bold text-[0.65rem] text-ink/60 uppercase tracking-[0.12em]">
-                Active days
-              </dt>
+              <dt className="mb-1 font-bold text-ink/60 text-sm">Active days</dt>
               <dd className="mb-0 font-bold text-lg tabular-nums">{weekly.activeDays}</dd>
             </div>
           </dl>

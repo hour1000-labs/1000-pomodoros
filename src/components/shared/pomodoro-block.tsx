@@ -1,15 +1,12 @@
-import type { CSSProperties } from 'react';
+import { type CSSProperties, useId } from 'react';
 
 import { cn } from '@/lib/utils';
 
 export type PomodoroBlockBaseState = 'complete' | 'partial' | 'future';
 export type PomodoroBlockState = PomodoroBlockBaseState | 'latest' | 'milestone';
 
-const stateClass: Record<PomodoroBlockBaseState, string> = {
-  complete: 'border-pomodoro-red bg-pomodoro-red',
-  partial: 'border-pomodoro-red bg-paper',
-  future: 'border-ink/[0.12] bg-paper',
-};
+const TOMATO_BODY_PATH =
+  'M14 7.75c-5.6-1-9.5 2.7-9.5 7.65C4.5 20.65 8.65 24 14 24s9.5-3.35 9.5-8.6C23.5 10.45 19.6 6.75 14 7.75Z';
 
 function isBaseState(state: PomodoroBlockState): state is PomodoroBlockBaseState {
   return state === 'complete' || state === 'partial' || state === 'future';
@@ -40,6 +37,7 @@ export function PomodoroBlock({
   dialogOpen?: boolean;
   className?: string;
 }) {
+  const fillClipId = `pomodoro-fill-${useId().replaceAll(':', '')}`;
   const defaultFraction = state === 'partial' ? 0.5 : state === 'future' ? 0 : 1;
   const rawFraction = fraction ?? defaultFraction;
   const clampedFraction = Number.isFinite(rawFraction)
@@ -57,11 +55,10 @@ export function PomodoroBlock({
   const isLatest = latest || state === 'latest';
   const isMilestone = milestone || state === 'milestone';
   const commonClass = cn(
-    'relative aspect-square size-full min-h-4 min-w-4 max-w-7 overflow-hidden rounded-sm border',
-    stateClass[baseState],
-    isLatest && 'outline-2 outline-ink outline-offset-1',
+    'relative grid aspect-square size-full min-h-4 min-w-4 max-w-7 place-items-center overflow-visible rounded-full border-0 bg-transparent p-0',
     highlighted &&
       'zoom-in-75 animate-in ring-2 ring-ink ring-offset-2 duration-300 motion-reduce:animate-none',
+    dialogOpen && 'bg-pomodoro-red/10 ring-2 ring-pomodoro-red ring-offset-2',
     onSelect &&
       'min-h-11 min-w-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2',
     className
@@ -74,26 +71,80 @@ export function PomodoroBlock({
     'data-latest': isLatest || undefined,
     'data-milestone': isMilestone || undefined,
     'data-newly-earned': highlighted || undefined,
+    'data-selected': dialogOpen || undefined,
     'data-fill-percent': Math.round(renderedFraction * 100),
     'data-pomodoro-index': pomodoroIndex,
   };
 
   const content = (
     <>
-      {baseState === 'partial' ? (
-        <span
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 bg-pomodoro-red"
-          style={{ height: 'var(--pomodoro-fill)' }}
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none size-full max-h-7 max-w-7 overflow-visible"
+        data-pomodoro-tomato="true"
+        focusable="false"
+        viewBox="0 0 28 28"
+      >
+        <defs>
+          <clipPath id={fillClipId} clipPathUnits="userSpaceOnUse">
+            <rect
+              data-fill-direction="left-to-right"
+              data-pomodoro-fill-clip="true"
+              height="20"
+              width={20 * renderedFraction}
+              x="4"
+              y="6"
+            />
+          </clipPath>
+        </defs>
+        {isLatest ? (
+          <circle
+            className="fill-none stroke-ink"
+            cx="14"
+            cy="15.25"
+            data-latest-ring="true"
+            r="12"
+            strokeWidth="1.5"
+          />
+        ) : null}
+        <path className="fill-paper" d={TOMATO_BODY_PATH} />
+        <path
+          className="fill-pomodoro-red"
+          clipPath={`url(#${fillClipId})`}
+          d={TOMATO_BODY_PATH}
+          data-pomodoro-fill="true"
         />
-      ) : null}
-      {isMilestone ? (
-        <span
-          aria-hidden="true"
-          className="absolute top-0 right-0 size-2.5 bg-ink [clip-path:polygon(100%_0,100%_100%,0_0)]"
-          data-milestone-notch="true"
+        <path
+          className="fill-none stroke-ink"
+          d={TOMATO_BODY_PATH}
+          data-pomodoro-outline="true"
+          strokeLinejoin="round"
+          strokeWidth="1.75"
         />
-      ) : null}
+        <path
+          className="fill-ink stroke-ink"
+          d="m14 8.5-3.9-2.6 2.15 3.65L14 8.5l1.75 1.05L17.9 5.9 14 8.5Z"
+          data-pomodoro-calyx="true"
+          strokeLinejoin="round"
+          strokeWidth="0.75"
+        />
+        <path
+          className="fill-none stroke-ink"
+          d="M14 7.25V3.75"
+          data-pomodoro-stem="true"
+          strokeLinecap="round"
+          strokeWidth="1.75"
+        />
+        {isMilestone ? (
+          <path
+            className="fill-ink stroke-paper"
+            d="m20.25 23.5 4.25-4.25v4.25h-4.25Z"
+            data-milestone-notch="true"
+            strokeLinejoin="round"
+            strokeWidth="0.75"
+          />
+        ) : null}
+      </svg>
       <span className="sr-only">{label}</span>
     </>
   );

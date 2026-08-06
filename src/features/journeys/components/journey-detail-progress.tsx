@@ -1,4 +1,4 @@
-import { ChevronDown, Grid3X3, Rows3 } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { MilestoneProgress } from '@/components/shared/milestone-progress';
@@ -66,19 +66,25 @@ function SectionGrid({
 
 function GridLegend() {
   const items = [
-    { label: 'Complete', block: <PomodoroBlock state="complete" label="Complete block example" /> },
+    {
+      label: 'Complete',
+      pomodoro: <PomodoroBlock state="complete" label="Complete Pomodoro example" />,
+    },
     {
       label: 'Partial',
-      block: <PomodoroBlock state="partial" fraction={0.5} label="Partial block example" />,
+      pomodoro: <PomodoroBlock state="partial" fraction={0.5} label="Partial Pomodoro example" />,
     },
-    { label: 'Future', block: <PomodoroBlock state="future" label="Future block example" /> },
+    {
+      label: 'Future',
+      pomodoro: <PomodoroBlock state="future" label="Future Pomodoro example" />,
+    },
     {
       label: 'Latest',
-      block: <PomodoroBlock state="complete" latest label="Latest block example" />,
+      pomodoro: <PomodoroBlock state="complete" latest label="Latest Pomodoro example" />,
     },
     {
       label: 'Milestone',
-      block: <PomodoroBlock state="future" milestone label="Milestone block example" />,
+      pomodoro: <PomodoroBlock state="future" milestone label="Milestone Pomodoro example" />,
     },
   ];
 
@@ -87,14 +93,12 @@ function GridLegend() {
       className="m-0 flex list-none flex-wrap gap-x-5 gap-y-2 p-0"
       aria-label="Pomodoro grid legend"
     >
-      {items.map(({ label, block }) => (
+      {items.map(({ label, pomodoro }) => (
         <li key={label} className="flex items-center gap-2">
           <span className="size-4 shrink-0" aria-hidden="true">
-            {block}
+            {pomodoro}
           </span>
-          <span className="font-bold text-[0.62rem] text-ink/65 uppercase tracking-[0.12em]">
-            {label}
-          </span>
+          <span className="text-ink/65 text-xs">{label}</span>
         </li>
       ))}
     </ul>
@@ -162,14 +166,9 @@ export function JourneyDetailProgress({
   return (
     <section aria-labelledby="journey-progress-heading">
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="mb-1 font-bold text-[0.68rem] text-ink/65 uppercase tracking-[0.16em]">
-            Visible effort
-          </p>
-          <h2 id="journey-progress-heading" className="mb-0 font-bold text-3xl tracking-[-0.035em]">
-            {formatPomodoroCount(totalPomodoros)} pomodoros
-          </h2>
-        </div>
+        <h2 id="journey-progress-heading" className="mb-0 font-bold text-3xl tracking-[-0.035em]">
+          {formatPomodoroCount(totalPomodoros)} Pomodoros
+        </h2>
         <Button
           type="button"
           variant="outline"
@@ -177,14 +176,13 @@ export function JourneyDetailProgress({
           aria-pressed={fullView}
           onClick={() => changeView(!fullView)}
         >
-          {fullView ? <Rows3 aria-hidden="true" /> : <Grid3X3 aria-hidden="true" />}
           {fullView ? 'View current section' : 'View full Journey'}
         </Button>
       </div>
 
-      <div className="border-2 border-ink bg-paper shadow-[5px_5px_0_var(--ink)]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-ink border-b px-4 py-3 sm:px-5">
-          <p className="mb-0 font-bold text-[0.68rem] text-ink/65 uppercase tracking-[0.14em]">
+      <div className="overflow-hidden rounded-xl border border-ink/15 bg-paper">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-ink/15 border-b px-4 py-3 sm:px-5">
+          <p className="mb-0 text-ink/65 text-sm">
             {fullView
               ? `${visibleSectionIndexes.length} of ${totalSections} sections`
               : `Section ${currentSectionIndex + 1} · Pomodoros ${currentSectionStart + 1}–${currentSectionEnd}`}
@@ -258,14 +256,14 @@ export function JourneyDetailProgress({
               selectedIndex={selectedBlockIndex}
             />
             {totalPomodoros === 0 ? (
-              <p className="mt-4 mb-0 border-pomodoro-red border-l-2 pl-3 text-ink/60 text-sm">
-                Your first completed focus session will begin filling this record.
+              <p className="mt-4 mb-0 text-ink/60 text-sm">
+                Finish a Focus session to add your first Pomodoro.
               </p>
             ) : null}
           </div>
         )}
 
-        <div className="grid gap-5 border-ink border-t px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:px-5">
+        <div className="grid gap-5 border-ink/15 border-t px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:px-5">
           <MilestoneProgress
             value={nextMilestonePercentage}
             label={currentMilestone?.name ?? 'Journey target'}

@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowRight, Check, Clock3, Play } from 'lucide-react';
 
 import { MilestoneProgress } from '@/components/shared/milestone-progress';
 import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
@@ -9,13 +8,6 @@ import { learnGuitarMockData } from '@/lib/mock-data';
 import { deriveJourneyProgress } from '@/lib/progress';
 
 import { PublicLayout } from './components/public-layout';
-
-const benefits = [
-  'Know what to work on next',
-  'Stay consistent',
-  'See your effort accumulate',
-  'Build meaningful skills',
-] as const;
 
 export function LandingPage() {
   const { journey, nextSteps, focusSessions, milestones } = learnGuitarMockData;
@@ -27,175 +19,84 @@ export function LandingPage() {
     : 100;
 
   return (
-    <PublicLayout
-      className="max-w-none px-0 py-0"
-      headerAction={
-        <Link
-          to="/onboarding/journey"
-          className="inline-flex min-h-11 items-center text-right font-bold text-sm underline-offset-4 hover:underline"
-        >
-          Start your first journey
-        </Link>
-      }
-    >
-      <section className="mx-auto grid w-full max-w-content items-center gap-9 px-gutter-mobile pt-6 pb-14 md:px-gutter-desktop md:pt-16 md:pb-24 lg:grid-cols-[minmax(0,0.82fr)_minmax(32rem,1.18fr)] lg:gap-16">
+    <PublicLayout>
+      <section className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(28rem,1.2fr)] lg:gap-16">
         <div>
-          <p className="mb-4 font-bold text-ink/60 text-xs uppercase tracking-[0.16em]">
-            A record of effort
-          </p>
-          <h1 className="mb-5 max-w-[12ch] font-bold text-[clamp(2.6rem,7vw,4rem)] leading-[1.05] tracking-[-0.04em]">
-            Turn focused work into visible progress.
+          <h1 className="mb-5 max-w-[15ch] font-bold text-[clamp(2.5rem,7vw,4rem)] leading-[1.05] tracking-[-0.04em]">
+            Track focused work, one pomodoro at a time
           </h1>
-          <p className="mb-7 max-w-[39rem] text-base text-ink/60 leading-relaxed md:text-lg">
-            Complete pomodoros, build skills, and see every hour you invest on the path toward
-            mastery.
+          <p className="mb-7 max-w-[36rem] text-base text-ink/60 leading-relaxed md:text-lg">
+            Choose a Journey, start a Focus session, and see your progress grow.
           </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <PrimaryButton asChild>
-              <Link to="/onboarding/journey">
-                Start your first journey
-                <ArrowRight aria-hidden="true" className="size-4" />
-              </Link>
-            </PrimaryButton>
-            <a
-              href="#product-demonstration"
-              className="inline-flex min-h-11 items-center gap-2 px-1 font-bold text-sm underline underline-offset-4"
-            >
-              See how it works
-              <ArrowRight aria-hidden="true" className="size-4" />
-            </a>
-          </div>
+          <PrimaryButton asChild>
+            <Link to="/onboarding/journey">Start your first Journey</Link>
+          </PrimaryButton>
         </div>
 
         <Card
-          id="product-demonstration"
-          aria-label={`Product demonstration for the ${journey.name} Journey`}
-          className="scroll-mt-6 gap-0 overflow-hidden border-2 border-ink py-0 shadow-[10px_10px_0_var(--ink)] ring-0"
+          aria-label={`${journey.name} Journey preview`}
+          className="gap-0 border border-ink/10 py-0 shadow-none ring-0"
         >
-          <div className="flex items-center justify-between border-ink border-b-2 px-4 py-3 font-bold text-[0.6875rem] uppercase tracking-[0.12em] sm:px-5">
-            <span>1000 Pomodoros</span>
-            <span className="text-ink/60">Journey 01</span>
-          </div>
-          <CardContent className="grid p-0 sm:grid-cols-2">
-            <div className="border-ink border-b-2 p-4 sm:border-r-2 sm:border-b-0 sm:p-5">
-              <p className="mb-2 font-bold text-[0.6875rem] text-ink/60 uppercase tracking-[0.12em]">
-                Current Journey
-              </p>
-              <h2 className="mb-5 font-bold text-2xl leading-tight tracking-[-0.025em]">
-                {journey.name}
-              </h2>
-              <div className="border-ink/20 border-y py-3">
-                <p className="mb-1 font-bold text-[0.6875rem] text-ink/60 uppercase tracking-[0.12em]">
-                  Next step
-                </p>
-                <p className="mb-0 font-bold text-sm">{nextStep?.title}</p>
+          <CardContent className="space-y-5 p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-6">
+              <div className="min-w-0">
+                <p className="mb-1 font-bold text-ink/60 text-sm">Journey</p>
+                <h2 className="mb-0 font-bold text-2xl leading-tight tracking-[-0.025em]">
+                  {journey.name}
+                </h2>
               </div>
-              <div className="mt-4 flex items-end justify-between gap-4">
-                <div>
-                  <p className="mb-1 font-bold text-[0.6875rem] text-ink/60 uppercase tracking-[0.12em]">
-                    Focused time
-                  </p>
-                  <p className="mb-0 font-bold text-xl">
-                    {Math.floor(progress.focusedMinutes / 60)}h {progress.focusedMinutes % 60}m
-                  </p>
-                </div>
-                <span
-                  className="grid size-11 place-items-center rounded-full bg-pomodoro-red text-paper"
-                  role="img"
-                  aria-label="Focused effort recorded"
-                >
-                  <Check aria-hidden="true" className="size-5" />
-                </span>
+              <div className="shrink-0 text-right">
+                <p className="mb-1 text-ink/60 text-sm">Focused time</p>
+                <p className="mb-0 font-bold text-lg tabular-nums">
+                  {Math.floor(progress.focusedMinutes / 60)}h {progress.focusedMinutes % 60}m
+                </p>
               </div>
             </div>
-            <div className="p-4 sm:p-5">
-              <p className="mb-1 font-bold text-[0.6875rem] text-ink/60 uppercase tracking-[0.12em]">
-                Focus session
-              </p>
-              <div className="mb-4 flex items-center justify-between gap-4 border-ink/20 border-b pb-3">
+
+            <div className="border-ink/10 border-y py-4">
+              <p className="mb-1 text-ink/60 text-sm">Next step</p>
+              <p className="mb-0 font-bold">{nextStep?.title}</p>
+            </div>
+
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="mb-1 text-ink/60 text-sm">Focus session</p>
                 <p
                   className="mb-0 font-bold text-4xl tabular-nums tracking-[-0.04em]"
                   role="timer"
-                  aria-label="25 minute timer"
+                  aria-label="25-minute Focus session"
                 >
                   25:00
                 </p>
-                <span
-                  className="grid size-11 place-items-center rounded-full bg-ink text-paper"
-                  role="img"
-                  aria-label="Start focus session preview"
-                >
-                  <Play aria-hidden="true" className="size-4 fill-current" />
+              </div>
+              <p className="mb-1 text-right text-ink/60 text-sm">
+                <span className="block font-bold text-ink tabular-nums">
+                  {progress.fullPomodoros} / 50
                 </span>
+                Pomodoros
+              </p>
+            </div>
+
+            <PomodoroGrid
+              focusedMinutes={progress.focusedMinutes}
+              totalPomodoros={50}
+              latestIndex={progress.fullPomodoros - 1}
+            />
+
+            <div className="border-ink/10 border-t pt-4">
+              <div className="mb-3 flex items-center justify-between gap-4 text-sm">
+                <span className="text-ink/60">Next milestone</span>
+                <span className="font-bold">{nextMilestone?.name}</span>
               </div>
-              <div className="mb-3 flex items-center justify-between gap-3 font-bold text-xs">
-                <span className="text-ink/60">Your visible effort</span>
-                <span>{progress.fullPomodoros} / 50</span>
-              </div>
-              <PomodoroGrid
-                focusedMinutes={progress.focusedMinutes}
-                totalPomodoros={50}
-                latestIndex={progress.fullPomodoros - 1}
+              <MilestoneProgress
+                value={milestonePercent}
+                label="Milestone progress"
+                detail={`${Math.round(milestonePercent)}%`}
               />
-              <div className="mt-4 rounded-md bg-ink p-3 text-paper">
-                <div className="mb-3 flex items-center gap-3">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-full bg-pomodoro-red">
-                    <Clock3 aria-hidden="true" className="size-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="mb-0 text-paper/65 text-xs">Next milestone</p>
-                    <p className="mb-0 font-bold text-sm">{nextMilestone?.name}</p>
-                  </div>
-                </div>
-                <MilestoneProgress
-                  value={milestonePercent}
-                  label="Milestone progress"
-                  detail={`${Math.round(milestonePercent)}%`}
-                  className="[&_[data-slot=progress-indicator]]:bg-pomodoro-red [&_[data-slot=progress]]:bg-paper/20 [&_span]:text-paper"
-                />
-              </div>
             </div>
           </CardContent>
         </Card>
       </section>
-
-      <section
-        aria-labelledby="benefits-heading"
-        className="relative left-1/2 w-dvw -translate-x-1/2 bg-ink text-paper"
-      >
-        <div className="mx-auto w-full max-w-content px-gutter-mobile py-16 md:px-gutter-desktop md:py-24">
-          <p className="mb-4 font-bold text-paper/65 text-xs uppercase tracking-[0.16em]">
-            A simple practice loop
-          </p>
-          <h2
-            id="benefits-heading"
-            className="mb-10 max-w-[19ch] font-bold text-3xl leading-tight tracking-[-0.03em] md:text-4xl"
-          >
-            Small sessions. A body of work you can see.
-          </h2>
-          <ol className="grid border-paper/20 border-t sm:grid-cols-2 lg:grid-cols-4">
-            {benefits.map((benefit, index) => (
-              <li
-                key={benefit}
-                className="min-h-32 border-paper/20 border-r border-b p-5 last:border-r-0"
-              >
-                <span className="font-bold text-paper/65 text-xs">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3 className="mt-7 mb-0 max-w-[14ch] font-bold text-base">{benefit}</h3>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <footer className="mx-auto w-full max-w-content px-gutter-mobile py-16 md:px-gutter-desktop md:py-24">
-        <div className="border-ink border-t-2 pt-8">
-          <p className="mb-0 max-w-[25ch] font-bold text-3xl leading-tight tracking-[-0.03em] md:text-5xl">
-            What will your next 1,000 pomodoros make possible?
-          </p>
-        </div>
-      </footer>
     </PublicLayout>
   );
 }

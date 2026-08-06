@@ -62,7 +62,7 @@ typography:
   label-md:
     fontFamily: Manrope
     fontSize: 13px
-    fontWeight: 600
+    fontWeight: 700
     lineHeight: 1.25
   timer-lg:
     fontFamily: Manrope
@@ -116,6 +116,8 @@ components:
   button-secondary:
     backgroundColor: "{colors.secondary}"
     textColor: "{colors.primary}"
+    borderColor: "Ink at 50%"
+    borderWidth: 1px
     typography: "{typography.label-lg}"
     rounded: "{rounded.md}"
     padding: 12px
@@ -123,24 +125,38 @@ components:
   card-default:
     backgroundColor: "{colors.secondary}"
     textColor: "{colors.primary}"
+    borderColor: "Ink at 12%"
+    borderWidth: 1px
+    shadow: none
     rounded: "{rounded.lg}"
     padding: 24px
   input-default:
     backgroundColor: "{colors.secondary}"
     textColor: "{colors.primary}"
+    borderColor: "Ink at 50%"
+    borderWidth: 1px
     typography: "{typography.body-md}"
     rounded: "{rounded.md}"
     padding: 12px
     height: 48px
   pomodoro-complete:
-    backgroundColor: "{colors.tertiary}"
-    textColor: "{colors.secondary}"
-    rounded: "{rounded.sm}"
+    shape: tomato
+    fillColor: "{colors.tertiary}"
+    outlineColor: "{colors.primary}"
+    stemColor: "{colors.primary}"
     size: 20px
-  pomodoro-empty:
-    backgroundColor: "{colors.secondary}"
-    textColor: "{colors.primary}"
-    rounded: "{rounded.sm}"
+  pomodoro-partial:
+    shape: tomato
+    fillColor: "{colors.tertiary}"
+    fillDirection: left-to-right
+    outlineColor: "{colors.primary}"
+    stemColor: "{colors.primary}"
+    size: 20px
+  pomodoro-future:
+    shape: tomato
+    fillColor: "{colors.secondary}"
+    outlineColor: "{colors.primary}"
+    stemColor: "{colors.primary}"
     size: 20px
   focus-timer:
     backgroundColor: "{colors.secondary}"
@@ -156,7 +172,9 @@ components:
 
 1000 Pomodoros should feel like **calm momentum**: focused, exact, motivating, and mature. The experience is a beautiful record of effort, not a loud productivity game. Its job is to make invisible practice tangible and make the next focused session easy to begin.
 
-The visual signature is a field of small pomodoro blocks accumulating over time. One block equals **25 focused minutes**. A growing grid should feel like laying bricks: each unit is modest, but the finished wall is undeniable.
+The visual signature is a field of compact tomato-shaped Pomodoro units accumulating over time. One Pomodoro equals **25 focused minutes**. Each unit is modest, but the complete field makes sustained effort undeniable.
+
+The simplest product explanation is: **“Track focused work, one pomodoro at a time.”** Use it when a product-level description is needed, then let each screen use only the shortest contextual copy required for its task.
 
 ### Brand personality
 
@@ -257,21 +275,21 @@ Design mobile first from **320px upward**, then enhance at **768px** and **1024p
 - Place the primary CTA above the fold and keep **Start focusing** reachable as the journey page scrolls.
 - Use generous negative space around the timer, primary number, and next step.
 - Prefer a single-column flow on mobile. Introduce two columns only when the secondary column clearly supports the primary task.
-- Keep dense history, settings, and advanced details behind progressive disclosure.
+- Keep supporting detail below the core action. History and Settings are not part of the currently implemented application navigation.
 - Avoid a generic SaaS dashboard made of equal-weight cards. The **Continue** action and progress grid must dominate Home.
 
 ### Responsive navigation
 
-- **Mobile:** Use a four-item bottom navigation for Home, Journeys, History, and Settings. The active item uses Ink plus a small red indicator. Starting focus happens from contextual red buttons, not a distracting permanent floating button.
-- **Desktop:** Use a compact left rail or top navigation. Keep the content canvas visually dominant and preserve one red action per screen.
+- **Mobile:** Use the implemented two-item bottom navigation for **Home** and **Journeys**. The active item uses Ink plus a small red indicator. Starting focus happens from contextual red buttons, not a distracting permanent floating button.
+- **Desktop:** Use the same **Home** and **Journeys** destinations in a compact top navigation. Keep the content canvas visually dominant and preserve one red action per screen.
 - **Focus mode:** Remove application navigation entirely while the timer is running.
 
 ### Pomodoro grid
 
 - Use 10 columns for the current milestone view so rows map cleanly to 10 pomodoros.
-- Let tile size flex between 16px and 28px with 4px gaps. Do not shrink tiles below reliable inspection size; paginate or virtualize large grids.
+- Let each tomato flex between 16px and 28px with 4px gaps. Do not shrink it below a reliable recognition and inspection size; progressively render large grids.
 - Group 100 pomodoros into a clear section. The 1,000-hour default contains 2,400 pomodoros across 24 major sections.
-- Default to the next milestone and recent progress. Let users zoom out to the full journey without making 2,400 empty blocks the first thing they see.
+- Default to the next milestone and recent progress. Let users reveal the full Journey without making 2,400 future tomatoes the first thing they see.
 - Preserve a satisfying full-grid view for users who want the scale of the complete journey.
 
 ### Spacing rhythm
@@ -283,8 +301,8 @@ Use the 4px base scale in the front matter. Default component padding is 16px on
 The product is mostly flat. Create hierarchy with whitespace, borders, typography, and controlled color rather than stacked shadows.
 
 - Default cards use a 1px Ink border at 12% opacity and no shadow.
-- Interactive cards may use a subtle 2px downward translation or an Ink border at 24% opacity on hover.
-- Dialogs and timer setup sheets may use one soft shadow: `0 16px 48px rgba(25, 24, 22, 0.16)`.
+- Interactive cards may strengthen their Ink border to 24% opacity on hover.
+- Dialogs may use one soft shadow: `0 16px 48px rgba(25, 24, 22, 0.16)`.
 - Do not use glassmorphism, blurred color clouds, glowing borders, or layered gradient backgrounds.
 - The progress grid sits directly on Paper whenever possible. It should feel like the content, not a widget inside another widget.
 
@@ -295,10 +313,10 @@ The shape language is precise with measured softness.
 - Buttons and inputs use 10px corners.
 - Cards and dialogs use 16px corners.
 - Feature or milestone containers may use 24px corners when they are the single hero object.
-- Pomodoro blocks use 6px corners and remain recognizably square.
+- Every visual Pomodoro unit uses the shared compact tomato silhouette: a Pomodoro Red fruit, persistent Ink outline, and small Ink stem or calyx.
 - Full pills are reserved for short statuses, filter chips, and avatars. Do not turn every label into a pill.
 - Use simple 2px outline icons. Familiar symbols beat custom metaphors for navigation and controls.
-- Avoid literal cartoon tomatoes in core UI. The red progress block is the mature abstraction of a pomodoro. A small tomato mark may appear in the logo or empty-state illustration only.
+- The tomato is code-native SVG or CSS, not an emoji, external raster asset, or cartoon illustration. Keep its geometry compact and legible from dense-grid sizes through interactive sizes.
 
 ## Components
 
@@ -326,16 +344,17 @@ The shape language is precise with measured softness.
 - Inline validation states what happened and how to fix it.
 - Autofocus only the single obvious text field, and never steal focus when returning to a populated screen.
 
-### Pomodoro blocks and grid
+### Pomodoro units and grid
 
-- **Complete:** Solid Pomodoro Red.
-- **Partial:** Pomodoro Red clipped from bottom to top in proportion to focused minutes. A 5-minute session fills 20% of a block.
-- **Future:** Paper with a 1px Ink border at 12% opacity.
+- **Complete:** Pomodoro Red fruit with the persistent Ink outline and stem.
+- **Partial:** Pomodoro Red fills the fruit proportionally **from left to right** inside the persistent Ink outline. A 5-minute session fills 20% of a Pomodoro.
+- **Future:** Paper fruit with the persistent Ink outline and stem.
 - **Latest:** Complete or partial styling plus a 2px Ink outline.
 - **Milestone:** Standard state plus a persistent corner notch or stronger outline; never rely on a new color.
 - **Manual:** Counts normally. Inspection details include an **Added manually** label; the overview grid does not visually punish legitimate manual work.
-- Selecting or focusing a block opens a compact detail popover with date, duration, Journey, Next step, and entry type.
-- Every block has an accessible name such as “Pomodoro 437, completed July 12, 2026, 25 minutes.”
+- The tomato drawing is decorative and hidden from the accessibility tree. Its existing semantic wrapper remains the only image or button role and owns the Pomodoro number, state, fill percentage, and interaction attributes.
+- Selecting or focusing a Pomodoro opens a compact detail popover with date, duration, Journey, Next step, and entry type.
+- Every Pomodoro has an accessible name such as “Pomodoro 437, completed July 12, 2026, 25 minutes.”
 
 ### Focus timer
 
@@ -349,8 +368,8 @@ The shape language is precise with measured softness.
 ### Session completion
 
 - Lead with the earned result: **“2 pomodoros complete.”**
-- Show the added minutes, updated total, milestone progress, and newly filled blocks immediately.
-- Use a 200–400ms fill or scale animation on the new blocks. No confetti, coins, fireworks, or endless celebration loops.
+- Show the added minutes, updated total, milestone progress, and newly earned tomatoes immediately.
+- Use a 200–400ms fill or scale animation on newly earned tomatoes. No confetti, coins, fireworks, or endless celebration loops.
 - Make reflection optional and collapsed. Credit appears before any writing prompt.
 - Primary action is contextual: **Start another pomodoro** or **Choose next step**. **Done** is a quiet secondary action.
 
@@ -377,7 +396,7 @@ The first viewport shows Journey name, reason, total focused time, current miles
 
 ### Onboarding
 
-Use five short screens: Journey name, optional reason, target, first Next step, and first session. Show a quiet `1 of 5` progress label. The last screen starts real work; onboarding must not end on an empty dashboard.
+Use the four implemented screens: Journey name, optional reason, target, and first Next step. Show a quiet `1 of 4` progress label. Completing the fourth step opens Home with the new Journey ready to start; do not add a separate fifth onboarding route.
 
 ### Landing page
 
@@ -423,7 +442,7 @@ Only render this surface after the business decision is activated.
 - Do use empty states to start action: **Create your first Journey** or **Add the next thing you can work on**.
 - Do meet WCAG AA, support keyboard navigation, preserve visible focus, and provide 44px minimum touch targets.
 - Do honor reduced motion and keep completion animation nonessential.
-- Do test at 320px width, 200% zoom, dark mode, long Journey names, 2,400-block Journeys, and zero-progress states.
+- Do test at 320px width, 200% zoom, dark mode, long Journey names, 2,400-Pomodoro Journeys, and zero-progress states.
 
 ### Don't
 
@@ -432,7 +451,7 @@ Only render this surface after the business decision is activated.
 - Don't turn Next steps into a full task manager with priorities, dependencies, boards, or due-date workflows.
 - Don't use XP, coins, leaderboards, guilt, streak-loss drama, or childish celebrations.
 - Don't force a reflection before crediting completed work.
-- Don't show the full 2,400 empty blocks as the default first view.
+- Don't show all 2,400 future tomatoes as the default first view.
 - Don't place multiple primary CTAs in the same visual field.
 - Don't hide pricing, renewal terms, progress rules, or destructive consequences in muted fine print.
 - Don't use fake testimonials, fake user counts, or unearned “most popular” claims.
@@ -442,4 +461,3 @@ Only render this surface after the business decision is activated.
 
 - Product source of truth: [1000 Pomodoros — Product Specification](https://docs.google.com/document/d/1jrYJToeQp9gweM38WnZjehf9TqyMlbwYIEy7MbKq5_w)
 - Format reference: [Google Stitch DESIGN.md overview](https://stitch.withgoogle.com/docs/design-md/overview)
-

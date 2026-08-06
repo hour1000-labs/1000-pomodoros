@@ -10,7 +10,6 @@ import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppState } from '@/hooks/use-app-state';
 import type { AppState, FocusSession, Journey, Milestone, NextStep } from '@/lib/models';
@@ -211,70 +210,39 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
       return;
     }
 
-    setSaveError('Your reflection could not be saved. Try again.');
+    setSaveError("We couldn't save your reflection. Try again.");
   }
 
   return (
-    <FocusLayout className="items-start py-5 sm:py-8 lg:items-center lg:py-12">
-      <div className="w-full max-w-6xl">
-        <BrandMark className="mb-8 sm:mb-12" />
+    <FocusLayout className="items-start py-6 sm:py-10">
+      <div className="w-full max-w-5xl">
+        <BrandMark className="mb-10" />
 
-        <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(24rem,1.2fr)] lg:items-center lg:gap-16">
+        <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(22rem,1.2fr)] lg:items-start lg:gap-12">
           <section className="min-w-0" aria-labelledby="session-complete-title">
-            <p className="mb-5 inline-flex min-h-8 items-center gap-2 rounded-full border border-ink px-3 font-bold text-[0.7rem] uppercase tracking-[0.16em]">
-              <span className="size-1.5 rounded-full bg-pomodoro-red" aria-hidden="true" />
-              Session complete
-            </p>
             <h1
-              className="mb-4 max-w-[10ch] font-bold text-[clamp(3rem,12vw,5.5rem)] leading-[0.95] tracking-[-0.065em]"
+              className="mb-4 max-w-[11ch] font-bold text-[clamp(2.75rem,12vw,5rem)] leading-none tracking-[-0.055em]"
               id="session-complete-title"
             >
               {earnedPomodoros} {pomodoroLabel} complete.
             </h1>
-            <p className="mb-8 max-w-[38rem] text-base text-ink/60 leading-relaxed sm:text-lg">
-              You added{' '}
+            <p className="mb-8 max-w-[38rem] text-base text-ink/60 leading-relaxed [overflow-wrap:anywhere] sm:text-lg">
+              Added{' '}
               <strong className="text-ink">
                 {formatMinutes(context.session.focusedMinutes)} focused minutes
               </strong>{' '}
               to {context.journey.name}.
             </p>
 
-            <div className="mb-7 border-ink border-y py-5">
-              <p className="mb-1 font-bold text-[0.68rem] text-ink/50 uppercase tracking-[0.15em]">
-                Next step
-              </p>
+            <div className="mb-8 border-ink/15 border-y py-5">
+              <p className="mb-1 font-bold text-ink/60 text-sm">Next step</p>
               <p className="mb-0 font-bold text-lg [overflow-wrap:anywhere]">
                 {context.nextStep.title}
               </p>
             </div>
 
-            <dl className="mb-8 grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-3">
-              <div className="min-w-0">
-                <dt className="mb-1 font-bold text-[0.68rem] text-ink/50 uppercase tracking-[0.14em]">
-                  Journey
-                </dt>
-                <dd className="m-0 font-bold [overflow-wrap:anywhere]">{context.journey.name}</dd>
-              </div>
-              <div>
-                <dt className="mb-1 font-bold text-[0.68rem] text-ink/50 uppercase tracking-[0.14em]">
-                  Session
-                </dt>
-                <dd className="m-0 font-bold tabular-nums">
-                  {formatFocusedDuration(context.session.focusedMinutes)}
-                </dd>
-              </div>
-              <div>
-                <dt className="mb-1 font-bold text-[0.68rem] text-ink/50 uppercase tracking-[0.14em]">
-                  New total
-                </dt>
-                <dd className="m-0 font-bold tabular-nums">
-                  {formatPomodoroCount(context.totalPomodoros)} pomodoros
-                </dd>
-              </div>
-            </dl>
-
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <PrimaryButton asChild className="shadow-[4px_4px_0_var(--ink)]">
+              <PrimaryButton asChild>
                 {context.crossedMilestone ? (
                   <Link
                     to="/milestones/$milestoneId"
@@ -290,7 +258,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
                   </Link>
                 )}
               </PrimaryButton>
-              <Button asChild variant="outline" className="border-ink/30 bg-paper">
+              <Button asChild variant="outline" className="border-ink/50 bg-paper">
                 <Link
                   to="/focus"
                   search={{
@@ -315,7 +283,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
               >
                 <span>
                   {context.session.reflection ? 'Edit reflection' : 'Add a short reflection'}{' '}
-                  <span className="font-normal text-ink/45">(optional)</span>
+                  <span className="font-normal text-ink/60">(optional)</span>
                 </span>
                 <ChevronDown
                   aria-hidden="true"
@@ -338,7 +306,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
                     maxLength={SESSION_REFLECTION_MAX_LENGTH}
                     rows={4}
                     aria-describedby="session-reflection-count"
-                    className="field-sizing-fixed min-h-28 min-w-0 max-w-full resize-y border-ink/25 bg-paper"
+                    className="field-sizing-fixed min-h-28 min-w-0 max-w-full resize-y border-ink/50 bg-paper"
                     onChange={(event) => {
                       setReflection(event.target.value);
                       setSaveError(null);
@@ -347,12 +315,12 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
                   />
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <p
-                      className="mb-0 text-ink/55 text-sm tabular-nums"
+                      className="mb-0 text-ink/60 text-sm tabular-nums"
                       id="session-reflection-count"
                     >
                       {reflection.length} / {SESSION_REFLECTION_MAX_LENGTH}
                     </p>
-                    <Button type="submit" variant="outline" className="border-ink/30">
+                    <Button type="submit" variant="outline" className="border-ink/50">
                       Save reflection
                     </Button>
                   </div>
@@ -371,62 +339,55 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
             </div>
           </section>
 
-          <Card className="min-w-0 border-2 border-ink shadow-[8px_8px_0_var(--ink)]">
-            <CardContent className="p-4 sm:p-7">
-              <div className="mb-5 flex flex-wrap items-start justify-between gap-3 border-ink border-b pb-4">
-                <div>
-                  <p className="mb-1 font-bold text-[0.68rem] text-ink/50 uppercase tracking-[0.15em]">
-                    Current milestone
-                  </p>
-                  <h2 className="mb-0 font-bold text-xl [overflow-wrap:anywhere]">
-                    {context.milestoneLabel}
-                  </h2>
-                </div>
-                <span className="rounded-full bg-ink px-3 py-1 font-bold text-paper text-sm tabular-nums">
-                  {Math.round(context.milestonePercentage)}%
-                </span>
+          <section
+            className="min-w-0 rounded-xl border border-ink/15 p-4 sm:p-6"
+            aria-labelledby="session-progress-title"
+          >
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3 border-ink/15 border-b pb-4">
+              <div className="min-w-0">
+                <p className="mb-1 font-bold text-ink/60 text-sm">Progress</p>
+                <h2
+                  className="mb-0 font-bold text-xl [overflow-wrap:anywhere]"
+                  id="session-progress-title"
+                >
+                  {context.milestoneLabel}
+                </h2>
               </div>
-
-              <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-                <p className="mb-0 font-bold text-[0.7rem] text-ink/55 uppercase tracking-[0.15em]">
-                  Your visible effort
-                </p>
-                <p className="mb-0 font-bold text-sm tabular-nums">
-                  {formatPomodoroCount(context.totalPomodoros)} /{' '}
-                  {formatPomodoroCount(context.gridTotalPomodoros)}
-                </p>
-              </div>
-
-              <PomodoroGrid
-                focusedMinutes={context.focusedMinutes}
-                totalPomodoros={context.gridTotalPomodoros}
-                startIndex={context.gridStartIndex}
-                renderLimit={context.gridRenderLimit}
-                milestoneIndexes={context.milestoneIndexes}
-                highlightedIndexes={context.highlightedIndexes}
-              />
-
-              <MilestoneProgress
-                className="mt-6 border-ink border-t pt-5"
-                value={context.milestonePercentage}
-                label={
-                  remainingMinutes === 0
-                    ? `${context.milestoneLabel} reached`
-                    : `${formatFocusedDuration(remainingMinutes)} remaining`
-                }
-                detail={`${formatFocusedDuration(context.focusedMinutes)} focused`}
-              />
-              <p className="mt-4 mb-0 flex items-center gap-2 font-bold text-[0.68rem] text-ink/50 uppercase tracking-[0.13em]">
-                <span
-                  className="size-1.5 shrink-0 rounded-full bg-pomodoro-red"
-                  aria-hidden="true"
-                />
-                {context.highlightedIndexes.length === 1
-                  ? 'Newly earned block identified'
-                  : `${context.highlightedIndexes.length} newly earned blocks identified`}
+              <p className="mb-0 font-bold text-lg tabular-nums">
+                {Math.round(context.milestonePercentage)}%
               </p>
-            </CardContent>
-          </Card>
+            </div>
+
+            <p className="mb-4 font-bold text-ink/65 text-sm tabular-nums">
+              {formatPomodoroCount(context.totalPomodoros)} of{' '}
+              {formatPomodoroCount(context.gridTotalPomodoros)} Pomodoros
+            </p>
+
+            <PomodoroGrid
+              focusedMinutes={context.focusedMinutes}
+              totalPomodoros={context.gridTotalPomodoros}
+              startIndex={context.gridStartIndex}
+              renderLimit={context.gridRenderLimit}
+              milestoneIndexes={context.milestoneIndexes}
+              highlightedIndexes={context.highlightedIndexes}
+            />
+
+            <MilestoneProgress
+              className="mt-6 border-ink/15 border-t pt-5"
+              value={context.milestonePercentage}
+              label={
+                remainingMinutes === 0
+                  ? `${context.milestoneLabel} reached`
+                  : `${formatFocusedDuration(remainingMinutes)} remaining`
+              }
+              detail={`${formatFocusedDuration(context.focusedMinutes)} focused`}
+            />
+            <p className="mt-4 mb-0 text-ink/60 text-sm">
+              {context.highlightedIndexes.length === 1
+                ? '1 newly earned Pomodoro is outlined.'
+                : `${context.highlightedIndexes.length} newly earned Pomodoros are outlined.`}
+            </p>
+          </section>
         </div>
 
         <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">

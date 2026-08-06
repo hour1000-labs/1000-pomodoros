@@ -19,14 +19,14 @@
   --primary-foreground: var(--paper);
   --secondary: var(--paper);
   --secondary-foreground: var(--ink);
-  --muted: color-mix(in srgb, var(--ink) 6%, var(--paper));
+  --muted: color-mix(in srgb, var(--ink) 5%, var(--paper));
   --muted-foreground: color-mix(in srgb, var(--ink) 60%, var(--paper));
-  --accent: color-mix(in srgb, var(--pomodoro-red) 10%, var(--paper));
+  --accent: color-mix(in srgb, var(--ink) 6%, var(--paper));
   --accent-foreground: var(--ink);
   --destructive: var(--pomodoro-red);
   --border: color-mix(in srgb, var(--ink) 12%, var(--paper));
-  --input: color-mix(in srgb, var(--ink) 18%, var(--paper));
-  --ring: var(--pomodoro-red);
+  --input: color-mix(in srgb, var(--ink) 50%, var(--paper));
+  --ring: var(--ink);
   --radius: 0.625rem;
 }
 
@@ -43,12 +43,12 @@
   --secondary-foreground: var(--paper);
   --muted: color-mix(in srgb, var(--paper) 8%, var(--ink));
   --muted-foreground: color-mix(in srgb, var(--paper) 65%, var(--ink));
-  --accent: color-mix(in srgb, var(--pomodoro-red) 14%, var(--ink));
+  --accent: color-mix(in srgb, var(--paper) 10%, var(--ink));
   --accent-foreground: var(--paper);
   --destructive: var(--pomodoro-red);
   --border: color-mix(in srgb, var(--paper) 12%, var(--ink));
-  --input: color-mix(in srgb, var(--paper) 18%, var(--ink));
-  --ring: var(--pomodoro-red);
+  --input: color-mix(in srgb, var(--paper) 50%, var(--ink));
+  --ring: var(--paper);
 }
 
 @theme inline {
@@ -115,8 +115,7 @@
     color: var(--foreground);
     font-family: var(--font-sans);
     font-size: 1rem;
-    line-height: 1.55;
-    letter-spacing: -0.005em;
+    line-height: 1.5;
     text-rendering: optimizeLegibility;
   }
 
@@ -132,12 +131,12 @@
   }
 
   :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--ring) 48%, transparent);
-    outline-offset: 3px;
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--pomodoro-red) 22%, var(--paper));
+    background: color-mix(in srgb, var(--ink) 14%, var(--paper));
     color: var(--ink);
   }
 

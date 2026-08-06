@@ -1,8 +1,6 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowLeft, ArrowRight, CalendarDays, Check } from 'lucide-react';
 
 import { BrandMark } from '@/components/shared/brand-mark';
-import { EmptyState } from '@/components/shared/empty-state';
 import { FocusLayout } from '@/components/shared/focus-layout';
 import { LoadingState } from '@/components/shared/loading-state';
 import { MilestoneProgress } from '@/components/shared/milestone-progress';
@@ -46,20 +44,15 @@ function MilestoneNotFoundState() {
     <FocusLayout className="items-start py-8 sm:py-12">
       <div className="w-full max-w-reading">
         <BrandMark className="mb-10" />
-        <h1 className="sr-only">Milestone unavailable</h1>
-        <EmptyState
-          className="w-full"
-          title="Milestone not found"
-          description="This milestone is unavailable or has not been earned yet. Return Home to continue from your saved progress."
-          action={
-            <PrimaryButton asChild>
-              <Link to="/home">
-                <ArrowLeft aria-hidden="true" />
-                Return Home
-              </Link>
-            </PrimaryButton>
-          }
-        />
+        <section className="rounded-lg border border-ink/15 p-6">
+          <h1 className="mb-2 font-bold text-2xl">Milestone unavailable</h1>
+          <p className="mb-6 max-w-[52ch] text-ink/60 text-sm leading-relaxed">
+            This milestone has not been earned yet or is no longer available.
+          </p>
+          <PrimaryButton asChild>
+            <Link to="/home">Go home</Link>
+          </PrimaryButton>
+        </section>
       </div>
     </FocusLayout>
   );
@@ -82,7 +75,7 @@ function MilestoneContent({ state, milestoneId }: { state: AppState; milestoneId
     remainingMinutes,
   } = detail;
   const pomodoroAmount = formatPomodoroAmount(targetPomodoros);
-  const pomodoroLabel = targetPomodoros === 1 ? 'pomodoro' : 'pomodoros';
+  const pomodoroLabel = targetPomodoros === 1 ? 'Pomodoro' : 'Pomodoros';
   const targetMilestoneIndexes = targetBlockCount > 0 ? [targetBlockCount - 1] : [];
 
   return (
@@ -96,64 +89,38 @@ function MilestoneContent({ state, milestoneId }: { state: AppState; milestoneId
 
         <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,0.78fr)_minmax(24rem,1.22fr)] lg:items-start lg:gap-16">
           <header className="min-w-0">
-            <p className="mb-7 inline-flex min-h-8 items-center gap-2 border border-ink px-3 font-bold text-[0.68rem] uppercase tracking-[0.16em]">
-              <Check aria-hidden="true" className="size-4 text-pomodoro-red" strokeWidth={3} />
-              Milestone reached
-            </p>
-
-            <p className="mb-5 font-bold text-lg [overflow-wrap:anywhere]">{journey.name}</p>
+            <p className="mb-4 font-bold text-ink/60 text-sm">Milestone reached</p>
+            <p className="mb-4 font-bold text-lg [overflow-wrap:anywhere]">{journey.name}</p>
             <h1
-              className="mb-5 max-w-[9ch] font-bold text-[clamp(4rem,20vw,8.5rem)] leading-[0.82] tracking-[-0.075em]"
+              className="mb-5 max-w-[10ch] font-bold text-[clamp(3.5rem,18vw,7rem)] leading-[0.88] tracking-[-0.06em]"
               id="milestone-title"
             >
               {formatFocusedTime(milestone.targetFocusedMinutes)}
             </h1>
-            <p className="mb-7 max-w-[34rem] font-bold text-xl leading-snug sm:text-2xl">
-              You showed up for{' '}
-              <span className="text-pomodoro-red">
-                {pomodoroAmount} {pomodoroLabel}.
-              </span>
-            </p>
-            <p className="mb-8 flex items-center gap-2 text-ink/60">
-              <CalendarDays aria-hidden="true" className="size-5 shrink-0 text-pomodoro-red" />
+            <p className="mb-8 text-ink/60">
               <time dateTime={milestone.earnedAt}>
                 Reached {formatMilestoneDate(milestone.earnedAt)}
               </time>
             </p>
 
-            <PrimaryButton asChild className="w-full shadow-[4px_4px_0_var(--ink)] sm:w-auto">
+            <PrimaryButton asChild className="w-full sm:w-auto">
               <Link to="/journeys/$journeyId" params={{ journeyId: journey.id }}>
                 Continue Journey
-                <ArrowRight aria-hidden="true" />
               </Link>
             </PrimaryButton>
           </header>
 
           <div className="min-w-0">
-            <Card className="min-w-0 gap-0 border-2 border-ink py-0 shadow-[8px_8px_0_var(--ink)] ring-0">
-              <div className="flex items-center justify-between gap-4 border-ink border-b-2 px-4 py-4 sm:px-6">
-                <div>
-                  <p className="mb-1 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.16em]">
-                    A record of practice
-                  </p>
+            <Card className="min-w-0 gap-0 py-0">
+              <CardContent className="p-4 sm:p-6">
+                <header className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
                   <h2 className="mb-0 font-bold text-xl [overflow-wrap:anywhere]">
                     {milestone.name}
                   </h2>
-                </div>
-                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-ink text-paper">
-                  <Check aria-hidden="true" className="size-5" strokeWidth={3} />
-                </span>
-              </div>
-
-              <CardContent className="p-4 sm:p-6">
-                <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="mb-0 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.15em]">
-                    Completed
-                  </p>
                   <p className="mb-0 font-bold text-sm tabular-nums">
-                    {pomodoroAmount} / {pomodoroAmount}
+                    {pomodoroAmount} of {pomodoroAmount} {pomodoroLabel}
                   </p>
-                </div>
+                </header>
 
                 <PomodoroGrid
                   className="max-w-[23rem]"
@@ -164,46 +131,31 @@ function MilestoneContent({ state, milestoneId }: { state: AppState; milestoneId
                   milestoneIndexes={targetMilestoneIndexes}
                 />
 
-                <p className="mt-5 mb-0 flex items-center gap-2 border-ink border-t pt-4 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.13em]">
-                  <span
-                    aria-hidden="true"
-                    className="size-1.5 shrink-0 rounded-full bg-pomodoro-red"
-                  />
-                  {milestoneSectionBlockCount} blocks in this section · 25 minutes each · milestone
-                  block identified
+                <p className="mt-5 mb-0 border-ink/15 border-t pt-4 text-ink/60 text-sm leading-relaxed">
+                  Each Pomodoro is 25 minutes. The milestone Pomodoro is marked.
                 </p>
               </CardContent>
             </Card>
 
             {nextMilestone ? (
-              <section
-                className="mt-10 border-pomodoro-red border-l-2 pl-5 sm:pl-7"
-                aria-labelledby="next-milestone-heading"
-              >
-                <p className="mb-2 font-bold text-[0.68rem] text-ink/60 uppercase tracking-[0.16em]">
-                  Next milestone
-                </p>
-                <div className="mb-5">
-                  <h2
-                    className="mb-0 font-bold text-3xl tracking-[-0.035em] [overflow-wrap:anywhere]"
-                    id="next-milestone-heading"
-                  >
-                    {nextMilestone.name}
-                  </h2>
-                </div>
+              <section className="mt-10" aria-labelledby="next-milestone-heading">
+                <p className="mb-2 font-bold text-ink/60 text-sm">Next milestone</p>
+                <h2
+                  className="mb-5 font-bold text-3xl tracking-[-0.035em] [overflow-wrap:anywhere]"
+                  id="next-milestone-heading"
+                >
+                  {nextMilestone.name}
+                </h2>
 
                 <MilestoneProgress
                   value={nextSectionPercentage}
-                  label="Progress from this milestone"
+                  label="Progress to next milestone"
                   detail={
                     remainingMinutes === 0
                       ? 'Reached'
                       : `${formatFocusedTime(remainingMinutes)} remaining`
                   }
                 />
-                <p className="mt-4 mb-0 max-w-[48ch] text-ink/60 text-sm leading-relaxed">
-                  The next focused hours begin the same way: one clear step and one focused session.
-                </p>
               </section>
             ) : null}
           </div>
@@ -223,7 +175,12 @@ export function MilestoneDetailScreen({ milestoneId }: { milestoneId: string }) 
       }
       errorFallback={({ retry, reset }) => (
         <FocusLayout>
-          <RecoverableErrorState onRetry={retry} onReset={reset} />
+          <RecoverableErrorState
+            title="Could not load milestone"
+            description="Your saved progress is unchanged. Try again."
+            onRetry={retry}
+            onReset={reset}
+          />
         </FocusLayout>
       )}
     >

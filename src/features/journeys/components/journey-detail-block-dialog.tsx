@@ -1,5 +1,3 @@
-import { Clock3 } from 'lucide-react';
-
 import { JourneyDetailDialog } from './journey-detail-dialog';
 
 export interface JourneyBlockContributionView {
@@ -55,29 +53,22 @@ export function JourneyDetailBlockDialog({
       }
     >
       <div className="flex flex-col gap-2">
-        <p className="mb-0 font-bold text-[0.68rem] text-pomodoro-red uppercase tracking-[0.16em]">
-          Visible effort
-        </p>
         <h2 id="journey-block-detail-title" className="mb-0 pr-10 font-bold text-2xl">
           Pomodoro {blockNumber ?? ''}
         </h2>
         <p id="journey-block-detail-description" className="mb-0 text-muted-foreground text-sm">
           {contributions.length === 1
-            ? 'The focus session that contributed to this block.'
-            : `${contributions.length} focus sessions contributed minutes to this block.`}
+            ? 'One Focus session added time to this Pomodoro.'
+            : `${contributions.length} Focus sessions added time to this Pomodoro.`}
         </p>
       </div>
 
-      <ol className="m-0 grid list-none gap-3 p-0" aria-label="Contributing focus sessions">
+      <ol className="m-0 list-none p-0" aria-label="Contributing Focus sessions">
         {contributions.map((contribution) => (
-          <li
-            key={contribution.sessionId}
-            className="rounded-lg border border-ink/15 bg-ink/[0.02] p-4"
-          >
+          <li key={contribution.sessionId} className="border-ink/15 border-b py-4 last:border-b-0">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <p className="mb-0 font-bold text-sm">{formatDate(contribution.date)}</p>
-              <span className="inline-flex items-center gap-1 font-bold text-ink/65 text-xs">
-                <Clock3 aria-hidden="true" className="size-3.5" />
+              <span className="font-bold text-ink/65 text-xs">
                 {formatMinutes(contribution.focusedMinutes)}
               </span>
             </div>
@@ -87,7 +78,7 @@ export function JourneyDetailBlockDialog({
             <p className="mb-0 text-ink/60 text-sm">
               {contribution.source === 'manual' ? 'Added manually' : 'Timer'}
               {contribution.contributionMinutes !== contribution.focusedMinutes
-                ? ` · ${formatMinutes(contribution.contributionMinutes)} added to this block`
+                ? ` · ${formatMinutes(contribution.contributionMinutes)} added to this Pomodoro`
                 : ''}
             </p>
           </li>

@@ -14,13 +14,15 @@ export function PublicLayout({
 }>) {
   return (
     <div className="min-h-dvh bg-paper text-ink">
-      <header className="mx-auto flex w-full max-w-content items-center justify-between gap-4 px-gutter-mobile py-4 md:px-gutter-desktop">
-        <BrandMark />
-        {headerAction}
+      <header className="border-ink/12 border-b">
+        <div className="mx-auto flex w-full max-w-content items-center justify-between gap-4 px-gutter-mobile py-3 md:px-gutter-desktop">
+          <BrandMark />
+          {headerAction}
+        </div>
       </header>
       <main
         className={cn(
-          'mx-auto w-full max-w-content px-gutter-mobile py-12 md:px-gutter-desktop md:py-20',
+          'mx-auto w-full max-w-content px-gutter-mobile py-10 md:px-gutter-desktop md:py-16',
           className
         )}
       >

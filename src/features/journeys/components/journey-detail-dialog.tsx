@@ -100,7 +100,7 @@ export function JourneyDetailDialog({
     <div className="fixed inset-0 z-50 grid place-items-center p-4">
       <div
         aria-hidden="true"
-        className="absolute inset-0 cursor-default bg-black/10 supports-backdrop-filter:backdrop-blur-xs"
+        className="absolute inset-0 cursor-default bg-ink/20 supports-backdrop-filter:backdrop-blur-xs"
       />
       <div
         ref={dialogRef}

@@ -18,6 +18,7 @@ export function ConfirmDialog({
   description,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
+  onOpenChange,
   onConfirm,
 }: {
   trigger: ReactNode;
@@ -25,10 +26,11 @@ export function ConfirmDialog({
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  onOpenChange?: (open: boolean) => void;
   onConfirm: () => void;
 }) {
   return (
-    <Dialog>
+    <Dialog onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>

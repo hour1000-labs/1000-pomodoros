@@ -185,7 +185,7 @@ function PausedSessionState({
     }
 
     actionInFlight.current = false;
-    setActionError('Your timer could not be resumed. It is still paused. Try again.');
+    setActionError("We couldn't resume the timer. It is still paused. Try again.");
   }
 
   function finishSessionEarly() {
@@ -210,7 +210,7 @@ function PausedSessionState({
     }
 
     actionInFlight.current = false;
-    setActionError('Your focused progress could not be saved yet. Keep this screen open.');
+    setActionError("We couldn't save your progress. Keep this screen open and try again.");
   }
 
   function cancelSession() {
@@ -230,12 +230,12 @@ function PausedSessionState({
     }
 
     actionInFlight.current = false;
-    setActionError('Your session could not be cancelled. It is still paused. Try again.');
+    setActionError("We couldn't cancel the session. It is still paused. Try again.");
   }
 
   function requestCancellation() {
     const confirmed = globalThis.confirm(
-      'Cancel this focus session? Your focused time from this session will be discarded and no Journey progress will be added.'
+      'Cancel this focus session? This discards its focused time and adds no Journey progress.'
     );
 
     if (confirmed) cancelSession();
@@ -243,10 +243,10 @@ function PausedSessionState({
 
   return (
     <FocusLayout className="relative overflow-hidden py-5 sm:py-8 [@media(max-height:640px)]:py-4">
-      <BrandMark className="absolute top-2 left-4 sm:top-5 sm:left-8 [@media(max-height:640px)]:hidden" />
+      <BrandMark className="absolute top-3 left-4 sm:top-6 sm:left-8 [@media(max-height:640px)]:hidden" />
 
       <section
-        className="grid w-full max-w-xl justify-items-center gap-3 pt-12 text-center sm:gap-4 [@media(max-height:640px)]:pt-0"
+        className="grid w-full max-w-xl justify-items-center gap-4 pt-12 text-center sm:gap-5 [@media(max-height:640px)]:gap-3 [@media(max-height:640px)]:pt-0"
         aria-labelledby="active-session-title"
       >
         <div className="min-w-0 max-w-full">
@@ -260,36 +260,27 @@ function PausedSessionState({
           className="grid size-[clamp(12rem,min(68vw,43dvh),22rem)] place-items-center rounded-full p-2"
           style={ringStyle}
         >
-          <div className="grid size-full place-content-center rounded-full border-2 border-ink bg-paper px-3">
-            <p className="mb-4 inline-flex items-center justify-center gap-2 justify-self-center rounded-full bg-ink px-4 py-2 font-bold text-[0.65rem] text-paper uppercase tracking-[0.18em]">
-              <span className="size-1.5 rounded-full bg-pomodoro-red" />
-              Paused
-            </p>
+          <div className="grid size-full place-content-center rounded-full border border-ink/15 bg-paper px-3">
+            <p className="mb-3 font-bold text-ink/60 text-sm">Paused</p>
             <h1
               className="mb-2 font-bold text-[clamp(3.25rem,14vw,6.5rem)] tabular-nums leading-none tracking-[-0.065em]"
               id="active-session-title"
             >
               {formatRemainingTime(activeTimer.remainingSeconds)}
             </h1>
-            <p className="mb-0 font-bold text-[0.65rem] text-ink/50 uppercase tracking-[0.18em]">
-              Remaining
-            </p>
+            <p className="mb-0 text-ink/60 text-sm">Time remaining</p>
           </div>
         </div>
 
         <div className="grid w-full max-w-md gap-3">
-          <PrimaryButton
-            type="button"
-            className="w-full shadow-[4px_4px_0_var(--ink)]"
-            onClick={resumeSession}
-          >
+          <PrimaryButton type="button" className="w-full" onClick={resumeSession}>
             <Play aria-hidden="true" />
             Resume
           </PrimaryButton>
           <Button
             type="button"
             variant="outline"
-            className="h-12 w-full border-2 border-ink font-bold"
+            className="h-12 w-full border-ink/50 font-bold"
             aria-describedby={canFinish ? undefined : 'finish-early-guidance'}
             disabled={!canFinish}
             onClick={finishSessionEarly}
@@ -299,7 +290,7 @@ function PausedSessionState({
           <Button
             type="button"
             variant="link"
-            className="h-11 text-ink/55 underline"
+            className="h-11 text-ink/60"
             onClick={requestCancellation}
           >
             Cancel session
@@ -367,7 +358,7 @@ function RunningSessionState({
       if (allowNavigation.current) return false;
 
       return !globalThis.confirm(
-        'Leave this focus screen? Your timer will continue running, and you can return at any time.'
+        'Leave this focus screen? The timer will keep running. You can return anytime.'
       );
     },
   });
@@ -386,7 +377,9 @@ function RunningSessionState({
 
       if (!completed) {
         completionInFlight.current = false;
-        setActionError('Your completed session could not be saved yet. Keep this screen open.');
+        setActionError(
+          "We couldn't save this completed session. Keep this screen open and try again."
+        );
         return;
       }
 
@@ -478,7 +471,7 @@ function RunningSessionState({
 
     if (!paused) {
       pauseInFlight.current = false;
-      setActionError('Your timer could not be paused. It is still running. Try again.');
+      setActionError("We couldn't pause the timer. It is still running. Try again.");
     }
   }
 
@@ -492,7 +485,7 @@ function RunningSessionState({
         await document.documentElement.requestFullscreen();
       }
     } catch {
-      setActionError('Fullscreen could not be changed in this browser.');
+      setActionError("We couldn't change fullscreen mode in this browser.");
     }
   }
 
@@ -510,7 +503,7 @@ function RunningSessionState({
         <Button
           type="button"
           variant="ghost"
-          className="absolute top-3 right-3 h-11 px-3 text-ink/55 hover:text-ink sm:top-6 sm:right-6"
+          className="absolute top-3 right-3 h-11 px-3 text-ink/60 hover:text-ink sm:top-6 sm:right-6"
           aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
           onClick={() => void toggleFullscreen()}
         >
@@ -536,10 +529,8 @@ function RunningSessionState({
           className="grid size-[clamp(12.5rem,min(70vw,50dvh),25rem)] place-items-center rounded-full p-2"
           style={ringStyle}
         >
-          <div className="grid size-full place-content-center rounded-full bg-ink px-3 text-paper">
-            <p className="mb-2 font-bold text-[0.65rem] text-paper/60 uppercase tracking-[0.18em]">
-              Remaining
-            </p>
+          <div className="grid size-full place-content-center rounded-full border border-ink/15 bg-paper px-3 text-ink">
+            <p className="mb-2 text-ink/60 text-sm">Time remaining</p>
             <h1
               className="mb-0 font-bold text-[clamp(3.4rem,14vw,7.5rem)] tabular-nums leading-none tracking-[-0.065em]"
               id="running-timer-title"
@@ -549,11 +540,7 @@ function RunningSessionState({
           </div>
         </div>
 
-        <PrimaryButton
-          type="button"
-          className="min-w-36 shadow-[4px_4px_0_var(--ink)]"
-          onClick={pauseSession}
-        >
+        <PrimaryButton type="button" className="min-w-36" onClick={pauseSession}>
           <Pause aria-hidden="true" />
           Pause
         </PrimaryButton>
@@ -653,8 +640,8 @@ function DurationOption({
   return (
     <label
       className={cn(
-        'relative flex min-h-18 cursor-pointer flex-col justify-between border-2 p-3 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink has-[:focus-visible]:ring-offset-2 [@media(max-height:680px)]:min-h-12 [@media(max-height:680px)]:p-2',
-        checked ? 'border-ink bg-ink text-paper' : 'border-ink/25 bg-paper text-ink'
+        'relative flex min-h-18 cursor-pointer flex-col justify-between rounded-lg border p-3 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink has-[:focus-visible]:ring-offset-2 [@media(max-height:680px)]:min-h-12 [@media(max-height:680px)]:p-2',
+        checked ? 'border-ink bg-ink text-paper' : 'border-ink/50 bg-paper text-ink'
       )}
     >
       <input
@@ -666,11 +653,11 @@ function DurationOption({
         onChange={() => onChange(value)}
       />
       <span className="font-bold text-base leading-none sm:text-xl">{label}</span>
-      <span className={cn('text-xs', checked ? 'text-paper/65' : 'text-ink/55')}>
+      <span className={cn('text-xs', checked ? 'text-paper/65' : 'text-ink/60')}>
         {description}
       </span>
       {checked ? (
-        <Check aria-hidden="true" className="absolute top-2 right-2 size-3 text-pomodoro-red" />
+        <Check aria-hidden="true" className="absolute top-2 right-2 size-3 text-paper" />
       ) : null}
     </label>
   );
@@ -681,16 +668,18 @@ function ProgressPreview({ minutes, journeyName }: { minutes: number; journeyNam
   const isComplete = previewMinutes === MINUTES_PER_POMODORO;
 
   return (
-    <div className="flex items-center gap-3 border-pomodoro-red border-l-2 pl-3">
+    <div className="flex items-center gap-3 rounded-lg border border-ink/15 p-3">
       <PomodoroBlock
         state={isComplete ? 'complete' : 'partial'}
         fraction={previewMinutes / MINUTES_PER_POMODORO}
-        label={`${previewMinutes} focused minutes preview`}
+        label={`Pomodoro preview: ${Math.round(
+          (previewMinutes / MINUTES_PER_POMODORO) * 100
+        )}% filled`}
         className="size-6 min-h-6 min-w-6"
       />
-      <p className="mb-0 text-ink/65 text-xs leading-relaxed">
-        <span className="font-bold text-ink">25 focused minutes fills one pomodoro block.</span>{' '}
-        This session adds {minutes} minutes to {journeyName}.
+      <p className="mb-0 min-w-0 text-ink/65 text-xs leading-relaxed [overflow-wrap:anywhere]">
+        <span className="font-bold text-ink">1 Pomodoro is 25 focused minutes.</span> This session
+        adds {minutes} focused minutes to {journeyName}.
       </p>
     </div>
   );
@@ -764,7 +753,7 @@ function TimerSetup({
     if (startInFlight.current || selectedMinutes === null) return;
 
     if (!nextStep) {
-      setSaveError('Choose an existing Next step before starting a focus session.');
+      setSaveError('Choose a Next step before starting.');
       return;
     }
 
@@ -791,36 +780,32 @@ function TimerSetup({
     setSaveError(
       result.status === 'saved'
         ? 'Another focus session is already active. Reload to restore it.'
-        : 'Your focus session could not be started. Nothing was recorded. Try again.'
+        : "We couldn't start your focus session. Nothing was recorded. Try again."
     );
   }
 
   return (
-    <FocusLayout className="items-start py-4 sm:py-6 lg:items-center">
-      <div className="mx-auto grid w-full max-w-5xl gap-5 lg:grid-cols-[0.72fr_1.28fr] lg:gap-14 [@media(max-height:680px)]:gap-2">
-        <aside className="border-ink border-b pb-4 lg:border-r lg:border-b-0 lg:pr-12 lg:pb-0 [@media(max-height:680px)]:pb-2">
-          <p className="mb-2 font-bold text-pomodoro-red text-xs uppercase tracking-[0.18em]">
-            Ready when you are
-          </p>
+    <FocusLayout className="items-start py-5 sm:py-8 lg:items-center">
+      <div className="mx-auto w-full max-w-2xl">
+        <BrandMark className="mb-8 [@media(max-height:680px)]:mb-4" />
+        <header className="mb-6 [@media(max-height:680px)]:mb-3">
           <h1
             ref={headingRef}
             tabIndex={announcement ? -1 : undefined}
-            className="mb-2 max-w-[13ch] font-bold text-3xl leading-[1.02] tracking-[-0.045em] sm:text-4xl lg:text-6xl [@media(max-height:680px)]:mb-0 [@media(max-height:680px)]:max-w-none [@media(max-height:680px)]:text-xl"
+            className="mb-2 font-bold text-3xl leading-tight tracking-[-0.035em] sm:text-4xl [@media(max-height:680px)]:text-2xl"
           >
-            Start with one focused session.
+            Start a focus session
           </h1>
-          <p className="mb-0 text-ink/60 text-sm [@media(max-height:620px)]:hidden">
-            Everything is set. Review it once, then begin.
+          <p className="mb-0 text-ink/60 text-sm sm:text-base [@media(max-height:620px)]:hidden">
+            Choose what to work on and for how long.
           </p>
-        </aside>
+        </header>
 
         <form noValidate onSubmit={handleStart} className="min-w-0">
-          <div className="grid gap-2 border-ink border-y py-2">
+          <div className="grid gap-3 rounded-xl border border-ink/15 p-4">
             <div className="flex min-w-0 items-center justify-between gap-4">
               <div className="min-w-0">
-                <p className="mb-0 font-bold text-[0.65rem] text-ink/50 uppercase tracking-[0.14em]">
-                  Journey
-                </p>
+                <p className="mb-1 font-bold text-ink/60 text-sm">Journey</p>
                 <p className="mb-0 truncate font-bold text-base">{journey.name}</p>
               </div>
               <SelectionDialog
@@ -849,11 +834,9 @@ function TimerSetup({
               </SelectionDialog>
             </div>
 
-            <div className="flex min-w-0 items-center justify-between gap-4 border-ink/15 border-t pt-2">
+            <div className="flex min-w-0 items-center justify-between gap-4 border-ink/15 border-t pt-3">
               <div className="min-w-0">
-                <p className="mb-0 font-bold text-[0.65rem] text-ink/50 uppercase tracking-[0.14em]">
-                  Current Next step
-                </p>
+                <p className="mb-1 font-bold text-ink/60 text-sm">Next step</p>
                 <p className="mb-0 line-clamp-2 font-bold text-sm">
                   {nextStep?.title ?? 'No current Next step'}
                 </p>
@@ -892,7 +875,7 @@ function TimerSetup({
           </div>
 
           <fieldset className="mt-4 [@media(max-height:680px)]:mt-2">
-            <legend className="mb-2 font-bold text-xs uppercase tracking-[0.14em]">Duration</legend>
+            <legend className="mb-2 font-bold text-sm">Duration</legend>
             <div className="grid grid-cols-3 gap-2">
               <DurationOption
                 value="25"
@@ -934,7 +917,7 @@ function TimerSetup({
                 value={customMinutes}
                 aria-invalid={visibleCustomError !== null}
                 aria-describedby={visibleCustomError ? 'custom-duration-error' : undefined}
-                className="h-11 rounded-none border-2 border-ink"
+                className="h-11 rounded-lg border border-ink/50"
                 onBlur={() => setCustomTouched(true)}
                 onChange={(event) => {
                   setCustomMinutes(event.target.value);
@@ -965,15 +948,12 @@ function TimerSetup({
 
           <PrimaryButton
             type="submit"
-            className="mt-4 w-full shadow-[4px_4px_0_var(--ink)] [@media(max-height:680px)]:mt-2"
+            className="mt-4 w-full [@media(max-height:680px)]:mt-2"
             disabled={isStarting || selectedMinutes === null || nextStep === null}
           >
             {isStarting ? <Clock3 aria-hidden="true" /> : <Play aria-hidden="true" />}
             {isStarting ? 'Starting session…' : 'Start focus session'}
           </PrimaryButton>
-          <p className="mt-2 mb-0 text-center font-bold text-[0.65rem] text-ink/45 uppercase tracking-[0.13em] [@media(max-height:680px)]:hidden">
-            {selectedMinutes ?? 'Custom'} minutes · {journey.name}
-          </p>
           {announcement ? (
             <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
               {announcement}

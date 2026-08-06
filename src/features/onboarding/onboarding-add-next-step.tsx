@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { type FormEvent, useRef, useState } from 'react';
 
 import { LoadingState } from '@/components/shared/loading-state';
+import { PomodoroBlock } from '@/components/shared/pomodoro-block';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
 import { Button } from '@/components/ui/button';
@@ -17,9 +18,9 @@ import { OnboardingLayout } from './components/onboarding-layout';
 const FIRST_MILESTONE_POMODOROS = 10;
 const MINUTES_PER_POMODORO = 25;
 const LEARN_GUITAR_SAMPLE_STEP = 'Practice the F chord transition';
-const nextStepPreviewBlockIds = Array.from(
+const nextStepPreviewPomodoroIds = Array.from(
   { length: FIRST_MILESTONE_POMODOROS },
-  (_, index) => `next-step-preview-block-${index + 1}`
+  (_, index) => `next-step-preview-pomodoro-${index + 1}`
 );
 
 function getInitialNextStep(draft: OnboardingDraft) {
@@ -77,31 +78,22 @@ export function createOnboardingRecords(
 function NextStepPreview({ journeyName }: { journeyName: string }) {
   return (
     <aside className="hidden max-w-sm lg:block" aria-hidden="true">
-      <p className="mb-8 font-bold text-[0.75rem] text-ink/60 uppercase tracking-[0.22em]">
-        Ready to begin
-      </p>
-      <div className="mb-7 h-px w-full bg-ink" />
-      <span className="mb-5 block size-10 rounded-full border-2 border-ink bg-pomodoro-red shadow-[2px_2px_0_var(--ink)]" />
-      <p className="mb-9 font-bold text-3xl leading-[1.08] tracking-[-0.035em] [overflow-wrap:anywhere]">
-        {journeyName}
-      </p>
-      <div className="mb-6 border-ink border-y py-5">
-        <p className="mb-2 font-bold text-[0.68rem] text-ink/55 uppercase tracking-[0.16em]">
-          First focus session
-        </p>
-        <p className="mb-0 font-bold text-5xl tabular-nums tracking-[-0.05em]">25:00</p>
+      <p className="mb-5 font-bold text-xl leading-tight [overflow-wrap:anywhere]">{journeyName}</p>
+      <div className="mb-6 border-ink/10 border-y py-4">
+        <p className="mb-1 text-ink/60 text-sm">First Focus session</p>
+        <p className="mb-0 font-bold text-4xl tabular-nums tracking-[-0.04em]">25:00</p>
       </div>
-      <p className="mb-8 max-w-[30ch] text-base text-ink/60 leading-relaxed">
-        One concrete action is all you need before the first pomodoro begins.
-      </p>
       <div className="grid w-fit grid-cols-5 gap-2">
-        {nextStepPreviewBlockIds.map((blockId) => (
-          <span className="size-7 rounded-sm border border-ink/70 bg-paper" key={blockId} />
+        {nextStepPreviewPomodoroIds.map((pomodoroId, index) => (
+          <PomodoroBlock
+            key={pomodoroId}
+            state="future"
+            label={`Pomodoro ${index + 1}, not started`}
+            className="size-7"
+          />
         ))}
       </div>
-      <p className="mt-5 mb-0 font-bold text-[0.7rem] text-ink/60 uppercase tracking-[0.18em]">
-        Your first block is waiting
-      </p>
+      <p className="mt-4 mb-0 text-ink/60 text-sm">Your first Pomodoro is ready</p>
     </aside>
   );
 }
@@ -177,40 +169,26 @@ function NextStepForm({
   }
 
   return (
-    <OnboardingLayout className="items-start py-3 sm:py-6 md:items-center md:py-12 [@media(max-height:760px)]:py-0">
-      <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1fr)] lg:gap-20 xl:gap-28">
+    <OnboardingLayout>
+      <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24">
         <NextStepPreview journeyName={draft.journeyName} />
 
         <section className="w-full min-w-0 max-w-[42rem] lg:justify-self-end">
-          <div className="mb-4 flex items-center gap-4 sm:mb-6 [@media(max-height:720px)]:mb-2">
-            <p className="mb-0 shrink-0 font-bold text-[0.75rem] uppercase tracking-[0.18em]">
-              4 of 4
-            </p>
+          <div className="mb-6 flex items-center gap-3">
+            <p className="mb-0 shrink-0 font-bold text-ink/60 text-sm">4 of 4</p>
             <span className="h-px w-24 bg-pomodoro-red" aria-hidden="true" />
-            <p className="mb-0 hidden font-bold text-[0.7rem] text-ink/60 uppercase tracking-[0.16em] sm:block">
-              Your first step
-            </p>
           </div>
 
-          <div className="mb-3 flex items-center gap-3 sm:mb-4 [@media(max-height:620px)]:hidden">
-            <span
-              className="block size-7 rounded-full border-2 border-ink bg-pomodoro-red"
-              aria-hidden="true"
-            />
-            <p className="mb-0 min-w-0 font-bold text-sm [overflow-wrap:anywhere]">
-              {draft.journeyName}
-            </p>
-          </div>
+          <p className="mb-3 min-w-0 font-bold text-ink/60 text-sm [overflow-wrap:anywhere]">
+            {draft.journeyName}
+          </p>
 
-          <h1 className="mb-3 max-w-[14ch] font-bold text-4xl leading-[1.04] tracking-[-0.04em] sm:text-5xl lg:text-[3.5rem] [@media(max-height:720px)]:mb-2 [@media(max-height:720px)]:text-3xl">
-            What is the next thing you can work on?
+          <h1 className="mb-7 max-w-[14ch] font-bold text-4xl leading-[1.08] tracking-[-0.035em] sm:text-5xl">
+            Add your first Next step
           </h1>
 
           <form noValidate onSubmit={handleSubmit}>
-            <label
-              className="mb-2 block font-bold text-[0.75rem] uppercase tracking-[0.12em]"
-              htmlFor="first-next-step"
-            >
+            <label className="mb-2 block font-bold text-sm" htmlFor="first-next-step">
               Next step
             </label>
             <Input
@@ -225,7 +203,7 @@ function NextStepForm({
                   : 'first-next-step-helper'
               }
               aria-invalid={showNextStepError}
-              className="h-16 w-full min-w-0 rounded-none border-2 border-ink bg-paper px-4 font-bold text-lg shadow-[5px_5px_0_var(--pomodoro-red)] focus-visible:border-ink sm:h-20 sm:px-6 sm:text-xl [@media(max-height:620px)]:h-14"
+              className="h-14 w-full min-w-0 rounded-lg border-ink/50 bg-paper px-4 font-bold text-lg focus-visible:border-ink sm:text-xl"
               onBlur={() => setHasBlurred(true)}
               onChange={(event) => {
                 setNextStepTitle(event.target.value);
@@ -233,10 +211,10 @@ function NextStepForm({
               }}
             />
             <p
-              className="mt-3 mb-0 border-pomodoro-red border-l-2 py-1 pl-4 text-ink/65 text-sm leading-relaxed [@media(max-height:620px)]:mt-2 [@media(max-height:620px)]:text-xs"
+              className="mt-2 mb-0 text-ink/60 text-sm leading-relaxed"
               id="first-next-step-helper"
             >
-              Choose one action you can make progress on in your next session.
+              Choose one action for your first Focus session.
             </p>
             {showNextStepError ? (
               <p
@@ -253,18 +231,10 @@ function NextStepForm({
               </p>
             ) : null}
 
-            <div className="mt-6 border-ink border-t pt-5 sm:mt-8 sm:flex sm:items-end sm:justify-between sm:gap-6 [@media(max-height:720px)]:mt-4 [@media(max-height:720px)]:pt-3">
-              <div className="mb-4 sm:mb-0 [@media(max-height:620px)]:hidden">
-                <p className="mb-1 font-bold text-[0.68rem] text-ink/55 uppercase tracking-[0.15em]">
-                  You are ready
-                </p>
-                <p className="mb-0 max-w-[23ch] font-bold text-base leading-snug">
-                  Create your Journey and see your first Next step ready on Home.
-                </p>
-              </div>
+            <div className="mt-6 flex justify-end">
               <PrimaryButton
                 type="submit"
-                className="w-full shadow-[4px_4px_0_var(--ink)] sm:w-auto sm:min-w-56"
+                className="w-full sm:w-auto sm:min-w-48"
                 disabled={pendingAction !== null}
               >
                 {pendingAction === 'submit' ? 'Creating Journey…' : 'Create Journey'}

@@ -38,6 +38,20 @@ confirmed requirements from questions that still need an explicit decision.
 - The full visualization should make large totals feel substantial and visibly
   fill the available progress field.
 
+### 2026-08-05 — Tomato progress units
+
+- Status: Confirmed
+- Decision: Every visual Pomodoro progress unit uses a tomato silhouette instead
+  of a square. Complete tomatoes are filled Pomodoro Red, partial tomatoes fill
+  proportionally from left to right inside a persistent outline, and future
+  tomatoes use an unfilled outline. Latest, milestone, newly-earned, selectable,
+  and accessible state cues remain distinct.
+- Reason: The tomato makes the Pomodoro unit literal and matches the supplied
+  Session Complete and Milestone visual references across the project.
+- Affects: Shared Pomodoro blocks and grids, previews, legends, Journey progress,
+  Session Complete, Milestone detail, retained demos, design documentation, and
+  UI verification.
+
 ### Next steps
 
 - Each Journey has an ordered list with the current next step at the top.
@@ -69,7 +83,6 @@ Resolve these before implementing a feature they materially affect.
 
 ### Progress
 
-- Finalize the visual treatment for complete and partial pomodoro blocks.
 - Finalize how the full 2,400-pomodoro journey is grouped and navigated.
 - Decide whether milestones can be outcome-based as well as time-based.
 

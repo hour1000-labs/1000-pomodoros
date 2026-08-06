@@ -39,6 +39,50 @@ describe('PomodoroGrid', () => {
     );
   });
 
+  it('renders one decorative tomato per semantic unit with left-to-right partial fill', () => {
+    render(<PomodoroGrid focusedMinutes={65} totalPomodoros={5} />);
+
+    const partial = screen.getByRole('img', {
+      name: 'Pomodoro 3: partial, 60% filled',
+    });
+    const complete = screen.getByRole('img', { name: 'Pomodoro 1: complete' });
+    const future = screen.getByRole('img', { name: 'Pomodoro 4: future' });
+    const tomato = partial.querySelector('[data-pomodoro-tomato="true"]');
+    const fillClip = partial.querySelector('[data-pomodoro-fill-clip="true"]');
+
+    expect(screen.getAllByRole('img')).toHaveLength(5);
+    expect(tomato?.getAttribute('aria-hidden')).toBe('true');
+    expect(tomato?.getAttribute('role')).toBeNull();
+    expect(fillClip?.getAttribute('data-fill-direction')).toBe('left-to-right');
+    expect(fillClip?.getAttribute('x')).toBe('4');
+    expect(fillClip?.getAttribute('width')).toBe('12');
+    expect(complete.querySelector('[data-pomodoro-fill-clip="true"]')?.getAttribute('width')).toBe(
+      '20'
+    );
+    expect(future.querySelector('[data-pomodoro-fill-clip="true"]')?.getAttribute('width')).toBe(
+      '0'
+    );
+    expect(partial.querySelector('[data-pomodoro-outline="true"]')).toBeTruthy();
+    expect(partial.querySelector('[data-pomodoro-stem="true"]')).toBeTruthy();
+    expect(partial.querySelector('[data-pomodoro-calyx="true"]')).toBeTruthy();
+  });
+
+  it.each([
+    [0.2, '20', '4'],
+    [0.5, '50', '10'],
+    [0.96, '96', '19.2'],
+  ])('renders a %s partial tomato proportionally from the left', (fraction, percent, width) => {
+    render(<PomodoroBlock state="partial" fraction={fraction} label={`${percent}% partial`} />);
+
+    const partial = screen.getByRole('img', { name: `${percent}% partial` });
+
+    expect(partial.getAttribute('data-fill-percent')).toBe(percent);
+    expect(partial.querySelector('[data-pomodoro-fill-clip="true"]')?.getAttribute('width')).toBe(
+      width
+    );
+    expect(partial.querySelector('[data-pomodoro-outline="true"]')).toBeTruthy();
+  });
+
   it('caps a 2,400-pomodoro target at the default render limit', () => {
     render(<PomodoroGrid focusedMinutes={0} totalPomodoros={2_400} />);
 
@@ -88,7 +132,7 @@ describe('PomodoroGrid', () => {
     expect(partialLatestMilestone.getAttribute('data-latest')).toBe('true');
     expect(partialLatestMilestone.getAttribute('data-milestone')).toBe('true');
     expect(partialLatestMilestone.getAttribute('aria-current')).toBe('true');
-    expect(partialLatestMilestone.className).toContain('outline-2');
+    expect(partialLatestMilestone.querySelector('[data-latest-ring="true"]')).toBeTruthy();
     expect(futureMilestone.getAttribute('data-state')).toBe('future');
     expect(futureMilestone.querySelector('[data-milestone-notch="true"]')).toBeTruthy();
   });
@@ -170,6 +214,9 @@ describe('PomodoroGrid', () => {
     expect(selectablePartial.getAttribute('aria-haspopup')).toBe('dialog');
     expect(selectablePartial.getAttribute('aria-controls')).toBe('pomodoro-detail-dialog');
     expect(selectablePartial.getAttribute('aria-expanded')).toBe('true');
+    expect(selectablePartial.getAttribute('data-selected')).toBe('true');
+    expect(selectablePartial.className).toContain('ring-pomodoro-red');
+    expect(selectablePartial.className).toContain('bg-pomodoro-red/10');
     expect(blocks.some((block) => block.getAttribute('data-pomodoro-index') === '100')).toBe(true);
     expect(blocks.some((block) => block.getAttribute('data-pomodoro-index') === '199')).toBe(true);
     expect(
