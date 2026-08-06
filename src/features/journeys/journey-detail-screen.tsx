@@ -57,19 +57,29 @@ function StartAction({ journeyId, nextStep }: { journeyId: string; nextStep: Nex
   );
 }
 
-function JourneyContent({ state, journeyId }: { state: AppState; journeyId: string }) {
+function JourneyContent({
+  state,
+  journeyId,
+  readOnly = false,
+  showNavigationItems = true,
+}: {
+  state: AppState;
+  journeyId: string;
+  readOnly?: boolean;
+  showNavigationItems?: boolean;
+}) {
   const [addOpen, setAddOpen] = useState(false);
   const detail = deriveJourneyDetailData(state, journeyId);
 
   if (!detail) return <JourneyNotFoundState state={state} />;
 
   const { journey, progress, currentStep } = detail;
-  const canStart = journey.status === 'active' && currentStep !== null;
+  const canStart = !readOnly && journey.status === 'active' && currentStep !== null;
   const startAction = canStart ? (
     <StartAction journeyId={journey.id} nextStep={currentStep} />
   ) : undefined;
   const mobileDock =
-    journey.status === 'active' ? (
+    !readOnly && journey.status === 'active' ? (
       <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 h-15 border-ink/10 border-t bg-paper px-5 pt-3 md:hidden">
         {currentStep ? (
           <StartAction journeyId={journey.id} nextStep={currentStep} />
@@ -83,7 +93,12 @@ function JourneyContent({ state, journeyId }: { state: AppState; journeyId: stri
     ) : undefined;
 
   return (
-    <ApplicationLayout journeyId={journey.id} className="pb-12 md:pb-16" mobileDock={mobileDock}>
+    <ApplicationLayout
+      journeyId={journey.id}
+      className="pb-12 md:pb-16"
+      mobileDock={mobileDock}
+      showNavigationItems={showNavigationItems}
+    >
       <header className="border-ink/15 border-b pb-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
@@ -139,6 +154,7 @@ function JourneyContent({ state, journeyId }: { state: AppState; journeyId: stri
             currentStep={currentStep}
             primaryAction={startAction}
             onRequestAdd={() => setAddOpen(true)}
+            readOnly={readOnly}
           />
           {journey.status !== 'active' ? (
             <p className="mt-5 mb-0 rounded-lg border border-ink/15 p-4 text-ink/60 text-sm">
@@ -154,6 +170,7 @@ function JourneyContent({ state, journeyId }: { state: AppState; journeyId: stri
           upcomingSteps={detail.upcomingSteps}
           addOpen={addOpen}
           onAddOpenChange={setAddOpen}
+          readOnly={readOnly}
         />
         <JourneyDetailRecentSessions sessions={detail.recentSessions} />
       </section>
@@ -161,10 +178,38 @@ function JourneyContent({ state, journeyId }: { state: AppState; journeyId: stri
   );
 }
 
-export function JourneyDetailScreen({ journeyId }: { journeyId: string }) {
+export function JourneyDetailScreen({
+  journeyId,
+  readOnly = false,
+  state,
+  showNavigationItems = true,
+}: {
+  journeyId: string;
+  readOnly?: boolean;
+  state?: AppState;
+  showNavigationItems?: boolean;
+}) {
+  if (state !== undefined) {
+    return (
+      <JourneyContent
+        state={state}
+        journeyId={journeyId}
+        readOnly={readOnly}
+        showNavigationItems={showNavigationItems}
+      />
+    );
+  }
+
   return (
     <ApplicationStateBoundary>
-      {(state) => <JourneyContent state={state} journeyId={journeyId} />}
+      {(persistedState) => (
+        <JourneyContent
+          state={persistedState}
+          journeyId={journeyId}
+          readOnly={readOnly}
+          showNavigationItems={showNavigationItems}
+        />
+      )}
     </ApplicationStateBoundary>
   );
 }

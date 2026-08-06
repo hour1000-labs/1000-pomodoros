@@ -113,6 +113,9 @@ describe('JourneyDetailScreen', () => {
     await renderJourney(createSeedAppState());
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Learn guitar' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: '1000 Pomodoros' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Journey' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Journeys' })).toBeNull();
     expect(screen.getByText('17 hours 55 minutes')).toBeTruthy();
     expect(screen.getByRole('heading', { name: '43 Pomodoros' })).toBeTruthy();
     expect(screen.getByText('72% · 17 pomodoros remaining')).toBeTruthy();

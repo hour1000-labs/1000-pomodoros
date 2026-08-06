@@ -132,7 +132,22 @@ export const learnGuitarMockData = {
   weeklyGoal: learnGuitarWeeklyGoal,
 };
 
-export function createSeedAppState(): AppState {
+export function createEmptyAppState(): AppState {
+  return {
+    schemaVersion: APP_STATE_SCHEMA_VERSION,
+    journeys: [],
+    nextSteps: [],
+    focusSessions: [],
+    milestones: [],
+    weeklyGoal: null,
+    onboardingDraft: null,
+    activeTimer: null,
+    lastActiveJourneyId: null,
+    lastCompletedSessionId: null,
+  };
+}
+
+export function createSampleAppState(): AppState {
   return {
     schemaVersion: APP_STATE_SCHEMA_VERSION,
     journeys: [{ ...learnGuitarJourney }],
@@ -147,6 +162,13 @@ export function createSeedAppState(): AppState {
   };
 }
 
+/**
+ * Retained as a fixture alias for existing tests that need the representative Journey state.
+ */
+export function createSeedAppState(): AppState {
+  return createSampleAppState();
+}
+
 export function createMilestoneReachedAppState(): AppState {
   const milestoneSessionEndTimes = Array.from({ length: 60 }, (_, index) =>
     new Date(Date.UTC(2026, 4, 14 + index, 18, 25)).toISOString()
@@ -158,7 +180,7 @@ export function createMilestoneReachedAppState(): AppState {
   };
 
   return {
-    ...createSeedAppState(),
+    ...createSampleAppState(),
     focusSessions,
     milestones: [
       { ...learnGuitarMilestones[0] },

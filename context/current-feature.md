@@ -1,41 +1,65 @@
-# Current Feature: <feature name>
+# Current Feature: Optional Sample Journey
 
-<!-- One-sentence description of the feature or fix -->
+Start first-time users with empty persisted data while keeping an explicit way to explore the Learn guitar sample Journey.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Not Started
+Ready to Commit
 
 ## Goal
 
-<!-- Describe what should change from the user's perspective. -->
+A new user sees a genuine empty workspace and can intentionally open a sample Journey when they want an example.
 
 ## Acceptance Criteria
 
 <!-- The feature is done when every applicable item is checked. -->
 
-- [ ] ...
-- [ ] ...
+- [x] A first load with no saved state creates and persists an empty `AppState`: no Journeys, Next steps, focus sessions, milestones, weekly goal, active timer, active Journey, or last completed session.
+- [x] Existing saved state is returned unchanged and is never merged with or overwritten by the Learn guitar sample data during normal loading.
+- [x] The default first-time experience keeps “Start your first Journey” as the primary action and offers a clearly labeled, keyboard-accessible “Explore sample Journey” action.
+- [x] The default first-time experience does not present the sample Journey as if it were the user’s persisted data; sample content appears only after the explicit Explore action.
+- [x] “Explore sample Journey” opens a read-only representative Learn guitar experience at `/sample` without writing the sample, overwriting user progress, or changing an onboarding draft.
+- [x] The sample experience exposes no Focus, completion, or Next step mutation actions, and clicking the “1000 Pomodoros” brand link returns to the landing page while persisted data remains unchanged.
+- [x] The sample experience uses a brand-only header with no Home or Journey navigation items, while the normal application navigation labels the singular destination “Journey.”
+- [x] The brand is non-interactive in normal persisted-Journey layouts so it cannot trigger the landing-page redirect glitch; it remains a link in the sample’s brand-only header.
+- [x] Starting a real Journey from the empty state continues to create persisted user data and route into the existing onboarding flow.
+- [x] The Learn guitar fixture remains available as an explicit sample/demo source for the Explore flow and relevant tests, but is no longer the implicit repository default.
 
 ## Plan
 
-1. ...
-2. ...
+1. Separate the empty initial-state factory from the existing Learn guitar sample fixture and make repository initialization use the empty state.
+2. Add the explicit Explore sample Journey entry point to the first-time landing experience while retaining the real-Journey CTA as the primary action.
+3. Add a dedicated `/sample` route that reuses the Journey detail UI in read-only mode, with no persistence actions, and verify the brand link returns to the landing page.
+4. Update repository, landing, and sample-flow tests for empty initialization, preserved saved state, non-persisted sample exploration, and real Journey creation.
+5. Verify the first-time, sample, and real-onboarding flows at responsive browser sizes and check the affected persistence and navigation states.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes (21 files, 173 tests)
+- [x] `pnpm build` passes (client and SSR)
+- [x] `git diff --check` passes
+- [x] Affected UI verified in the browser, if applicable
+- [x] Mobile and desktop verified, if responsive UI changed
+- [x] Fresh empty state, explicit sample exploration, reload behavior, and real Journey creation are verified in the browser
+- [x] No relevant browser console errors or warnings
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
+
+- Keep the Learn guitar records as an explicit fixture/demo source; remove only their implicit use as initial persisted data.
+- Treat Explore sample Journey as a non-destructive opt-in: the action opens a read-only `/sample` route backed by an explicit fixture and never calls the repository or mutates localStorage.
+- The sample route intentionally uses the existing application navigation so the “1000 Pomodoros” brand link returns to `/`; because the sample is not persisted, the landing route remains the landing experience.
+- The sample route now uses the same brand link in a brand-only header; regular app navigation keeps a singular “Journey” destination because each detail view represents one Journey.
+- Normal persisted-Journey layouts render the brand as static text to avoid navigating to `/` and immediately redirecting back to Home.
+- Test revalidation classified the static-brand follow-up as localized behavioral: reran `pnpm check`, `pnpm test`, `pnpm build`, `git diff --check`, and the affected browser flows; earlier sample-flow evidence remained applicable.
+- Browser verification covered the empty landing, sample exploration and reload, sample return link, full real-Journey onboarding creation, normal singular navigation, mobile and desktop layouts, and no console errors or warnings.
+- Review 2026-08-05 found no blocking findings, regressions, accessibility issues, unrelated changes, or unapproved scope expansion; all implementation changes map to the acceptance criteria.
+- The initial empty-state intent was reconciled into `createEmptyAppState()` plus explicit `createSampleAppState()`; the existing `createSeedAppState()` name remains a fixture alias so unrelated tests keep their representative Journey setup.
+- No pending item in `context/decisions.md` materially blocks this scope.
 
 ## History
 

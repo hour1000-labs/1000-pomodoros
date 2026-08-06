@@ -22,11 +22,13 @@ export function JourneyDetailNextSteps({
   upcomingSteps,
   addOpen,
   onAddOpenChange,
+  readOnly = false,
 }: {
   journeyId: string;
   upcomingSteps: readonly NextStep[];
   addOpen: boolean;
   onAddOpenChange: (open: boolean) => void;
+  readOnly?: boolean;
 }) {
   const [title, setTitle] = useState('');
   const [touched, setTouched] = useState(false);
@@ -83,10 +85,12 @@ export function JourneyDetailNextSteps({
           <h2 id="next-steps-heading" className="mb-0 font-bold text-2xl tracking-[-0.025em]">
             Next steps
           </h2>
-          <Button type="button" variant="outline" onClick={() => changeAddOpen(true)}>
-            <Plus aria-hidden="true" />
-            Add Next step
-          </Button>
+          {!readOnly ? (
+            <Button type="button" variant="outline" onClick={() => changeAddOpen(true)}>
+              <Plus aria-hidden="true" />
+              Add Next step
+            </Button>
+          ) : null}
         </div>
 
         {upcomingSteps.length === 0 ? (
@@ -117,65 +121,70 @@ export function JourneyDetailNextSteps({
         )}
       </section>
 
-      <JourneyDetailDialog
-        open={addOpen}
-        onOpenChange={changeAddOpen}
-        titleId="journey-add-next-step-title"
-        descriptionId="journey-add-next-step-description"
-        initialFocusRef={inputRef}
-      >
-        <div className="flex flex-col gap-2">
-          <h2 id="journey-add-next-step-title" className="mb-0 pr-10 font-bold text-xl">
-            Add a Next step
-          </h2>
-          <p id="journey-add-next-step-description" className="mb-0 text-muted-foreground text-sm">
-            Choose one action you can start now.
-          </p>
-        </div>
-        <form noValidate onSubmit={handleAdd}>
-          <label htmlFor="journey-next-step-title" className="mb-2 block font-bold text-sm">
-            Next step
-          </label>
-          <Input
-            ref={inputRef}
-            id="journey-next-step-title"
-            value={title}
-            maxLength={NEXT_STEP_MAX_LENGTH}
-            aria-invalid={(touched && titleError !== null) || undefined}
-            aria-describedby={
-              touched && titleError !== null ? 'journey-next-step-error' : undefined
-            }
-            placeholder="Practice the chord change slowly"
-            onChange={(event) => handleTitleChange(event.target.value)}
-            onBlur={() => setTouched(true)}
-          />
-          <div className="mt-2 flex items-start justify-between gap-4 text-sm">
+      {!readOnly ? (
+        <JourneyDetailDialog
+          open={addOpen}
+          onOpenChange={changeAddOpen}
+          titleId="journey-add-next-step-title"
+          descriptionId="journey-add-next-step-description"
+          initialFocusRef={inputRef}
+        >
+          <div className="flex flex-col gap-2">
+            <h2 id="journey-add-next-step-title" className="mb-0 pr-10 font-bold text-xl">
+              Add a Next step
+            </h2>
             <p
-              id="journey-next-step-error"
-              className="mb-0 text-pomodoro-red"
-              role={touched && titleError !== null ? 'alert' : undefined}
+              id="journey-add-next-step-description"
+              className="mb-0 text-muted-foreground text-sm"
             >
-              {touched ? titleError : null}
+              Choose one action you can start now.
             </p>
-            <span className="ml-auto shrink-0 text-ink/65 tabular-nums">
-              {title.length}/{NEXT_STEP_MAX_LENGTH}
-            </span>
           </div>
-          {addError ? (
-            <p className="mt-3 mb-0 font-bold text-pomodoro-red text-sm" role="alert">
-              {addError}
-            </p>
-          ) : null}
-          <div className="-mx-4 mt-5 -mb-4 flex flex-col-reverse gap-2 border-ink/15 border-t p-4 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => changeAddOpen(false)}>
-              Cancel
-            </Button>
-            <PrimaryButton type="submit" disabled={isSaving}>
-              {isSaving ? 'Adding…' : 'Add Next step'}
-            </PrimaryButton>
-          </div>
-        </form>
-      </JourneyDetailDialog>
+          <form noValidate onSubmit={handleAdd}>
+            <label htmlFor="journey-next-step-title" className="mb-2 block font-bold text-sm">
+              Next step
+            </label>
+            <Input
+              ref={inputRef}
+              id="journey-next-step-title"
+              value={title}
+              maxLength={NEXT_STEP_MAX_LENGTH}
+              aria-invalid={(touched && titleError !== null) || undefined}
+              aria-describedby={
+                touched && titleError !== null ? 'journey-next-step-error' : undefined
+              }
+              placeholder="Practice the chord change slowly"
+              onChange={(event) => handleTitleChange(event.target.value)}
+              onBlur={() => setTouched(true)}
+            />
+            <div className="mt-2 flex items-start justify-between gap-4 text-sm">
+              <p
+                id="journey-next-step-error"
+                className="mb-0 text-pomodoro-red"
+                role={touched && titleError !== null ? 'alert' : undefined}
+              >
+                {touched ? titleError : null}
+              </p>
+              <span className="ml-auto shrink-0 text-ink/65 tabular-nums">
+                {title.length}/{NEXT_STEP_MAX_LENGTH}
+              </span>
+            </div>
+            {addError ? (
+              <p className="mt-3 mb-0 font-bold text-pomodoro-red text-sm" role="alert">
+                {addError}
+              </p>
+            ) : null}
+            <div className="-mx-4 mt-5 -mb-4 flex flex-col-reverse gap-2 border-ink/15 border-t p-4 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" onClick={() => changeAddOpen(false)}>
+                Cancel
+              </Button>
+              <PrimaryButton type="submit" disabled={isSaving}>
+                {isSaving ? 'Adding…' : 'Add Next step'}
+              </PrimaryButton>
+            </div>
+          </form>
+        </JourneyDetailDialog>
+      ) : null}
     </>
   );
 }
@@ -185,11 +194,13 @@ export function JourneyDetailCurrentStep({
   currentStep,
   primaryAction,
   onRequestAdd,
+  readOnly = false,
 }: {
   journeyId: string;
   currentStep: NextStep | null;
   primaryAction?: ReactNode;
   onRequestAdd: () => void;
+  readOnly?: boolean;
 }) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [completeError, setCompleteError] = useState<string | null>(null);
@@ -237,22 +248,30 @@ export function JourneyDetailCurrentStep({
           <h2 className="mb-3 font-bold text-2xl leading-tight tracking-[-0.025em] [overflow-wrap:anywhere]">
             {currentStep.title}
           </h2>
-          <p className="mb-5 text-ink/60 text-sm">Finish the session to add a Pomodoro.</p>
-          {primaryAction ? <div className="mb-3 hidden md:block">{primaryAction}</div> : null}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            disabled={isCompleting}
-            onClick={handleComplete}
-          >
-            <Check aria-hidden="true" />
-            {isCompleting ? 'Completing…' : 'Mark complete'}
-          </Button>
-          {completeError ? (
-            <p className="mt-3 mb-0 font-bold text-pomodoro-red text-sm" role="alert">
-              {completeError}
-            </p>
+          <p className="mb-5 text-ink/60 text-sm">
+            {readOnly
+              ? 'This is a sample Journey. Create your own Journey to start focusing.'
+              : 'Finish the session to add a Pomodoro.'}
+          </p>
+          {!readOnly ? (
+            <>
+              {primaryAction ? <div className="mb-3 hidden md:block">{primaryAction}</div> : null}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={isCompleting}
+                onClick={handleComplete}
+              >
+                <Check aria-hidden="true" />
+                {isCompleting ? 'Completing…' : 'Mark complete'}
+              </Button>
+              {completeError ? (
+                <p className="mt-3 mb-0 font-bold text-pomodoro-red text-sm" role="alert">
+                  {completeError}
+                </p>
+              ) : null}
+            </>
           ) : null}
         </>
       ) : (
@@ -260,15 +279,21 @@ export function JourneyDetailCurrentStep({
           <h2 className="mb-3 font-bold text-2xl leading-tight tracking-[-0.025em]">
             Choose what comes next
           </h2>
-          <p className="mb-5 text-ink/60 text-sm">Add one action to work on next.</p>
-          <PrimaryButton
-            type="button"
-            className="hidden w-full md:inline-flex"
-            onClick={onRequestAdd}
-          >
-            <Plus aria-hidden="true" />
-            Add a Next step
-          </PrimaryButton>
+          <p className="mb-5 text-ink/60 text-sm">
+            {readOnly
+              ? 'This is a sample Journey. Create your own Journey to add a Next step.'
+              : 'Add one action to work on next.'}
+          </p>
+          {!readOnly ? (
+            <PrimaryButton
+              type="button"
+              className="hidden w-full md:inline-flex"
+              onClick={onRequestAdd}
+            >
+              <Plus aria-hidden="true" />
+              Add a Next step
+            </PrimaryButton>
+          ) : null}
         </>
       )}
     </aside>

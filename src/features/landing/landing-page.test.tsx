@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { createSeedAppState } from '@/lib/mock-data';
@@ -65,21 +65,25 @@ describe('LandingPage', () => {
     expect(
       onboardingLinks.every((link) => link.getAttribute('href') === '/onboarding/journey')
     ).toBe(true);
+    expect(screen.getByRole('link', { name: 'Explore sample Journey' }).getAttribute('href')).toBe(
+      '/sample'
+    );
+    expect(screen.queryByText('Learn guitar')).toBeNull();
     expect(screen.queryByRole('link', { name: 'See how it works' })).toBeNull();
   });
 
-  it('shows one concise, accessible product preview', async () => {
-    await renderLandingPage(createJourneyFreeState());
+  it('opens the sample Journey only after explicit exploration', async () => {
+    const router = await renderLandingPage(createJourneyFreeState());
 
-    const demonstration = await screen.findByLabelText('Learn guitar Journey preview');
-    expect(
-      within(demonstration).getByRole('heading', { level: 2, name: 'Learn guitar' })
-    ).toBeTruthy();
-    expect(within(demonstration).getByText('Practice the F chord transition')).toBeTruthy();
-    expect(within(demonstration).getByLabelText('25-minute Focus session')).toBeTruthy();
-    expect(within(demonstration).getByLabelText(/43 complete pomodoros out of 50/i)).toBeTruthy();
-    expect(within(demonstration).getByText('25 focused hours')).toBeTruthy();
-    expect(screen.getAllByRole('heading')).toHaveLength(2);
+    expect(screen.queryByRole('heading', { level: 1, name: 'Learn guitar' })).toBeNull();
+    fireEvent.click(screen.getByRole('link', { name: 'Explore sample Journey' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Learn guitar' })).toBeTruthy();
+    expect(router.state.location.pathname).toBe('/sample');
+
+    const savedState = JSON.parse(window.localStorage.getItem(APP_STORAGE_KEY) ?? '{}') as AppState;
+    expect(savedState.journeys).toHaveLength(0);
+    expect(savedState.nextSteps).toHaveLength(0);
   });
 
   it('replace-redirects persisted Journey owners to Home', async () => {

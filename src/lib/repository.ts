@@ -7,7 +7,7 @@ import {
   getRemainingSeconds,
   pauseRunningFocusSession,
 } from './focus-timer';
-import { createSeedAppState } from './mock-data';
+import { createEmptyAppState } from './mock-data';
 import {
   type ActiveTimer,
   APP_STATE_SCHEMA_VERSION,
@@ -354,7 +354,7 @@ function toSaveError(
 
 export function createLocalStorageRepository(options: RepositoryOptions = {}): AppRepository {
   const getStorage = options.getStorage ?? getBrowserStorage;
-  const createSeedState = options.createSeedState ?? createSeedAppState;
+  const createSeedState = options.createSeedState ?? createEmptyAppState;
   const listeners = new Set<() => void>();
 
   function notify() {

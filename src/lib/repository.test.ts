@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createSeedAppState } from './mock-data';
+import { createEmptyAppState, createSeedAppState } from './mock-data';
 import type {
   ActiveTimer,
   FocusSession,
@@ -59,6 +59,17 @@ const activeTimer: ActiveTimer = {
 };
 
 describe('localStorage repository', () => {
+  it('initializes an empty state by default when saved state is absent', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+
+    const result = repository.load();
+
+    expect(result.status).toBe('ready');
+    expect(result.status === 'ready' && result.state).toEqual(createEmptyAppState());
+    expect(storage.getItem(APP_STORAGE_KEY)).toBe(JSON.stringify(createEmptyAppState()));
+  });
+
   it('seeds once only when saved state is absent', () => {
     const storage = new MemoryStorage();
     const createSeedState = vi.fn(createSeedAppState);
@@ -462,7 +473,10 @@ describe('localStorage repository', () => {
 
   it('adds a trimmed Next step at the end of its Journey without duplicating an id', () => {
     const storage = new MemoryStorage();
-    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    const repository = createLocalStorageRepository({
+      getStorage: () => storage,
+      createSeedState: createSeedAppState,
+    });
     repository.load();
     const listener = vi.fn();
     repository.subscribe(listener);
@@ -566,7 +580,10 @@ describe('localStorage repository', () => {
 
   it('completes the current Next step and promotes the first upcoming step atomically', () => {
     const storage = new MemoryStorage();
-    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    const repository = createLocalStorageRepository({
+      getStorage: () => storage,
+      createSeedState: createSeedAppState,
+    });
     repository.load();
     const listener = vi.fn();
     repository.subscribe(listener);
