@@ -9,7 +9,13 @@ import type {
   NextStep,
   OnboardingDraft,
 } from './models';
-import { APP_STORAGE_KEY, createLocalStorageRepository, type StorageLike } from './repository';
+import {
+  APP_STORAGE_KEY,
+  createAppExport,
+  createLocalStorageRepository,
+  parseAppExport,
+  type StorageLike,
+} from './repository';
 
 class MemoryStorage implements StorageLike {
   readonly values = new Map<string, string>();
@@ -128,6 +134,45 @@ describe('localStorage repository', () => {
       state: null,
     });
     expect(createSeedState).not.toHaveBeenCalled();
+  });
+
+  it('round-trips a complete saved state through the versioned export format', () => {
+    const state = createSeedAppState();
+    const backup = createAppExport(state, '2026-07-12T19:00:00.000Z');
+
+    expect(parseAppExport(JSON.parse(JSON.stringify(backup)))).toEqual(state);
+  });
+
+  it('imports a valid backup by replacing saved state and notifying subscribers', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    repository.load();
+    const listener = vi.fn();
+    repository.subscribe(listener);
+    const importedState = createSeedAppState();
+
+    const result = repository.importState(createAppExport(importedState));
+
+    expect(result.status).toBe('saved');
+    expect(repository.load()).toMatchObject({ status: 'ready', state: importedState });
+    expect(listener).toHaveBeenCalledOnce();
+  });
+
+  it('rejects an invalid backup without changing the current saved state', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    const currentState = createSeedAppState();
+    storage.setItem(APP_STORAGE_KEY, JSON.stringify(currentState));
+    const beforeImport = storage.getItem(APP_STORAGE_KEY);
+
+    const result = repository.importState({
+      ...createAppExport(currentState),
+      version: 999,
+    });
+
+    expect(result.status).toBe('error');
+    expect(result.status === 'error' ? result.error.code : undefined).toBe('invalid-import-file');
+    expect(storage.getItem(APP_STORAGE_KEY)).toBe(beforeImport);
   });
 
   it('persists onboarding, active session, timer, completion, and milestones', () => {

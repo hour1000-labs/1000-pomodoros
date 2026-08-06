@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { createSeedAppState } from '@/lib/mock-data';
 import type { AppState } from '@/lib/models';
-import { APP_STORAGE_KEY } from '@/lib/repository';
+import { APP_STORAGE_KEY, createAppExport } from '@/lib/repository';
 import { getRouter } from '@/router';
 
 beforeEach(() => {
@@ -68,8 +68,30 @@ describe('LandingPage', () => {
     expect(screen.getByRole('link', { name: 'Explore sample Journey' }).getAttribute('href')).toBe(
       '/sample'
     );
+    expect(screen.getByRole('button', { name: 'Import saved progress' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Export/ })).toBeNull();
     expect(screen.queryByText('Learn guitar')).toBeNull();
     expect(screen.queryByRole('link', { name: 'See how it works' })).toBeNull();
+  });
+
+  it('restores saved progress from the landing page and continues to Home', async () => {
+    const router = await renderLandingPage(createJourneyFreeState());
+    const input = screen.getByLabelText('Choose a 1000 Pomodoros backup file');
+    const backupFile = new File(
+      [JSON.stringify(createAppExport(createSeedAppState()))],
+      'progress-backup.json',
+      { type: 'application/json' }
+    );
+
+    fireEvent.change(input, { target: { files: [backupFile] } });
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/home');
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(JSON.parse(window.localStorage.getItem(APP_STORAGE_KEY) ?? '{}')).toEqual(
+      createSeedAppState()
+    );
   });
 
   it('opens the sample Journey only after explicit exploration', async () => {

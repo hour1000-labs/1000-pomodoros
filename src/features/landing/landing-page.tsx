@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { ImportSavedData } from '@/components/shared/import-saved-data';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { Button } from '@/components/ui/button';
 
@@ -7,7 +8,7 @@ import { PublicLayout } from './components/public-layout';
 
 export function LandingPage() {
   return (
-    <PublicLayout>
+    <PublicLayout headerAction={<ImportSavedData compact confirmBeforeImport={false} />}>
       <section className="flex min-h-[min(32rem,calc(100dvh-8rem))] items-center">
         <div>
           <h1 className="mb-5 max-w-[15ch] font-bold text-[clamp(2.5rem,7vw,4rem)] leading-[1.05] tracking-[-0.04em]">

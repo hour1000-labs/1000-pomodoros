@@ -25,6 +25,15 @@ import { getFocusedMinutes } from './progress';
 export const SESSION_REFLECTION_MAX_LENGTH = 280;
 
 export const APP_STORAGE_KEY = '1000-pomodoros:app-state:v1';
+export const APP_EXPORT_FORMAT = '1000-pomodoros.app-state';
+export const APP_EXPORT_VERSION = 1 as const;
+
+export interface AppExport {
+  format: typeof APP_EXPORT_FORMAT;
+  version: typeof APP_EXPORT_VERSION;
+  exportedAt: string;
+  state: AppState;
+}
 
 export interface StorageLike {
   getItem(key: string): string | null;
@@ -35,7 +44,8 @@ export interface StorageLike {
 export type RepositoryErrorCode =
   | 'storage-read-failed'
   | 'storage-write-failed'
-  | 'invalid-saved-state';
+  | 'invalid-saved-state'
+  | 'invalid-import-file';
 
 export class RepositoryError extends Error {
   readonly code: RepositoryErrorCode;
@@ -83,6 +93,7 @@ export type RepositorySaveResult =
 export interface AppRepository {
   load(): RepositoryLoadResult;
   save(state: AppState): RepositorySaveResult;
+  importState(data: unknown): RepositorySaveResult;
   update(updateState: (state: AppState) => AppState): RepositorySaveResult;
   reset(): RepositoryLoadResult;
   subscribe(listener: () => void): () => void;
@@ -266,6 +277,29 @@ export function isAppState(value: unknown): value is AppState {
     isNullableString(value.lastActiveJourneyId) &&
     isNullableString(value.lastCompletedSessionId)
   );
+}
+
+export function createAppExport(state: AppState, exportedAt = new Date().toISOString()): AppExport {
+  return {
+    format: APP_EXPORT_FORMAT,
+    version: APP_EXPORT_VERSION,
+    exportedAt,
+    state,
+  };
+}
+
+export function parseAppExport(value: unknown): AppState | null {
+  if (
+    !isRecord(value) ||
+    value.format !== APP_EXPORT_FORMAT ||
+    value.version !== APP_EXPORT_VERSION ||
+    !isString(value.exportedAt) ||
+    !isAppState(value.state)
+  ) {
+    return null;
+  }
+
+  return value.state;
 }
 
 function upsertById<T extends { id: string }>(items: readonly T[], item: T) {
@@ -462,6 +496,19 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
 
     notify();
     return { status: 'saved', state };
+  }
+
+  function importState(data: unknown): RepositorySaveResult {
+    const state = parseAppExport(data);
+
+    if (state === null) {
+      return toSaveError(
+        'invalid-import-file',
+        'This file is not a supported 1000 Pomodoros backup.'
+      );
+    }
+
+    return save(state);
   }
 
   function update(updateState: (state: AppState) => AppState): RepositorySaveResult {
@@ -804,6 +851,7 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
   return {
     load,
     save,
+    importState,
     update,
     reset,
     subscribe,

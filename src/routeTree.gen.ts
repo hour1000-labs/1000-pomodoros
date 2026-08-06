@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SampleRouteImport } from './routes/sample'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,6 +22,11 @@ import { Route as MilestonesMilestoneIdRouteImport } from './routes/milestones/$
 import { Route as JourneysJourneyIdRouteImport } from './routes/journeys/$journeyId'
 import { Route as FocusCompleteRouteImport } from './routes/focus/complete'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SampleRoute = SampleRouteImport.update({
   id: '/sample',
   path: '/sample',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/home': typeof HomeRoute
   '/sample': typeof SampleRoute
+  '/settings': typeof SettingsRoute
   '/focus/complete': typeof FocusCompleteRoute
   '/journeys/$journeyId': typeof JourneysJourneyIdRoute
   '/milestones/$milestoneId': typeof MilestonesMilestoneIdRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/home': typeof HomeRoute
   '/sample': typeof SampleRoute
+  '/settings': typeof SettingsRoute
   '/focus/complete': typeof FocusCompleteRoute
   '/journeys/$journeyId': typeof JourneysJourneyIdRoute
   '/milestones/$milestoneId': typeof MilestonesMilestoneIdRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/home': typeof HomeRoute
   '/sample': typeof SampleRoute
+  '/settings': typeof SettingsRoute
   '/focus/complete': typeof FocusCompleteRoute
   '/journeys/$journeyId': typeof JourneysJourneyIdRoute
   '/milestones/$milestoneId': typeof MilestonesMilestoneIdRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/home'
     | '/sample'
+    | '/settings'
     | '/focus/complete'
     | '/journeys/$journeyId'
     | '/milestones/$milestoneId'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/home'
     | '/sample'
+    | '/settings'
     | '/focus/complete'
     | '/journeys/$journeyId'
     | '/milestones/$milestoneId'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/home'
     | '/sample'
+    | '/settings'
     | '/focus/complete'
     | '/journeys/$journeyId'
     | '/milestones/$milestoneId'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HomeRoute: typeof HomeRoute
   SampleRoute: typeof SampleRoute
+  SettingsRoute: typeof SettingsRoute
   FocusCompleteRoute: typeof FocusCompleteRoute
   JourneysJourneyIdRoute: typeof JourneysJourneyIdRoute
   MilestonesMilestoneIdRoute: typeof MilestonesMilestoneIdRoute
@@ -175,6 +188,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sample': {
       id: '/sample'
       path: '/sample'
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HomeRoute: HomeRoute,
   SampleRoute: SampleRoute,
+  SettingsRoute: SettingsRoute,
   FocusCompleteRoute: FocusCompleteRoute,
   JourneysJourneyIdRoute: JourneysJourneyIdRoute,
   MilestonesMilestoneIdRoute: MilestonesMilestoneIdRoute,

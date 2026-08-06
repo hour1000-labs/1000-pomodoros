@@ -1,11 +1,15 @@
 import { Link } from '@tanstack/react-router';
-import { Home, Map as MapIcon } from 'lucide-react';
+import { Home, Map as MapIcon, Settings2 } from 'lucide-react';
 
 import { BrandMark } from '@/components/shared/brand-mark';
 import { cn } from '@/lib/utils';
 
 const navItemClass =
-  'relative inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md px-3 text-ink/60 text-sm transition-colors hover:bg-ink/5 hover:text-ink focus-visible:text-ink md:flex-none md:justify-start';
+  'relative inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md px-3 text-ink/60 text-sm transition-colors whitespace-nowrap hover:bg-ink/5 hover:text-ink focus-visible:text-ink md:flex-none md:justify-start';
+const activeNavItemClass = cn(
+  navItemClass,
+  'bg-ink/5 font-bold text-ink after:absolute after:inset-x-3 after:-bottom-2 after:h-0.5 after:bg-pomodoro-red md:bg-transparent md:after:-bottom-3'
+);
 
 export function AppNavigation({
   journeyId,
@@ -45,8 +49,7 @@ export function AppNavigation({
                 activeOptions={{ exact: true }}
                 activeProps={{
                   'aria-current': 'page',
-                  className:
-                    'bg-ink/5 font-bold text-ink after:absolute after:inset-x-3 after:-bottom-2 after:h-0.5 after:bg-pomodoro-red md:bg-transparent md:after:-bottom-3',
+                  className: activeNavItemClass,
                 }}
               >
                 <Home aria-hidden="true" className="size-4" />
@@ -61,12 +64,25 @@ export function AppNavigation({
                 activeOptions={{ exact: false }}
                 activeProps={{
                   'aria-current': 'page',
-                  className:
-                    'bg-ink/5 font-bold text-ink after:absolute after:inset-x-3 after:-bottom-2 after:h-0.5 after:bg-pomodoro-red md:bg-transparent md:after:-bottom-3',
+                  className: activeNavItemClass,
                 }}
               >
                 <MapIcon aria-hidden="true" className="size-4" />
                 Journey
+              </Link>
+            </li>
+            <li className="flex flex-1 md:flex-none">
+              <Link
+                to="/settings"
+                className={navItemClass}
+                activeOptions={{ exact: true }}
+                activeProps={{
+                  'aria-current': 'page',
+                  className: activeNavItemClass,
+                }}
+              >
+                <Settings2 aria-hidden="true" className="size-4" />
+                Settings
               </Link>
             </li>
           </ul>
