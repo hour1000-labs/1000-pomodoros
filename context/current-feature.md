@@ -1,61 +1,41 @@
-# Current Feature: GitHub Pages Preview Deployment
+# Current Feature: <feature name>
 
-Add a GitHub Actions workflow that builds the app and publishes the current main-branch progress to GitHub Pages.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Ready to Commit
+Not Started
 
 ## Goal
 
-Anyone with repository access can open the GitHub Pages site to inspect the latest deployed app progress after changes land on `main`.
+<!-- Describe what should change from the user's perspective. -->
 
 ## Acceptance Criteria
 
 <!-- The feature is done when every applicable item is checked. -->
 
-- [x] A GitHub Actions workflow runs on pushes to `main` and supports manual dispatch.
-- [x] The workflow installs dependencies from the repository lockfile, builds the production app, and publishes the resulting static artifact through the official GitHub Pages deployment flow.
-- [x] The workflow has the minimum required Pages, artifact, and contents permissions, uses concurrency to prevent overlapping deployments, and exposes build or deployment failures clearly.
-- [x] The published app is configured for the GitHub Pages project path so its assets load correctly, and client-side navigation works on the deployed site.
-- [x] Repository setup instructions identify the one-time GitHub Pages configuration required to use GitHub Actions as the source.
+- [ ] ...
+- [ ] ...
 
 ## Plan
 
-1. Inspect the existing TanStack Start build and hosting configuration and select the smallest static GitHub Pages-compatible setup.
-2. Add the GitHub Actions workflow with dependency installation, production build, Pages artifact upload, and deployment steps.
-3. Configure the application base path or static hosting behavior needed for the repository's GitHub Pages project URL.
-4. Document the one-time repository Pages setting and how to find the deployed preview.
-5. Verify the workflow configuration, production build, generated artifact behavior, and deployed-route assumptions.
+1. ...
+2. ...
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] No relevant console errors
-- [x] GitHub Actions workflow syntax and permissions are reviewed
-- [x] Static artifact contains the app entry point and required assets
-- [x] GitHub Pages project-path asset resolution and client-side navigation are verified
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
-
-- Deployment target is GitHub Pages for an easy-to-open development preview, not the production launch channel.
-- The repository remote is `git@github.com:hour1000-labs/1000-pomodoros.git`; the workflow derives the Pages base path from GitHub's Pages configuration, while the README links to the current project preview URL.
-- No pending product decision currently changes this development-preview scope.
-- No focused Vitest tests were added because the changed behavior is CI and build configuration; workflow parsing, static artifact inspection, and browser checks cover the meaningful behavior.
-- Test evidence on 2026-08-06: `pnpm check` passed for 111 files; `pnpm test` passed with 21 files and 176 tests; default `pnpm build` prerendered 10 pages; `VITE_BASE_PATH=/1000-pomodoros pnpm build` prerendered 12 pages and produced the entrypoint, `404.html` fallback, required route HTML, and 15 project-path asset URLs.
-- Test evidence on 2026-08-06: Pages-path simulation at 1280×800 and 320×568 loaded the landing page without console errors; client-side navigation reached `/1000-pomodoros/sample`, and the mobile grid showed its horizontal-scroll guidance.
-- The actual GitHub Actions upload/deployment has not run yet; verify the live Pages URL and workflow result after integration.
-- Post-verification revalidation: documentation-only update to this working file; `pnpm check` and `git diff --check` were rerun, and the build, test, artifact, and browser evidence was reused because no executable, generated, or published files changed.
-- Review on 2026-08-06: all acceptance criteria are satisfied by the workflow inspection plus local build, artifact, and Pages-path browser evidence. The first live GitHub Pages run is a post-integration operational check, not a remaining implementation blocker.
-- Review revalidation: documentation-only update to the feature record; `pnpm check` and `git diff --check` were rerun, and all executable evidence remains applicable.
 
 ## History
 
@@ -200,3 +180,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/add-new-journey`
 - Summary: Added an Add Journey action to Home that starts a fresh, reusable onboarding flow for additional Journeys while preserving existing Journeys and records.
 - Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (21 files, 176 tests), `pnpm build` (client and SSR), `git diff --check`, and browser checks at 1280×800, 640×400, and 320×568 with no overflow or console errors/warnings passed.
+
+### 2026-08-06 — GitHub Pages Preview Deployment
+
+- Branch: `codex/feature/github-pages-preview-deployment`
+- Summary: Added an automated GitHub Pages preview workflow with static TanStack Start prerendering, project-path-aware assets and routing, client-side fallback handling, and repository setup instructions.
+- Verification: `pnpm check`, `pnpm test` (21 files, 176 tests), `pnpm build`, project-path artifact inspection, workflow YAML parsing, `git diff --check`, and Pages-path browser checks at 1280×800 and 320×568 with client navigation and no console errors passed.
