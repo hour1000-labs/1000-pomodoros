@@ -1,102 +1,41 @@
-# Current Feature: Simple Minimal App Redesign
+# Current Feature: <feature name>
 
-Redesign every currently implemented user-facing screen with simpler copy, quieter use of the existing three-color palette, tomato-shaped Pomodoro progress units, and one obvious next action while preserving behavior.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
-Ready to Commit
+<!-- Not Started | In Progress | Ready to Commit -->
+
+Not Started
 
 ## Goal
 
-A user can understand 1000 Pomodoros as “Track focused work, one pomodoro at a time,” see every Pomodoro represented by a consistent tomato, and move through every current flow without unnecessary words, competing emphasis, or decorative visual noise.
+<!-- Describe what should change from the user's perspective. -->
 
 ## Acceptance Criteria
 
-- [x] The product is explainable with the single core phrase “Track focused work, one pomodoro at a time,” and the landing and first-use surfaces reinforce that promise without introducing competing product narratives.
-- [x] The redesign covers every currently implemented route: `/`, `/onboarding/journey`, `/onboarding/motivation`, `/onboarding/target`, `/onboarding/next-step`, `/home`, `/focus`, `/focus/complete`, `/journeys/$journeyId`, and `/milestones/$milestoneId`.
-- [x] The redesign also covers each user-visible state within those routes, including focus setup, running and paused timers, successful and unavailable completion or milestone states, dialogs, navigation, loading, empty, validation, persistence-error, and recovery states.
-- [x] Every screen and dialog communicates one clear purpose and has no more than one visually dominant primary action; required Back, Skip, Cancel, retry, secondary, and destructive actions remain available with appropriately lower emphasis.
-- [x] Visible and assistive copy—including page metadata, headings, instructions, controls, validation, empty and error messages, confirmations, and accessible names—uses short, concrete, plain language and the confirmed terms `Journey`, `Pomodoro`, `Focus session`, `Next step`, and `Milestone` consistently.
-- [x] Redundant explanations, duplicate metrics, decorative eyebrow copy, and vague or promotional wording are removed without removing information needed to understand progress, make a decision, recover from an error, or understand a destructive consequence.
-- [x] The visual system uses only Ink, Paper, and Pomodoro Red as base colors, plus accessible derived opacity values: Paper remains dominant, Ink provides structure and text, and no viewport or dialog shows more than one visible red primary action; red may also communicate earned progress, selection, and necessary error or destructive feedback.
-- [x] Reachable UI has no hard offset shadows, heavy two-pixel frames, oversized decorative color fields, nonessential badges or icons, or nested card treatments; cards default to a subtle one-pixel border with no shadow, while the existing soft dialog elevation may remain.
-- [x] Manrope, tabular timer and metric numerals, and the Pomodoro grid remain recognizable product anchors, while each view uses at most one display-scale element and labels use sentence case instead of decorative uppercase micro-copy.
-- [x] Every square or rounded-square element that represents one Pomodoro progress unit is replaced project-wide by one shared tomato treatment, including landing and onboarding previews, focus setup, Journey grids and legends, Session complete, Milestone detail, and retained foundation or demo components; no square Pomodoro unit remains.
-- [x] The tomato matches the supplied screenshot direction with a compact Pomodoro Red fruit, Ink outline, and small Ink stem or calyx; it is a code-native SVG or CSS-rendered shape rather than an emoji, external raster image, or new dependency, and it remains legible at dense-grid sizes.
-- [x] The tomato drawing is decorative inside the existing semantic unit wrapper: it is hidden from the accessibility tree while the wrapper remains the sole image or button role with the Pomodoro number, state, fill percentage, and interaction attributes, so no duplicate announcements or role counts are introduced.
-- [x] User-facing copy that describes a visual progress unit as a `block` is rewritten to `Pomodoro`; internal component, variable, test-description, and historical-spec identifiers may retain `block` where renaming would not improve the user experience.
-- [x] Shared tokens, primitives, layouts, navigation, and feedback components express the minimal system consistently, and `context/DESIGN.md` is updated wherever the final implementation changes an existing documented design rule.
-- [x] Existing routes, navigation outcomes, timer lifecycle, persistence and recovery behavior, progress calculations, Journey and Next-step mutations, milestone attribution, and completed-session history remain functionally unchanged.
-- [x] Complete, partial, future, latest, milestone, newly-earned, and selectable tomato states remain distinguishable without color alone: complete tomatoes are filled, partial tomatoes fill proportionally from left to right inside a persistent outline, future tomatoes are outlined, and the existing latest, milestone, highlight, focus, and inspection cues remain distinct.
-- [x] Replacing the shape does not change Pomodoro indexing, minute-to-progress conversion, 10-column and 100-unit grouping, progressive rendering through 2,400 units, selection and focus restoration, animation semantics, or accessible names that announce the Pomodoro number and state.
-- [x] Every affected surface remains usable at 320px width, desktop widths, and a 200%-zoom equivalent with maximum supported copy, without clipped content, horizontal overflow, obscured primary actions, or overlapping fixed navigation.
-- [x] Semantic headings, labels, status announcements, keyboard operation, visible focus, reduced-motion behavior, WCAG AA contrast, and minimum 44px interactive targets are preserved or improved.
-- [x] Automated tests are updated for intentional copy or markup changes without weakening coverage of routing, persistence, timer, progress, mutation, error, and accessibility behavior.
+<!-- The feature is done when every applicable item is checked. -->
+
+- [ ] ...
+- [ ] ...
 
 ## Plan
 
-1. Audit every in-scope route and state, then create a page-by-page content hierarchy that identifies its one purpose, visual anchor, primary action, essential supporting information, and removable copy or decoration.
-2. Inventory every Pomodoro progress-unit rendering in reachable and retained demo source, distinguish it from unrelated red UI, and map it to the shared tomato treatment and required states.
-3. Establish the implementation rules for the core phrase, concise voice, palette usage, typography, spacing, borders, elevation, icons, action hierarchy, and tomato shape; reconcile changed rules with `context/DESIGN.md`.
-4. Implement the shared tomato rendering through the existing Pomodoro block and grid foundation, migrate stray hand-built progress squares and legends, and preserve partial fill, latest, milestone, newly-earned, selectable, accessible, and large-grid behavior.
-5. Simplify the remaining global theme and shared UI foundation, including color tokens, buttons, cards, dialogs, inputs, brand treatment, navigation, layouts, loading, empty, error, confirmation, progress, and focus components.
-6. Apply the system and rewritten copy to the landing page and all four implemented onboarding screens while preserving the existing onboarding draft, validation, exit, back, skip, and forward flows.
-7. Apply the system and rewritten copy to Home, Journey detail, focus setup, running and paused focus states, Session complete, Milestone detail, their dialogs, and all unavailable or recovery states while preserving behavior.
-8. Update affected tests to assert the tomato states, revised accessible names, roles, hierarchy, progressive rendering, and unchanged user flows rather than obsolete square styling or decorative copy.
-9. Run the complete automated and browser verification matrix, fix any regressions, and perform a final route-by-route simplicity, tomato-coverage, and consistency audit.
+1. ...
+2. ...
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm exec tsc --noEmit` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] `git diff --check` passes
-- [x] Every in-scope route and interactive state is verified in a real browser for its one-purpose hierarchy, one dominant action, final copy, and consistent palette
-- [x] The complete landing-to-onboarding-to-focus flow and returning-user Home-to-focus-to-completion flow pass without behavioral regressions
-- [x] Journey progress inspection through the full 2,400-block target, Next-step dialogs and mutations, completion reflection, milestone earned and unavailable states, zero/loading/empty/error states, and persistence recovery are verified
-- [x] A project-wide source and browser audit confirms that every Pomodoro progress unit—including preview, legend, dense-grid, interactive, newly-earned, onboarding-aside, and retained demo uses—is tomato-shaped, visible copy no longer calls those units blocks, and unrelated red buttons, progress bars, status dots, and decorative accents remain normal UI
-- [x] Complete, 20%/50%/96% partial, future, latest, milestone, newly-earned, keyboard-focused, and selected tomatoes are verified against the screenshot direction at 16–28px dense sizes and 44px interactive sizes
-- [x] Session Complete and Milestone Detail are visually compared with `context/screenshots/session-complete-ui-v2.png` and `context/screenshots/milestone-ui-v2.png` for the tomato treatment without importing unrelated screenshot features
-- [x] 320×568 mobile, 375×812 mobile, 1280×800 desktop, and a 640×400 200%-zoom equivalent are verified with maximum supported content and no clipping, overflow, or obscured actions; Home/Journeys bottom navigation, Journey Detail’s sticky action, safe-area spacing, and scroll boundaries work together
-- [x] Keyboard navigation, visible focus, semantic structure, assistive names and announcements, 44px targets, reduced motion, non-color state cues, and WCAG AA contrast are verified
-- [x] No relevant browser console errors or warnings occur
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
-- Branch: `codex/feature/simple-minimal-app-redesign`.
-- The user changed partial tomato progress from bottom-to-top to left-to-right before implementation; the feature and product decision registry already reflect that direction and it is authoritative.
-- Direction: simplicity is the product constraint, not an aesthetic add-on. The app should do one thing clearly: help people focus and see the work add up.
-- Core phrase for this feature: “Track focused work, one pomodoro at a time.” It replaces more abstract explanations where a product-level description is needed; contextual screens still use the shortest copy required for their task.
-- “Every page” means every route and state currently implemented in the repository. Product-spec screens that do not exist yet—such as authentication, Journey library, history, manual entry, statistics, settings, pricing, and sharing—are not added by this feature.
-- Product-authored demonstration and reset-state copy is in scope; persisted Journey names, reasons, Next steps, and reflections written by the user are not rewritten.
-- Unrouted foundation/demo exports are not treated as pages for the broader redesign, but their Pomodoro progress units are included in the project-wide tomato conversion so no retained square representation remains.
-- Color assumption: redesign the hierarchy and application of the existing Ink, Paper, and Pomodoro Red palette rather than inventing a new brand palette. Exact base values remain unless current contrast evidence requires an adjustment.
-- Existing dormant dark-theme tokens should remain coherent with shared palette changes, but adding a dark-mode control or a new theme is out of scope.
-- The user’s 2026-08-05 direction resolves the pending visual-treatment decision: every Pomodoro unit is a tomato, with filled, proportional partial, and outline states. The separate pending decision about large-grid grouping remains unresolved and unchanged.
-- The functional conic timer progress, tabular numerals, proportional tomato fill, latest outline, milestone cue, newly-earned treatment, progressive grid rendering, and focus restoration communicate state and must not be removed as decoration.
-- “Tomato” is the visual representation, not a renamed data unit. Product and assistive copy continues to use the confirmed term `Pomodoro`, where one Pomodoro equals 25 focused minutes.
-- The supplied Session Complete and Milestone screenshots are references for the compact tomato silhouette, outline/fill states, and emphasis ring only; their unrelated layout, wording, Share action, and other concepts are not imported by this requirement.
-- “Every red square” means every square progress cell representing a Pomodoro. Rectangular primary buttons, progress bars, status dots, selection accents, error feedback, and decorative red geometry are not tomatoes.
-- `context/DESIGN.md` currently specifies square Pomodoro blocks and discourages literal tomatoes; those rules must be replaced by the confirmed tomato treatment. Historical completed-feature specs may retain their original wording because `context/decisions.md` is authoritative for new work.
-- `context/DESIGN.md` contains older five-step-onboarding and four-item-navigation guidance. This visual and copy redesign must preserve the implemented four-step onboarding and Home/Journeys navigation rather than adding missing screens or controls to match that stale guidance.
-- Necessary safety, validation, error-recovery, accessibility, and destructive-consequence copy is not “clutter” and must remain clear even when it cannot be reduced to a few words.
-- No new product capabilities, routes, data fields, dependencies, authentication, backend, pricing, dark-mode control, or unrelated generated illustrations are in scope.
-- Keep the supplied reference files `context/screenshots/milestone-ui-v2.png` and `context/screenshots/session-complete-ui-v2.png` unchanged.
-- Fresh local storage still receives the existing seeded Learn guitar state, so `/` redirects to Home by design; the landing and onboarding flow was verified with a valid empty-state fixture. Changing that established seed behavior is outside this visual-and-copy redesign.
-- 2026-08-05 initial feature test passed `pnpm check` (107 files, no warnings), `pnpm exec tsc --noEmit`, `pnpm test` (19 files, 169 tests), `pnpm build` (client and SSR), and `git diff --check`.
-- Test remediation was **localized behavioral**: the selected inspectable Pomodoro exposed `aria-expanded` but had no persistent visual cue. `PomodoroBlock` now adds a geometric red selection ring, a 10% selection field, and `data-selected`; the focused grid and Journey suites passed (2 files, 26 tests), followed by a fresh full 169-test run, TypeScript, client/SSR build, `pnpm check`, and `git diff --check`. No pre-remediation executable evidence is being relied on for the final result.
-- Production-browser verification covered all ten routes; landing through all four onboarding steps into focus; Home through focus and completion; focus setup, running, paused, early completion, reflection persistence, validation, earned and unavailable milestone, zero and empty states, persistence error, and successful recovery. Vitest additionally covered transient loading, missing-data, and persistence-failure boundaries. Journey inspection opened and closed with focus restoration, Next steps were added and completed, and the full 24-section target rendered exactly 2,400 semantic Pomodoro units through index 2,399.
-- Tomato evidence: the shared SVG remained decorative inside one semantic wrapper; complete, future, latest, milestone, newly-earned, keyboard-focused, and selected states were distinct. Partial fills measured 20% = 4, 50% = 10, and 96% = 19.2 SVG units from x=4 with `data-fill-direction="left-to-right"`; dense tomatoes measured 19.4–28px and selectable tomatoes measured 44px. Session Complete and Milestone Detail matched the supplied compact fruit, Ink outline/stem, proportional fill, and emphasis-ring direction without importing their unrelated concepts.
-- Responsive evidence passed at 320×568, 375×812, 1280×800, and 640×400 with 80-character Journey names, 240-character reasons, 120-character Next steps, and 280-character reflections. Document and app scroll containers had no horizontal overflow; mobile bottom navigation retained about 51px clearance at the scroll boundary, and at 640×400 the sticky Focus action ended 18px above navigation while the final content remained inside the scroll viewport.
-- Accessibility evidence: keyboard focus was visible on a 48px landing action, inspectable tomatoes were 44×44px, Escape restored focus to the selected Pomodoro, semantic snapshots exposed headings, labels, dialogs, progressbars, timers, alerts, and status announcements, and reduced motion produced `animation-name: none`. Contrast ratios were Ink/Paper 17.74:1, muted Ink/Paper 4.66:1, and Pomodoro Red/Paper 5.05:1. The final browser console contained 0 errors and 0 warnings.
-- A 98-source-file audit found no remaining square Pomodoro progress unit or visible progress-unit `block` wording. The only remaining red non-tomato elements are intentional rectangular actions, timer/progress indicators, navigation emphasis, selection, and error feedback.
-- 2026-08-05 feature review inspected the complete 57-file tracked diff and both untracked supplied screenshots, passed `pnpm check` (107 files, no warnings) and `git diff --check`, and validated the selected-Pomodoro remediation as **localized behavioral** with the focused, full-suite, TypeScript, build, and browser evidence recorded above.
-- The initial feature review found that opening `Reset saved progress` from a persistence-recovery state left the red `Try again` action visibly behind the Ink/20 dialog overlay while the dialog also showed the red `Reset progress` action. This affected every consumer of `RecoverableErrorState` and left both action-hierarchy criteria and the route-state hierarchy verification unchecked until remediation.
-- Review remediation was **localized behavioral**: `ConfirmDialog` now exposes its optional open-state callback, and `RecoverableErrorState` uses it to switch `Try again` from the red default treatment to the outline treatment only while reset confirmation is open. The change is limited to recovery-state action hierarchy and does not alter reset, retry, persistence, routing, or other dialog behavior.
-- Remediation checks passed `pnpm check` (108 files, no warnings), `pnpm exec tsc --noEmit`, focused Vitest coverage for the recovery state and shared confirmation dialog (2 files, 4 tests), `pnpm build` (client and SSR), and `git diff --check`. Production-browser checks at 1280×800 and 375×812 confirmed that the background retry action computes to the outline variant with a Paper background while the reset action is red, Cancel restores the retry action to the red default variant, confirming reset restores the seeded Home state, targets remain at least 48px high, and the console contains 0 errors and 0 warnings.
-- The earlier full 169-test run, all-route behavior, tomato-state, responsive, accessibility, contrast, and screenshot-comparison evidence are reused because this optional dialog callback and recovery-only visual state cannot affect those recorded results. The affected recovery and confirmation behavior was rerun directly.
-- Post-remediation feature review inspected the localized three-file remediation separately from the complete 58-file tracked diff, included the new focused test and both untracked supplied screenshots, found no blocking regression or scope expansion, and confirmed every acceptance criterion and verification item is satisfied. The final documentation-only evidence update reran `pnpm check` and `git diff --check`; both passed.
+<!-- Record important decisions, blockers, scope changes, or follow-up work. -->
 
 ## History
 
@@ -217,3 +156,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/milestone-reached`
 - Summary: Added an earned-only milestone record built from persisted progress, with a responsive completed PomodoroGrid section, next-milestone guidance, non-celebratory fallback states, and a direct return to the related Journey.
 - Verification: `pnpm check` (107 files), `pnpm exec tsc --noEmit`, `pnpm test` (19 files, 162 tests), focused remediation tests (2 files, 12 tests), `pnpm build` (client and SSR), `git diff --check`, and live-browser checks from 320px through desktop plus a 200%-zoom equivalent for earned, missing, unearned, and recoverable-error states, persisted values, grid and navigation behavior, maximum-content overflow, accessibility, contrast, reduced motion, and console output passed.
+
+### 2026-08-05 — Simple Minimal App Redesign
+
+- Branch: `codex/feature/simple-minimal-app-redesign`
+- Summary: Simplified every implemented user-facing screen around one clear action, concise product language, a quieter Ink/Paper/Pomodoro Red system, and shared tomato-shaped Pomodoro progress units with left-to-right partial fill.
+- Verification: `pnpm check` (108 files), `pnpm exec tsc --noEmit`, `pnpm test` (19 files, 169 tests), focused recovery and confirmation tests (2 files, 4 tests), `pnpm build` (client and SSR), `git diff --check`, and production-browser checks across all ten routes at 320×568, 375×812, 1280×800, and a 640×400 200%-zoom equivalent for complete flows, tomato states, persistence recovery, accessibility, contrast, reduced motion, responsive behavior, and console output passed.
