@@ -1,52 +1,41 @@
-# Current Feature: Remove onboarding tomato previews
+# Current Feature: <feature name>
 
-Remove the static tomato progress previews from the four onboarding screens so setup stays focused and does not imply unearned progress.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Ready to Commit
+Not Started
 
 ## Goal
 
 <!-- Describe what should change from the user's perspective. -->
 
-People moving through onboarding see only the setup questions and are not led to believe they already have Pomodoro progress.
-
 ## Acceptance Criteria
 
 <!-- The feature is done when every applicable item is checked. -->
 
-- [x] The static tomato previews and their sample progress labels are removed from `/onboarding/journey`, `/onboarding/motivation`, `/onboarding/target`, and `/onboarding/next-step`.
-- [x] The onboarding form content remains appropriately positioned on desktop and mobile without an empty preview column or layout gap.
-- [x] Tomato progress visuals remain available everywhere outside onboarding where they communicate real or intentional product progress.
-- [x] The existing four-step onboarding flow, form behavior, and progress labels continue to work unchanged.
+- [ ] ...
+- [ ] ...
 
 ## Plan
 
-1. Remove the preview components, preview data, and now-unused imports from each onboarding screen.
-2. Adjust the shared screen wrappers so the remaining form content uses the available layout without the preview column.
-3. Verify the onboarding routes and confirm tomato visuals remain in their other intended product contexts.
+1. ...
+2. ...
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes — 21 files, 173 tests
-- [x] `pnpm build` passes — client and SSR build
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] No relevant console errors
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
-
-- The previews are intentionally excluded from onboarding because their static “9 Pomodoros” state can look like user-earned progress. Landing/demo and progress-tracking visuals are out of scope for removal.
-- Initial `pnpm test` exposed four stale expectations for the removed previews. This was a localized behavioral test remediation: the four onboarding screen tests now assert no preview `<aside>` or tomato SVG, then `pnpm check`, `pnpm test`, and `git diff --check` were rerun successfully. The earlier build evidence remains applicable because only test files changed after the build.
-- Browser evidence: the complete four-step flow passed at 1280×800; all four routes passed at 320×568 with no `<aside>`, no tomato SVGs, and no horizontal overflow; `/sample` retained 105 tomato units. Browser console checks reported no errors or warnings beyond the standard React DevTools info message.
-- Vitest still prints existing jsdom environment warnings about `window.scrollTo`, an empty `href`, and nested `<html>` markup; the suite passes and these warnings are outside this feature's changed behavior.
-- Review: all four acceptance criteria are satisfied. The complete diff is limited to removing onboarding-only previews, recentering the four forms, updating their focused tests, and recording workflow evidence; the unrelated `.playwright-cli/` directory remains unmodified and out of scope.
 
 ## History
 
@@ -179,3 +168,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/optional-sample-journey`
 - Summary: Starts new users with empty persisted data and adds a non-persisted, read-only Learn guitar sample Journey with brand-only navigation and explicit landing-page access.
 - Verification: `pnpm check`, `pnpm test` (21 files, 173 tests), `pnpm build` (client and SSR), `git diff --check`, and browser checks for empty landing, sample exploration/reload/non-persistence, sample return navigation, full real-Journey onboarding creation, normal Journey navigation, responsive layouts, and no console errors or warnings passed.
+
+### 2026-08-05 — Remove onboarding tomato previews
+
+- Branch: `codex/feature/remove-onboarding-tomato-previews`
+- Summary: Removed the static tomato progress previews from all four onboarding screens and recentered the setup forms while preserving intentional progress visuals in the sample Journey and other product screens.
+- Verification: `pnpm check`, `pnpm test` (21 files, 173 tests), `pnpm build`, `git diff --check`, and browser checks at 1280×800 and 320×568 for the complete onboarding flow, zero onboarding tomato previews, no horizontal overflow or console errors, and preserved sample Journey tomato units passed.
