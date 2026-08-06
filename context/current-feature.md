@@ -1,54 +1,41 @@
-# Current Feature: Import and export saved progress
+# Current Feature: <feature name>
 
-Add a Settings flow for downloading and restoring the current saved Journeys and progress as a validated JSON backup.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
-Ready to Commit
+<!-- Not Started | In Progress | Ready to Commit -->
+
+Not Started
 
 ## Goal
 
-Users can move their saved Journeys and progress between devices with a clear, recoverable import and export flow.
+<!-- Describe what should change from the user's perspective. -->
 
 ## Acceptance Criteria
 
-- [x] The application provides a reachable Settings screen with clearly labeled Export data and Import data actions.
-- [x] Export downloads a versioned JSON backup containing the current saved application state, including Journeys, related Next steps, focus-session progress, milestones, goals, and any other persisted state needed to restore it.
-- [x] Import validates the backup format and supported schema before writing anything; malformed or unsupported files leave the current saved state unchanged and show an actionable error.
-- [x] After explicit confirmation that the existing saved data will be replaced, a valid import atomically replaces the saved state and the current application reflects the imported Journeys and progress.
-- [x] The import and export controls are keyboard accessible, provide status or error feedback, and remain usable at mobile and desktop widths.
-- [x] When there are no saved Journeys, the landing page offers Import saved progress without showing an export action; a valid import applies immediately without a replacement warning and continues into Home.
+<!-- The feature is done when every applicable item is checked. -->
+
+- [ ] ...
+- [ ] ...
 
 ## Plan
 
-1. Define a versioned export envelope and repository import operation that reuse the existing AppState validation and preserve atomic replacement semantics.
-2. Add a Settings route and application-navigation entry with responsive import/export controls.
-3. Implement browser file download and file selection, confirmation, validation feedback, and state refresh after import.
-4. Add repository and screen tests for round trips, invalid files, replacement behavior, and accessible controls.
-5. Reuse the import control on the Journey-free landing page and verify successful restore navigation without exposing export.
+1. ...
+2. ...
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] No relevant console errors
-- [x] Exported files round-trip through import without losing saved Journeys or progress
-- [x] Invalid and unsupported imports preserve the pre-import saved state
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
-Import is intentionally a full replacement of the current saved state, not a merge, because the exported file represents a complete local backup. The backup includes the existing AppState fields so restored progress and active saved timer state remain consistent.
-
-The shared application navigation needed a localized responsive remediation after the third mobile item caused active labels to wrap at 320px. The base navigation sizing and `whitespace-nowrap` rules are now retained for active links; `pnpm check`, `git diff --check`, the full test suite, production build, and repeat browser checks at 320px and desktop widths passed afterward.
-
-The first build attempt ran in parallel with the test suite and reached a transient temporary-server connection timeout during prerendering; the standalone `pnpm build` rerun completed successfully.
-
-The Journey-free landing page exposes import as a quiet top-right recovery action. Because the persisted state has no Journeys, a valid backup applies immediately without a replacement warning and the normal redirect continues into Home. Export remains available only when saved data exists in Settings.
-
-Feature test on 2026-08-06 passed `pnpm check` (115 files), `pnpm test` (22 files, 184 tests), `pnpm build` (client, SSR, and 11 prerendered pages), and `git diff --check`. Real-browser checks at desktop and 320x568 verified the landing import placement, absence of export, no horizontal overflow, immediate import to Home without a dialog, and the Settings replacement confirmation flow; browser output had no application errors or warnings (only the React DevTools informational message). An intermediate cleanup navigation was attempted after stopping the dev server and produced a CLI syntax/connection error; the server was restarted and the affected landing flow passed cleanly afterward.
+<!-- Record important decisions, blockers, scope changes, or follow-up work. -->
 
 ## History
 
@@ -199,3 +186,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/github-pages-preview-deployment`
 - Summary: Added an automated GitHub Pages preview workflow with static TanStack Start prerendering, project-path-aware assets and routing, client-side fallback handling, and repository setup instructions.
 - Verification: `pnpm check`, `pnpm test` (21 files, 176 tests), `pnpm build`, project-path artifact inspection, workflow YAML parsing, `git diff --check`, and Pages-path browser checks at 1280×800 and 320×568 with client navigation and no console errors passed.
+
+### 2026-08-06 — Import and export saved progress
+
+- Branch: `codex/feature/import-export-saved-progress`
+- Summary: Added versioned Settings backups for exporting and restoring saved Journeys and progress, plus an immediate top-right import path for Journey-free landing pages without an export action or replacement warning.
+- Verification: `pnpm check` (115 files), `pnpm test` (22 files, 184 tests), `pnpm build` (client, SSR, and 11 prerendered pages), `git diff --check`, and real-browser checks at desktop and 320×568 for landing import, Settings confirmation, responsive fit, restored navigation, and console output passed.
