@@ -10,32 +10,43 @@ Not Started
 
 ## Goal
 
-<!-- Describe what should change from the user's perspective. -->
+Show prospective users a realistic, recently active beginner guitar-learning journey in the sample view, detailing exactly 43 completed pomodoros, early milestones, beginner chord/strumming next steps, and authentic session reflections.
 
 ## Acceptance Criteria
 
-- [ ] ...
-
-- [ ] ...
+- [x] Provide exactly 43 completed pomodoros (25 minutes each, totaling 1,075 focused minutes) with realistic timestamps spread across the past month up to recent days.
+- [x] Assign realistic beginner next steps to the 43 pomodoros (e.g. tuning & posture, open chords Em & A minor, clean C to G chord transitions, basic 4/4 rhythm strumming, playing first beginner song).
+- [x] Include realistic beginner reflections and notes on focus sessions (e.g. fingertip soreness, clean finger placement, rhythm pacing, smooth transition breakthroughs).
+- [x] Calculate all sample focus session timestamps dynamically relative to the current date so all 43 pomodoros fall within the past month (recent activity).
+- [x] Update sample milestone records (e.g. 10 pomodoros earned, 25 hours next) and earned dates to align logically with the 43 completed pomodoros.
+- [x] Ensure all existing unit tests and sample journey UI components pass with no regressions or console errors.
 
 ## Plan
 
-1. ...
-
-2. ...
+1. Design a 43-pomodoro beginner guitar practice history (absolute beginner starting with tuning, open chords, simple transitions, strumming, and a first song).
+2. Implement relative date generator utilities in `src/lib/mock-data.ts` to anchor all 43 sessions dynamically within the past month relative to the runtime date.
+3. Construct the 43 `FocusSession` entries with realistic `nextStepId`, timestamp distribution, and authentic beginner reflections.
+4. Update `src/lib/mock-data.ts` structures (Journey, NextSteps, FocusSessions, Milestones, WeeklyGoal) to export the 43-pomodoro beginner dataset.
+5. Update unit test specs across `src/` to account for dynamic sample dates, 43 completed pomodoros, and updated next steps.
+6. Run full code verification (`pnpm check`, `pnpm test`, `pnpm build`) and inspect the `/sample` route.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] Affected UI verified in the browser, if applicable
+- [x] Mobile and desktop verified, if responsive UI changed
+- [x] No relevant console errors
 
 ## Notes
 
-<!-- Record important decisions, blockers, scope changes, or follow-up work. -->
+- Total progress: 43 completed pomodoros (1,075 minutes = ~17 hours 55 minutes focused time).
+- Beginner context: absolute beginner learning open chords, finger placement, chord transitions, basic rhythm, building calluses, and playing their first simple song.
+- Session dates calculated dynamically using relative offsets from runtime date so whenever a user views the sample journey, dates fall naturally within the past month.
+
+
+
 
 ## History
 
