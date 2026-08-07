@@ -404,7 +404,7 @@ export function SessionCompleteScreen({ sessionId }: { sessionId?: string }) {
   if (hydration.status === 'loading') {
     return (
       <FocusLayout>
-        <LoadingState label="Loading completed session" />
+        <LoadingState label="Loading completed session" variant="complete" />
       </FocusLayout>
     );
   }

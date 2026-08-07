@@ -972,7 +972,7 @@ export function FocusSessionScreen({ search }: { search: FocusSearch }) {
   if (hydration.status === 'loading') {
     return (
       <FocusLayout>
-        <LoadingState label="Loading focus setup" />
+        <LoadingState label="Loading focus setup" variant="focus" />
       </FocusLayout>
     );
   }

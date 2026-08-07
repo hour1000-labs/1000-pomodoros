@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { LoadingState } from '@/components/shared/loading-state';
+import { type LoadingSkeletonVariant, LoadingState } from '@/components/shared/loading-state';
 import { PersistedStateBoundary } from '@/components/shared/persisted-state-boundary';
 import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
 import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data';
@@ -10,14 +10,16 @@ import { ApplicationLayout } from './application-layout';
 
 export function ApplicationStateBoundary({
   children,
+  variant = 'home',
 }: {
   children: (state: AppState) => ReactNode;
+  variant?: LoadingSkeletonVariant;
 }) {
   return (
     <PersistedStateBoundary
       loadingFallback={
         <ApplicationLayout journeyId={LEARN_GUITAR_JOURNEY_ID}>
-          <LoadingState />
+          <LoadingState variant={variant} />
         </ApplicationLayout>
       }
       errorFallback={({ retry, reset }) => (

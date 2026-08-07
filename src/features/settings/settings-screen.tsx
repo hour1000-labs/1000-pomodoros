@@ -130,7 +130,7 @@ function SettingsContent({ state }: { state: AppState }) {
 
 export function SettingsScreen() {
   return (
-    <ApplicationStateBoundary>
+    <ApplicationStateBoundary variant="settings">
       {(state) => <SettingsContent state={state} />}
     </ApplicationStateBoundary>
   );

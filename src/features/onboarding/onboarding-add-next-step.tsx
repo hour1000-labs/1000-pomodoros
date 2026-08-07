@@ -235,7 +235,7 @@ export function OnboardingAddNextStep() {
   if (hydration.status === 'loading') {
     return (
       <OnboardingLayout>
-        <LoadingState label="Loading Next step draft" />
+        <LoadingState label="Loading Next step draft" variant="form" />
       </OnboardingLayout>
     );
   }

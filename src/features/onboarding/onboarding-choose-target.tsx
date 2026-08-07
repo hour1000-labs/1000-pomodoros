@@ -273,7 +273,7 @@ export function OnboardingChooseTarget() {
   if (hydration.status === 'loading') {
     return (
       <OnboardingLayout>
-        <LoadingState label="Loading target draft" />
+        <LoadingState label="Loading target draft" variant="form" />
       </OnboardingLayout>
     );
   }

@@ -1,34 +1,30 @@
-# Current Feature: <feature name>
+# Current Feature: Realistic Loading Skeletons
 
-<!-- One-sentence description of the feature or fix -->
+Replace generic loading skeletons with realistic, layout-matched loading states across Home, Journey Detail, Milestone Detail, Focus, and Onboarding screens.
 
 ## Status
 
-<!-- Not Started | In Progress | Ready to Commit -->
-
-Not Started
+Ready to Commit
 
 ## Goal
 
-Show prospective users a realistic, recently active beginner guitar-learning journey in the sample view, detailing exactly 43 completed pomodoros, early milestones, beginner chord/strumming next steps, and authentic session reflections.
+Provide realistic, layout-matched loading skeleton states that visually mirror actual page content and layout hierarchy while state loads.
 
 ## Acceptance Criteria
 
-- [x] Provide exactly 43 completed pomodoros (25 minutes each, totaling 1,075 focused minutes) with realistic timestamps spread across the past month up to recent days.
-- [x] Assign realistic beginner next steps to the 43 pomodoros (e.g. tuning & posture, open chords Em & A minor, clean C to G chord transitions, basic 4/4 rhythm strumming, playing first beginner song).
-- [x] Include realistic beginner reflections and notes on focus sessions (e.g. fingertip soreness, clean finger placement, rhythm pacing, smooth transition breakthroughs).
-- [x] Calculate all sample focus session timestamps dynamically relative to the current date so all 43 pomodoros fall within the past month (recent activity).
-- [x] Update sample milestone records (e.g. 10 pomodoros earned, 25 hours next) and earned dates to align logically with the 43 completed pomodoros.
-- [x] Ensure all existing unit tests and sample journey UI components pass with no regressions or console errors.
+- [x] Implement layout-matched loading skeleton components for Home, Journey Detail, Milestone Detail, Focus Setup / Complete, and Onboarding screens.
+- [x] Match actual page layout structure, headers, metric cards, action buttons, and Pomodoro grid geometry in skeleton states.
+- [x] Retain accessibility standards with appropriate `aria-busy="true"`, `role="status"`, and screen-reader label announcements.
+- [x] Maintain design system compliance using `bg-ink/8`, subtle shimmer pulse animations, and responsive container bounds.
+- [x] Ensure `pnpm check`, `pnpm test`, and `pnpm build` pass with zero errors or regressions.
 
 ## Plan
 
-1. Design a 43-pomodoro beginner guitar practice history (absolute beginner starting with tuning, open chords, simple transitions, strumming, and a first song).
-2. Implement relative date generator utilities in `src/lib/mock-data.ts` to anchor all 43 sessions dynamically within the past month relative to the runtime date.
-3. Construct the 43 `FocusSession` entries with realistic `nextStepId`, timestamp distribution, and authentic beginner reflections.
-4. Update `src/lib/mock-data.ts` structures (Journey, NextSteps, FocusSessions, Milestones, WeeklyGoal) to export the 43-pomodoro beginner dataset.
-5. Update unit test specs across `src/` to account for dynamic sample dates, 43 completed pomodoros, and updated next steps.
-6. Run full code verification (`pnpm check`, `pnpm test`, `pnpm build`) and inspect the `/sample` route.
+1. Inspect screen layout structures for Home, Journey Detail, Milestone Detail, Focus setup/complete, and Onboarding to define skeleton variants.
+2. Refactor/extend `src/components/shared/loading-state.tsx` to support screen-specific skeleton variants (`variant="home" | "journey" | "milestone" | "focus" | "form" | "default"`).
+3. Wire up screen-specific skeleton variants in `PersistedStateBoundary`, `ApplicationStateBoundary`, and screen loading fallbacks.
+4. Create `src/components/shared/loading-state.test.tsx` to verify skeleton rendering and accessibility attributes for all variants.
+5. Run full code verification (`pnpm check`, `pnpm test`, `pnpm build`) and inspect loading states in browser.
 
 ## Verification
 
@@ -41,9 +37,8 @@ Show prospective users a realistic, recently active beginner guitar-learning jou
 
 ## Notes
 
-- Total progress: 43 completed pomodoros (1,075 minutes = ~17 hours 55 minutes focused time).
-- Beginner context: absolute beginner learning open chords, finger placement, chord transitions, basic rhythm, building calluses, and playing their first simple song.
-- Session dates calculated dynamically using relative offsets from runtime date so whenever a user views the sample journey, dates fall naturally within the past month.
+- Preserves existing `LoadingState` component signature with default fallback while offering contextual variants.
+
 
 
 

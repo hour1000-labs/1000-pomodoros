@@ -203,7 +203,7 @@ export function JourneyDetailScreen({
   }
 
   return (
-    <ApplicationStateBoundary>
+    <ApplicationStateBoundary variant="journey">
       {(persistedState) => (
         <JourneyContent
           state={persistedState}

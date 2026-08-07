@@ -154,7 +154,7 @@ export function OnboardingAddMotivation() {
   if (hydration.status === 'loading') {
     return (
       <OnboardingLayout>
-        <LoadingState label="Loading motivation draft" />
+        <LoadingState label="Loading motivation draft" variant="form" />
       </OnboardingLayout>
     );
   }

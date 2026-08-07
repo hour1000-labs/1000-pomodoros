@@ -170,7 +170,7 @@ export function MilestoneDetailScreen({ milestoneId }: { milestoneId: string }) 
     <PersistedStateBoundary
       loadingFallback={
         <FocusLayout>
-          <LoadingState label="Loading milestone" />
+          <LoadingState label="Loading milestone" variant="milestone" />
         </FocusLayout>
       }
       errorFallback={({ retry, reset }) => (

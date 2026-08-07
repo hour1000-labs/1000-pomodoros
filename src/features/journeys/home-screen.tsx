@@ -123,7 +123,7 @@ export function HomeScreen() {
   const now = useCurrentLocalDate();
 
   return (
-    <ApplicationStateBoundary>
+    <ApplicationStateBoundary variant="home">
       {(state) => <HomeContent now={now} state={state} />}
     </ApplicationStateBoundary>
   );

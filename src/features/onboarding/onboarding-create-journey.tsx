@@ -216,7 +216,7 @@ export function OnboardingCreateJourney({ startFresh = false }: { startFresh?: b
   if (hydration.status === 'loading') {
     return (
       <OnboardingLayout>
-        <LoadingState label="Loading Journey draft" />
+        <LoadingState label="Loading Journey draft" variant="form" />
       </OnboardingLayout>
     );
   }
