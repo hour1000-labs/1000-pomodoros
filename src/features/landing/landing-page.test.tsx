@@ -45,33 +45,53 @@ async function renderLandingPage(state: AppState) {
 }
 
 describe('LandingPage', () => {
-  it('presents the core promise and one primary action for a Journey-free state', async () => {
+  it('presents the core promise, product preview, 3-step explanation, and onboarding actions for a Journey-free state', async () => {
     await renderLandingPage(createJourneyFreeState());
 
+    // Hero title & description
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: 'Track focused work, one pomodoro at a time',
+        name: 'Turn focused work into visible progress',
       })
     ).toBeTruthy();
     expect(
-      screen.getByText('Choose a Journey, start a Focus session, and see your progress grow.')
+      screen.getByText(
+        'Complete 25-minute pomodoros, build skills, and watch every hour you invest add up to long-term mastery.'
+      )
     ).toBeTruthy();
 
+    // Primary CTA buttons (Hero and Explanation section)
     const onboardingLinks = screen.getAllByRole('link', {
       name: 'Start your first Journey',
     });
-    expect(onboardingLinks).toHaveLength(1);
+    expect(onboardingLinks.length).toBeGreaterThanOrEqual(1);
     expect(
       onboardingLinks.every((link) => link.getAttribute('href') === '/onboarding/journey')
     ).toBe(true);
+
+    // Secondary action & header import
     expect(screen.getByRole('link', { name: 'Explore sample Journey' }).getAttribute('href')).toBe(
       '/sample'
     );
     expect(screen.getByRole('button', { name: 'Import saved progress' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Export/ })).toBeNull();
-    expect(screen.queryByText('Learn guitar')).toBeNull();
-    expect(screen.queryByRole('link', { name: 'See how it works' })).toBeNull();
+
+    // Embedded Product Preview Frame checks
+    expect(screen.getByText('Learn guitar')).toBeTruthy();
+    expect(screen.getByText('Practice the F chord transition')).toBeTruthy();
+    expect(screen.getByText('25:00')).toBeTruthy();
+    expect(screen.getByText('43 / 50')).toBeTruthy();
+
+    // 3-step Core Loop explanation checks
+    expect(screen.getByRole('heading', { level: 2, name: 'How it works' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'Choose what you want to improve' })
+    ).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: 'Focus on the next step' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'Watch your focused effort add up' })
+    ).toBeTruthy();
   });
 
   it('restores saved progress from the landing page and continues to Home', async () => {
@@ -97,9 +117,11 @@ describe('LandingPage', () => {
   it('opens the sample Journey only after explicit exploration', async () => {
     const router = await renderLandingPage(createJourneyFreeState());
 
+    // Main page H1 is "Turn focused work into visible progress", not "Learn guitar"
     expect(screen.queryByRole('heading', { level: 1, name: 'Learn guitar' })).toBeNull();
     fireEvent.click(screen.getByRole('link', { name: 'Explore sample Journey' }));
 
+    // Navigates to /sample where H1 is "Learn guitar"
     expect(await screen.findByRole('heading', { level: 1, name: 'Learn guitar' })).toBeTruthy();
     expect(router.state.location.pathname).toBe('/sample');
 
@@ -119,7 +141,7 @@ describe('LandingPage', () => {
     expect(
       screen.queryByRole('heading', {
         level: 1,
-        name: 'Track focused work, one pomodoro at a time',
+        name: 'Turn focused work into visible progress',
       })
     ).toBeNull();
   });

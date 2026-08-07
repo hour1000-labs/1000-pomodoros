@@ -53,7 +53,7 @@ describe('SampleJourneyScreen', () => {
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: 'Track focused work, one pomodoro at a time',
+        name: 'Turn focused work into visible progress',
       })
     ).toBeTruthy();
     expect(router.state.location.pathname).toBe('/');

@@ -22,7 +22,7 @@ export function PublicLayout({
       </header>
       <main
         className={cn(
-          'mx-auto w-full max-w-content px-gutter-mobile py-10 md:px-gutter-desktop md:py-16',
+          'mx-auto w-full max-w-content px-gutter-mobile py-8 md:px-gutter-desktop md:py-12 lg:py-14',
           className
         )}
       >

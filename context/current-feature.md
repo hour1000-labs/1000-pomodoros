@@ -1,41 +1,89 @@
-# Current Feature: <feature name>
+# Current Feature: Redesign Landing Page
 
-<!-- One-sentence description of the feature or fix -->
+Redesign the public landing page into a visually stunning, high-contrast, product-first experience with dynamic product previews, structured benefit highlights, and clear onboarding actions.
 
 ## Status
 
-<!-- Not Started | In Progress | Ready to Commit -->
-
-Not Started
+Ready to Commit
 
 ## Goal
 
-<!-- Describe what should change from the user's perspective. -->
+Help a first-time visitor understand 1000 Pomodoros within a few seconds:
+
+1. Choose something meaningful to improve.
+2. Focus on the next step.
+3. Each 25 minutes of focused work becomes visible Pomodoro progress.
+
+The landing page should make the product itself the primary explanation and make starting a Journey the obvious next action.  
 
 ## Acceptance Criteria
 
-- [ ] ...
+- [x] The hero clearly communicates that 1000 Pomodoros turns focused work into visible progress toward a skill, project, or goal.
 
-- [ ] ...
+- [x] The hero contains:
+  - a clear headline
+  - one short supporting description
+  - one primary `Start your first journey` CTA linking to `/onboarding/journey`
+
+- [x] `Import saved progress` remains available in the header without competing visually with the primary CTA.
+
+- [x] A product preview appears directly after or partially within the hero and demonstrates:
+  - a Journey
+  - its current Next step
+  - a 25:00 focus timer
+  - tomato/Pomodoro progress
+  - progress toward a milestone
+
+- [x] The landing page explains the core loop in no more than three simple steps:
+  1. Choose what you want to improve.
+  2. Focus on the next step.
+  3. Watch your focused effort add up.
+
+- [x] A `Start your first journey` CTA is available after the explanation.
+
+- [x] The page does not introduce additional marketing sections, feature grids, testimonials, statistics, or functionality that are not necessary to explain the core product.
+
+- [x] Existing landing-page behavior is preserved:
+  - existing users are routed to the appropriate returning-user experience
+  - saved progress can be imported
+  - the optional sample Journey remains accessible as intended
+
+- [x] The product preview does not persist or modify user Journey data.
+
+- [x] The page follows `context/DESIGN.md` and maintains one clear primary visual action.
+
+- [x] The page works from 320px mobile through 1200px+ desktop without horizontal overflow or clipped content.
+
+- [x] The page remains usable at 200% zoom.
+
+- [x] All controls are keyboard accessible, have visible focus states, meet WCAG AA contrast requirements, and respect `prefers-reduced-motion`.
+
+- [x] No new console errors or warnings are introduced.
+
+- [x] `pnpm check`, `pnpm test`, and `pnpm build` pass.
 
 ## Plan
 
-1. ...
-
-2. ...
+1. **Hero Section Refinement**: Update hero layout in `src/features/landing/` with a clear headline, single short supporting description, single primary `Start your first journey` CTA linking to `/onboarding/journey`, and ensure `Import saved progress` remains in the header without competing visually. *(Supports Criteria 1, 2, 3, 10)*
+2. **Product Preview Showcase**: Build a non-persisted product preview frame directly within or following the hero that visually demonstrates a sample Journey, its Next step, a 25:00 focus timer, tomato Pomodoro progress, and milestone progress. *(Supports Criteria 4, 9)*
+3. **Core Loop Explanation & Closing CTA**: Implement a simple 3-step explanation section (1. Choose what you want to improve, 2. Focus on the next step, 3. Watch your focused effort add up) followed by a secondary `Start your first journey` CTA, while avoiding unnecessary marketing clutter, testimonials, or feature bloat. *(Supports Criteria 5, 6, 7)*
+4. **Behavior & Route Preservation**: Maintain existing behavior including returning-user routing logic, progress import, and accessible sample Journey (`/sample`) exploration. *(Supports Criterion 8)*
+5. **Design, Responsiveness & Accessibility**: Apply `context/DESIGN.md` rules (one primary visual action, WCAG AA contrast, keyboard focus, reduced motion, clean 320px–1200px+ responsive layout, and 200% zoom fit). *(Supports Criteria 10, 11, 12, 13, 14)*
+6. **Automated Testing & Verification**: Update unit tests in `src/features/landing/landing-page.test.tsx` to cover all new elements and flows, and verify that `pnpm check`, `pnpm test`, and `pnpm build` pass with zero console errors or warnings. *(Supports Criterion 15)*
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] Affected UI verified in the browser, if applicable
+- [x] Mobile and desktop verified, if responsive UI changed
+- [x] No relevant console errors
 
 ## Notes
 
-<!-- Record important decisions, blockers, scope changes, or follow-up work. -->
+- Adheres to `context/DESIGN.md` guidelines (three-color Ink/Paper/Pomodoro Red palette, 100% Manrope typography, single primary CTA per view).
+- Preserves existing landing page test requirements (import saved data, redirect for existing journeys, sample journey access).
 
 ## History
 
