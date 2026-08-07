@@ -221,7 +221,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
         <div className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(22rem,1.2fr)] lg:items-start lg:gap-12">
           <section className="min-w-0" aria-labelledby="session-complete-title">
             <h1
-              className="mb-4 max-w-[11ch] font-bold text-[clamp(2.75rem,12vw,5rem)] leading-none tracking-[-0.055em]"
+              className="mb-4 max-w-[11ch] font-bold text-[clamp(2.75rem,12vw,5rem)] leading-none tracking-[-0.055em] [overflow-wrap:normal]"
               id="session-complete-title"
             >
               {earnedPomodoros} {pomodoroLabel} complete.

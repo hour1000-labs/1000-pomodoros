@@ -1,43 +1,49 @@
-# Current Feature: <feature name>
+# Current Feature: Keep Session Complete heading words intact
 
-<!-- One-sentence description of the feature or fix -->
+Prevent the Session Complete heading from leaving the final “s” of “pomodoros” on a separate line at narrow widths.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Not Started
+Ready to Commit
 
 ## Goal
 
-<!-- Describe what should change from the user's perspective. -->
+On the Session Complete screen, users see the result heading as a readable phrase without a single trailing letter stranded on the next line.
 
 ## Acceptance Criteria
 
-<!-- The feature is done when every applicable item is checked. -->
+- [x] The Session Complete result heading keeps “pomodoros” together when viewed at the supported narrow mobile width, including the affected session-count copy.
 
-- [ ] ...
+- [x] The existing Session Complete wording, meaning, and accessible heading semantics remain unchanged.
 
-- [ ] ...
+- [x] The heading still fits without horizontal overflow and retains the current appearance at desktop widths.
 
 ## Plan
 
-1. ...
+1. Inspect the Session Complete heading markup and responsive typography styles to identify the smallest wrapping fix.
 
-2. ...
+2. Apply the targeted fix and add or update focused coverage if the existing tests do not protect the affected behavior.
+
+3. Verify the affected mobile and desktop layouts plus the standard project checks.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes — Biome checked 117 files with no warnings.
+- [x] `pnpm test` passes — 23 test files and 189 tests passed; the runner emitted existing jsdom `Window's scrollTo() method` notices.
+- [x] `pnpm build` passes — client, SSR, and 11 prerendered pages built successfully.
+- [x] Affected UI verified in the browser, if applicable — Session Complete rendered with “2 pomodoros complete.” at 320×568 and 1280×800.
+- [x] Mobile and desktop verified, if responsive UI changed — both viewports had no document overflow; computed heading `overflow-wrap` was `normal`.
+- [x] No relevant console errors — mobile had no warnings; desktop had no errors or warnings, only the standard React DevTools info message.
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
+
+- Scope is limited to the Session Complete heading wrap; no copy, layout, or typography redesign is intended.
+- The fix overrides the inherited global `overflow-wrap: anywhere` only on the Session Complete result heading so normal word boundaries are preserved.
+- Verification evidence was recorded after the localized UI change. The subsequent working-file update was documentation-only; `pnpm check` and `git diff --check` must be rerun, while the test, build, and browser evidence remains applicable.
 
 ## History
 
