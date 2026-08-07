@@ -1,49 +1,41 @@
-# Current Feature: Keep Session Complete heading words intact
+# Current Feature: <feature name>
 
-Prevent the Session Complete heading from leaving the final “s” of “pomodoros” on a separate line at narrow widths.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Ready to Commit
+Not Started
 
 ## Goal
 
-On the Session Complete screen, users see the result heading as a readable phrase without a single trailing letter stranded on the next line.
+<!-- Describe what should change from the user's perspective. -->
 
 ## Acceptance Criteria
 
-- [x] The Session Complete result heading keeps “pomodoros” together when viewed at the supported narrow mobile width, including the affected session-count copy.
+- [ ] ...
 
-- [x] The existing Session Complete wording, meaning, and accessible heading semantics remain unchanged.
-
-- [x] The heading still fits without horizontal overflow and retains the current appearance at desktop widths.
+- [ ] ...
 
 ## Plan
 
-1. Inspect the Session Complete heading markup and responsive typography styles to identify the smallest wrapping fix.
+1. ...
 
-2. Apply the targeted fix and add or update focused coverage if the existing tests do not protect the affected behavior.
-
-3. Verify the affected mobile and desktop layouts plus the standard project checks.
+2. ...
 
 ## Verification
 
-- [x] `pnpm check` passes — Biome checked 117 files with no warnings.
-- [x] `pnpm test` passes — 23 test files and 189 tests passed; the runner emitted existing jsdom `Window's scrollTo() method` notices.
-- [x] `pnpm build` passes — client, SSR, and 11 prerendered pages built successfully.
-- [x] Affected UI verified in the browser, if applicable — Session Complete rendered with “2 pomodoros complete.” at 320×568 and 1280×800.
-- [x] Mobile and desktop verified, if responsive UI changed — both viewports had no document overflow; computed heading `overflow-wrap` was `normal`.
-- [x] No relevant console errors — mobile had no warnings; desktop had no errors or warnings, only the standard React DevTools info message.
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
-
-- Scope is limited to the Session Complete heading wrap; no copy, layout, or typography redesign is intended.
-- The fix overrides the inherited global `overflow-wrap: anywhere` only on the Session Complete result heading so normal word boundaries are preserved.
-- Verification evidence was recorded after the localized UI change. The subsequent working-file update was documentation-only; `pnpm check` and `git diff --check` must be rerun, while the test, build, and browser evidence remains applicable.
 
 ## History
 
@@ -206,3 +198,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/add-missed-pomodoro-entries`
 - Summary: Added accessible manual missed-session recording from tomato details with date, Next step, focused minutes, persisted manual labels, same-date contributors, and 25-minute tomato progress allocation.
 - Verification: `pnpm check`, `pnpm test` (23 files, 189 tests), `pnpm build` (SSR and prerendering), `git diff --check`, and desktop/320×568 browser checks for validation, persistence, multi-tomato progress, focus return, responsive layering, and browser console output passed.
+
+### 2026-08-06 — Keep Session Complete heading words intact
+
+- Branch: `codex/fix/session-complete-heading-wrap`
+- Summary: Prevented the Session Complete heading from splitting the final “s” of “pomodoros” onto a separate line at narrow widths.
+- Verification: `pnpm check`, `pnpm test` (23 files, 189 tests), `pnpm build` (client, SSR, and 11 prerendered pages), `git diff --check`, and browser checks at 320×568 and 1280×800 with no document overflow or console errors/warnings passed.
