@@ -146,6 +146,8 @@ function JourneyContent({
             latestIndex={detail.latestIndex}
             milestoneIndexes={detail.milestoneIndexes}
             getBlockContributions={detail.getBlockContributions}
+            nextSteps={detail.nextSteps}
+            readOnly={readOnly}
           />
         </div>
         <div className="order-1 lg:order-2">

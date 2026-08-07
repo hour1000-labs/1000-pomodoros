@@ -5,7 +5,7 @@ import { MilestoneProgress } from '@/components/shared/milestone-progress';
 import { PomodoroBlock } from '@/components/shared/pomodoro-block';
 import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
 import { Button } from '@/components/ui/button';
-import type { Milestone } from '@/lib/models';
+import type { Milestone, NextStep } from '@/lib/models';
 
 import {
   type JourneyBlockContributionView,
@@ -27,6 +27,7 @@ function SectionGrid({
   latestIndex,
   milestoneIndexes,
   getBlockContributions,
+  readOnly,
   onSelect,
   selectedIndex,
 }: {
@@ -37,16 +38,15 @@ function SectionGrid({
   latestIndex: number | null;
   milestoneIndexes: readonly number[];
   getBlockContributions: (index: number) => readonly JourneyBlockContributionView[];
+  readOnly: boolean;
   onSelect: (index: number) => void;
   selectedIndex: number | null;
 }) {
-  const selectableIndexes = useMemo(
-    () =>
-      Array.from({ length: count }, (_, offset) => startIndex + offset).filter(
-        (index) => getBlockContributions(index).length > 0
-      ),
-    [count, getBlockContributions, startIndex]
-  );
+  const selectableIndexes = useMemo(() => {
+    const indexes = Array.from({ length: count }, (_, offset) => startIndex + offset);
+
+    return readOnly ? indexes.filter((index) => getBlockContributions(index).length > 0) : indexes;
+  }, [count, getBlockContributions, readOnly, startIndex]);
 
   return (
     <PomodoroGrid
@@ -121,6 +121,8 @@ export function JourneyDetailProgress({
   latestIndex,
   milestoneIndexes,
   getBlockContributions,
+  nextSteps,
+  readOnly = false,
 }: {
   focusedMinutes: number;
   totalPomodoros: number;
@@ -137,6 +139,8 @@ export function JourneyDetailProgress({
   latestIndex: number | null;
   milestoneIndexes: readonly number[];
   getBlockContributions: (index: number) => readonly JourneyBlockContributionView[];
+  nextSteps: readonly NextStep[];
+  readOnly?: boolean;
 }) {
   const [fullView, setFullView] = useState(false);
   const [visibleSectionCount, setVisibleSectionCount] = useState(() =>
@@ -219,6 +223,7 @@ export function JourneyDetailProgress({
                     latestIndex={latestIndex}
                     milestoneIndexes={milestoneIndexes}
                     getBlockContributions={getBlockContributions}
+                    readOnly={readOnly}
                     onSelect={setSelectedBlockIndex}
                     selectedIndex={selectedBlockIndex}
                   />
@@ -252,6 +257,7 @@ export function JourneyDetailProgress({
               latestIndex={latestIndex}
               milestoneIndexes={milestoneIndexes}
               getBlockContributions={getBlockContributions}
+              readOnly={readOnly}
               onSelect={setSelectedBlockIndex}
               selectedIndex={selectedBlockIndex}
             />
@@ -286,6 +292,8 @@ export function JourneyDetailProgress({
       <JourneyDetailBlockDialog
         blockIndex={selectedBlockIndex}
         contributions={selectedContributions}
+        nextSteps={nextSteps}
+        readOnly={readOnly}
         onOpenChange={(open) => {
           if (!open) setSelectedBlockIndex(null);
         }}

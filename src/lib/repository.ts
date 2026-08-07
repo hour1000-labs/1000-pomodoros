@@ -20,7 +20,7 @@ import {
   type WeeklyGoal,
 } from './models';
 import { getNextStepError } from './next-step';
-import { getFocusedMinutes } from './progress';
+import { getFocusedMinutes, MINIMUM_FOCUSED_MINUTES } from './progress';
 
 export const SESSION_REFLECTION_MAX_LENGTH = 280;
 
@@ -130,6 +130,7 @@ export interface AppRepository {
     session: FocusSession,
     earnedMilestones?: readonly Milestone[]
   ): RepositorySaveResult;
+  addManualFocusSession(session: FocusSession): RepositorySaveResult;
   updateSessionReflection(sessionId: string, reflection: string): RepositorySaveResult;
 }
 
@@ -833,6 +834,29 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     return update((state) => completeSessionInState(state, session, earnedMilestones));
   }
 
+  function addManualFocusSession(session: FocusSession) {
+    return update((state) => {
+      const nextStep =
+        session.nextStepId === null
+          ? null
+          : state.nextSteps.find(
+              (candidate) =>
+                candidate.id === session.nextStepId && candidate.journeyId === session.journeyId
+            );
+      const canAdd =
+        session.source === 'manual' &&
+        session.status === 'completed' &&
+        session.endedAt !== null &&
+        Number.isFinite(session.focusedMinutes) &&
+        session.focusedMinutes >= MINIMUM_FOCUSED_MINUTES &&
+        state.journeys.some(({ id }) => id === session.journeyId) &&
+        nextStep !== null &&
+        !state.focusSessions.some(({ id }) => id === session.id);
+
+      return canAdd ? completeSessionInState(state, session) : state;
+    });
+  }
+
   function updateSessionReflection(sessionId: string, reflection: string) {
     return update((state) => {
       const session = state.focusSessions.find(({ id }) => id === sessionId);
@@ -872,6 +896,7 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     setWeeklyGoal,
     finishOnboarding,
     completeSession,
+    addManualFocusSession,
     updateSessionReflection,
   };
 }

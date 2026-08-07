@@ -1,41 +1,62 @@
-# Current Feature: <feature name>
+# Current Feature: Add missed pomodoro entries
 
-<!-- One-sentence description of the feature or fix -->
+Allow users to record a forgotten focus session from a tomato detail modal and add its time to the Journey's visual progress.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Not Started
+Ready to Commit
 
 ## Goal
 
 <!-- Describe what should change from the user's perspective. -->
 
+Users can recover focused work they completed without starting the timer by recording its date, next step, and minutes, then seeing the appropriate tomato progress and dated session details.
+
 ## Acceptance Criteria
 
 <!-- The feature is done when every applicable item is checked. -->
 
-- [ ] ...
-- [ ] ...
+- [x] Each tomato detail modal provides a clear, accessible action to add a missing session, using copy such as “Forgot to start a session?”.
+- [x] The manual-entry flow requires the completed date, the next step worked on, and the number of focused minutes, with clear validation for missing or invalid values.
+- [x] Manual entries follow the confirmed five-minute minimum, are visibly labeled as manual time, and preserve the exact completed date, next step, and focused minutes in persisted session history.
+- [x] Saving a manual entry updates Journey progress using the existing 25-minute tomato math: complete tomatoes fill at 25 minutes and partial tomatoes fill proportionally from left to right, with additional tomatoes represented when the recorded minutes exceed one unit.
+- [x] The saved entry appears in the tomato modal for the corresponding date with its date, next step, minutes, and manual label; existing entries from the same date remain visible and the new entry is appended rather than replacing them.
+- [x] Manual minutes contribute to the same Journey progress totals, visual aggregates, and session-derived surfaces as timer-recorded minutes while retaining their manual label.
+- [x] The manual-entry flow remains usable with keyboard and assistive technology, fits the existing responsive tomato modal on mobile and desktop, and does not introduce relevant console errors.
 
 ## Plan
 
-1. ...
-2. ...
+1. Inspect the existing tomato grid/modal, session model, progress selectors, persistence helpers, and tests to identify the smallest extension points for manual sessions.
+2. Extend the session and progress data flow so manual entries retain their date, next step, minutes, and source label while using the existing tomato fill and aggregation rules.
+3. Add the accessible “forgot to start” action and validated manual-entry form to the tomato modal, then refresh the modal and Journey progress after a successful save.
+4. Add focused tests for validation, minimum and partial durations, multi-tomato progress, persistence, date matching, same-date appending, and manual labeling.
+5. Verify the complete flow in the browser at responsive viewport sizes and run the repository quality, test, build, and diff checks.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes (23 files, 189 tests)
+- [x] `pnpm build` passes, including SSR and prerendering
+- [x] Manual-entry tests cover required fields, the five-minute minimum, exact minutes, manual labeling, partial and multi-tomato progress, persistence, date matching, and same-date appending
+- [x] Affected UI verified in the browser, if applicable
+- [x] Mobile and desktop verified, if responsive UI changed
+- [x] No relevant console errors
 
 ## Notes
 
 <!-- Record important decisions, blockers, scope changes, or follow-up work. -->
+
+- Manual time entry, the five-minute minimum, partial focused sessions, and proportional tomato fill are confirmed product requirements.
+- Manual minutes will use the existing session-derived progress and date-handling conventions; this feature does not add a separate progress system.
+- The scope covers recording and displaying a missed session. Editing or deleting manual entries, scheduling entries, and adding new next-step management are out of scope unless implementation reveals an existing required dependency.
+- Real Journey tomatoes, including future tomatoes, are inspectable so a missed session can be added from any tomato modal; the read-only sample Journey does not expose the manual-entry action.
+- Manual entries use an existing Journey Next step and a valid local calendar date that is not in the future. The date is stored through the existing session timestamps so same-date contributors continue to append naturally.
+- The mobile Journey content uses a bounded stacking layer so the tomato dialog stays above the fixed Start dock without changing the dialog's DOM ownership or focus-return behavior.
+- Test remediation was localized behavioral: the initial body-portal layering fix caused the existing focused-trigger dialog test to hang, so it was replaced with the narrower mobile stacking-layer change. Revalidated with `pnpm check`, `git diff --check`, the focused dialog test, the full suite, `pnpm build`, and desktop/mobile browser checks.
+- The Vitest run still prints existing jsdom `Window's scrollTo()` and empty `href`/hydration warnings; the affected browser flow reports no errors or warnings beyond the standard React DevTools info message.
+- Review: all acceptance criteria and applicable verification items are satisfied; no blocking findings or unapproved scope expansion remain.
 
 ## History
 

@@ -414,6 +414,52 @@ describe('localStorage repository', () => {
     expect(matchingSessions[0]?.focusedMinutes).toBe(25);
   });
 
+  it('appends valid manual sessions for the same date and rejects invalid records', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({
+      getStorage: () => storage,
+      createSeedState: createSeedAppState,
+    });
+    repository.load();
+    const firstManualSession: FocusSession = {
+      ...activeSession,
+      id: 'manual-session-first',
+      plannedMinutes: 10,
+      focusedMinutes: 10,
+      status: 'completed',
+      source: 'manual',
+      startedAt: '2026-08-05T17:50:00.000Z',
+      endedAt: '2026-08-05T18:00:00.000Z',
+    };
+    const secondManualSession: FocusSession = {
+      ...firstManualSession,
+      id: 'manual-session-second',
+      plannedMinutes: 15,
+      focusedMinutes: 15,
+      startedAt: '2026-08-05T18:05:00.000Z',
+      endedAt: '2026-08-05T18:20:00.000Z',
+    };
+
+    repository.addManualFocusSession(firstManualSession);
+    repository.addManualFocusSession(secondManualSession);
+    repository.addManualFocusSession({ ...firstManualSession, focusedMinutes: 4 });
+    repository.addManualFocusSession({
+      ...firstManualSession,
+      id: 'manual-session-no-step',
+      nextStepId: null,
+    });
+    repository.addManualFocusSession(firstManualSession);
+
+    const result = repository.load();
+    if (result.status !== 'ready') throw new Error('Expected persisted state to load');
+
+    expect(result.state.focusSessions.filter(({ source }) => source === 'manual')).toEqual([
+      firstManualSession,
+      secondManualSession,
+    ]);
+    expect(result.state.lastCompletedSessionId).toBe(secondManualSession.id);
+  });
+
   it('awards every crossed milestone in the same idempotent completion write', () => {
     const storage = new MemoryStorage();
     const state = createSeedAppState();

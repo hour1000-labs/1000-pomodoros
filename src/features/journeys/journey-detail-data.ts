@@ -41,6 +41,7 @@ export interface JourneyDetailData {
   nextMilestonePercentage: number;
   remainingPomodoros: number;
   currentStep: NextStep | null;
+  nextSteps: NextStep[];
   upcomingSteps: NextStep[];
   recentSessions: JourneyRecentSession[];
   targetBlocks: number;
@@ -257,6 +258,7 @@ export function deriveJourneyDetailData(
     nextMilestonePercentage,
     remainingPomodoros,
     currentStep,
+    nextSteps: journeySteps,
     upcomingSteps,
     recentSessions,
     targetBlocks,

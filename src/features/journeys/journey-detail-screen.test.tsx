@@ -247,6 +247,56 @@ describe('JourneyDetailScreen', () => {
     expect(within(dialog).getAllByText('Practice the F chord transition')).toHaveLength(2);
   });
 
+  it('records a forgotten session from a tomato and appends it to the matching date', async () => {
+    const state = createSeedAppState();
+    const existingSession: FocusSession = {
+      id: 'session-existing-date',
+      journeyId: LEARN_GUITAR_JOURNEY_ID,
+      nextStepId: LEARN_GUITAR_CURRENT_STEP_ID,
+      plannedMinutes: 10,
+      focusedMinutes: 10,
+      status: 'completed',
+      source: 'timer',
+      startedAt: '2026-08-05T17:50:00.000Z',
+      endedAt: '2026-08-05T18:00:00.000Z',
+      reflection: '',
+    };
+    state.focusSessions = [existingSession];
+
+    await renderJourney(state);
+
+    const block = screen.getByRole('button', { name: /^Pomodoro 1: partial, 40% filled/ });
+    fireEvent.click(block);
+
+    const dialog = await screen.findByRole('dialog', { name: 'Pomodoro 1' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Forgot to start a session?' }));
+    fireEvent.change(within(dialog).getByLabelText('Completed date'), {
+      target: { value: '2026-08-05' },
+    });
+    fireEvent.change(within(dialog).getByLabelText('Next step worked on'), {
+      target: { value: LEARN_GUITAR_CURRENT_STEP_ID },
+    });
+    fireEvent.change(within(dialog).getByLabelText('Focused minutes'), {
+      target: { value: '15' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add session' }));
+
+    await waitFor(() => {
+      const saved = readSavedState();
+      expect(saved.focusSessions).toHaveLength(2);
+      expect(saved.focusSessions[1]).toMatchObject({
+        focusedMinutes: 15,
+        source: 'manual',
+        nextStepId: LEARN_GUITAR_CURRENT_STEP_ID,
+      });
+    });
+    expect(
+      await within(dialog).findByText('2 Focus sessions added time to this Pomodoro.')
+    ).toBeTruthy();
+    expect(within(dialog).getAllByText('Added manually').length).toBeGreaterThan(0);
+    expect(block.getAttribute('data-fill-percent')).toBe('100');
+  });
+
   it('adds an upcoming Next step and persists it once', async () => {
     await renderJourney(createSeedAppState());
 
@@ -376,7 +426,7 @@ describe('JourneyDetailScreen', () => {
       screen.getAllByRole('button', { name: /Add a Next step|Add Next step/ }).length
     ).toBeGreaterThan(0);
     expect(document.querySelectorAll('[data-pomodoro-index]')).toHaveLength(100);
-    expect(screen.queryByRole('button', { name: /^Pomodoro 1:/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Pomodoro 1: future' })).toBeTruthy();
   });
 
   it('keeps an inactive Journey readable without offering a Focus session', async () => {
