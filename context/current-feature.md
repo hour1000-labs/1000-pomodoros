@@ -1,43 +1,41 @@
-# Current Feature: Realistic Loading Skeletons
+# Current Feature: <feature name>
 
-Replace generic loading skeletons with realistic, layout-matched loading states across Home, Journey Detail, Milestone Detail, Focus, and Onboarding screens.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
-Ready to Commit
+<!-- Not Started | In Progress | Ready to Commit -->
+
+Not Started
 
 ## Goal
 
-Provide realistic, layout-matched loading skeleton states that visually mirror actual page content and layout hierarchy while state loads.
+<!-- User-visible outcome of the feature -->
 
 ## Acceptance Criteria
 
-- [x] Implement layout-matched loading skeleton components for Home, Journey Detail, Milestone Detail, Focus Setup / Complete, and Onboarding screens.
-- [x] Match actual page layout structure, headers, metric cards, action buttons, and Pomodoro grid geometry in skeleton states.
-- [x] Retain accessibility standards with appropriate `aria-busy="true"`, `role="status"`, and screen-reader label announcements.
-- [x] Maintain design system compliance using `bg-ink/8`, subtle shimmer pulse animations, and responsive container bounds.
-- [x] Ensure `pnpm check`, `pnpm test`, and `pnpm build` pass with zero errors or regressions.
+<!-- Checklist of testable outcomes -->
+
+- [ ] Criterion 1
 
 ## Plan
 
-1. Inspect screen layout structures for Home, Journey Detail, Milestone Detail, Focus setup/complete, and Onboarding to define skeleton variants.
-2. Refactor/extend `src/components/shared/loading-state.tsx` to support screen-specific skeleton variants (`variant="home" | "journey" | "milestone" | "focus" | "form" | "default"`).
-3. Wire up screen-specific skeleton variants in `PersistedStateBoundary`, `ApplicationStateBoundary`, and screen loading fallbacks.
-4. Create `src/components/shared/loading-state.test.tsx` to verify skeleton rendering and accessibility attributes for all variants.
-5. Run full code verification (`pnpm check`, `pnpm test`, `pnpm build`) and inspect loading states in browser.
+<!-- Implementation steps -->
+
+1. Step 1
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] No relevant console errors
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
-- Preserves existing `LoadingState` component signature with default fallback while offering contextual variants.
+<!-- Decisions, blockers, and scope changes -->
 
 
 
@@ -216,3 +214,10 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/redesign-landing-page`
 - Summary: Redesigned the public landing page into a visually stunning, high-contrast, product-first experience with dynamic product previews, 3-step explanation section, and clear onboarding CTAs.
 - Verification: `pnpm check`, `pnpm test` (23 files, 189 tests), `pnpm build` (client, SSR, and 11 prerendered pages), `git diff --check`, keyboard accessibility, WCAG AA contrast, reduced motion, 320px–1200px+ responsive layouts, and 200% zoom checks passed.
+
+### 2026-08-07 — Realistic Loading Skeletons
+
+- Branch: `codex/feature/realistic-loading-skeletons`
+- Summary: Replaced generic loading fallback blocks with realistic, layout-matched skeleton components across Home, Journey Detail, Milestone Detail, Focus Setup, Session Complete, Onboarding, Settings, and Landing Page.
+- Verification: `pnpm check`, `pnpm test` (24 files, 200 tests), `pnpm build` (client, SSR, and 11 prerendered pages), `git diff --check`, and visual skeleton layout alignment checks passed.
+
