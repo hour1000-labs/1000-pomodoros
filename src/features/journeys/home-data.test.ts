@@ -89,7 +89,7 @@ function createSession({
 
 describe('deriveHomeData', () => {
   it('derives the seeded Home values at local noon on July 12, 2026', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     const data = deriveHomeData(state, LOCAL_SEED_NOW);
 
     expect(data.continueJourney?.journey.id).toBe(LEARN_GUITAR_JOURNEY_ID);
@@ -126,7 +126,7 @@ describe('deriveHomeData', () => {
   });
 
   it('puts the valid last-active pointer first, then caps recent active Journeys at two', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     state.journeys = [
       {
         ...state.journeys[0],
@@ -162,7 +162,7 @@ describe('deriveHomeData', () => {
   });
 
   it('uses only a deterministic current Next step and never falls back to upcoming work', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     state.nextSteps = [
       {
         ...createNextStep({
@@ -202,7 +202,7 @@ describe('deriveHomeData', () => {
   });
 
   it('isolates progress, current milestones, and current steps for each Journey summary', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     const primaryJourney = {
       ...state.journeys[0],
       lastActiveAt: '2026-07-12T17:00:00.000Z',
@@ -289,7 +289,7 @@ describe('deriveHomeData', () => {
   });
 
   it('derives Today app-wide from countable sessions while preserving partial minutes', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     const otherJourney = createJourney({
       id: 'journey-other',
       lastActiveAt: '2026-07-11T00:00:00.000Z',
@@ -352,7 +352,7 @@ describe('deriveHomeData', () => {
   });
 
   it('honors weekly Journey scope and week start, clamps over-goal progress, and allows no goal', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     const otherJourney = createJourney({
       id: 'journey-other',
       lastActiveAt: '2026-07-11T00:00:00.000Z',
@@ -404,7 +404,7 @@ describe('deriveHomeData', () => {
   });
 
   it('keeps only the three newest valid global sessions and resolves multi-Journey labels', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     const otherJourney = createJourney({
       id: 'journey-portfolio',
       lastActiveAt: '2026-07-13T00:00:00.000Z',
@@ -471,7 +471,7 @@ describe('deriveHomeData', () => {
   });
 
   it('excludes under-five-minute, running, and cancelled sessions from recent activity', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     state.focusSessions = [
       createSession({
         id: 'session-countable',
@@ -500,7 +500,7 @@ describe('deriveHomeData', () => {
   });
 
   it('does not label a recent session with a Next step from another Journey', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     const otherJourney = createJourney({
       id: 'journey-other',
       lastActiveAt: '2026-07-13T00:00:00.000Z',
@@ -528,7 +528,7 @@ describe('deriveHomeData', () => {
   });
 
   it('flags zero activity for the Continue Journey even when another Journey has activity', () => {
-    const state = createSeedAppState();
+    const state = createSeedAppState(LOCAL_SEED_NOW);
     const otherJourney = createJourney({
       id: 'journey-other',
       lastActiveAt: '2026-07-11T00:00:00.000Z',

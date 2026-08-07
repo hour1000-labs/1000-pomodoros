@@ -197,7 +197,7 @@ describe('JourneyDetailScreen', () => {
     if (!dialog) throw new Error('Expected the block detail dialog to open');
     expect(block.getAttribute('aria-expanded')).toBe('true');
     expect(dialog?.textContent).toContain('Pomodoro 1');
-    expect(dialog?.textContent).toContain('Practice the F chord transition');
+    expect(dialog?.textContent).toContain('Posture, tuning & open E minor chord');
     expect(dialog?.textContent).toContain('Timer');
 
     const closeButton = dialog.querySelector<HTMLButtonElement>('[aria-label="Close"]');

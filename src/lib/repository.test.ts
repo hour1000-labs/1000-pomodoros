@@ -595,7 +595,7 @@ describe('localStorage repository', () => {
         title: 'Learn the bridge slowly',
         description: '',
         status: 'upcoming',
-        position: 3,
+        position: 8,
         createdAt: '2026-07-17T18:00:00.000Z',
         completedAt: null,
       },
@@ -631,7 +631,7 @@ describe('localStorage repository', () => {
 
     expect(result.state.nextSteps.find(({ id }) => id === 'next-step-new-song')).toMatchObject({
       status: 'current',
-      position: 3,
+      position: 8,
     });
   });
 

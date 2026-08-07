@@ -28,6 +28,10 @@ function addCompletedSession(
     id = 'session-just-completed',
   }: { focusedMinutes?: number; id?: string } = {}
 ) {
+  const lastEndedAt = state.focusSessions.at(-1)?.endedAt ?? '2026-07-16T18:00:00.000Z';
+  const startedAtTime = new Date(lastEndedAt).getTime() + 5 * 60 * 1_000;
+  const endedAtTime = startedAtTime + focusedMinutes * 60 * 1_000;
+
   const session: FocusSession = {
     id,
     journeyId: 'journey-learn-guitar',
@@ -36,8 +40,8 @@ function addCompletedSession(
     focusedMinutes,
     status: 'completed',
     source: 'timer',
-    startedAt: '2026-07-16T18:00:00.000Z',
-    endedAt: '2026-07-16T18:25:00.000Z',
+    startedAt: new Date(startedAtTime).toISOString(),
+    endedAt: new Date(endedAtTime).toISOString(),
     reflection: '',
   };
 
@@ -91,11 +95,12 @@ describe('Session Complete', () => {
   it('keeps an older completion attributed to its own Pomodoros and milestones', async () => {
     const state = createSeedAppState();
     const requestedSession = addCompletedSession(state);
+    const requestedEndedAtTime = new Date(requestedSession.endedAt).getTime();
     const laterSession: FocusSession = {
       ...requestedSession,
       id: 'session-completed-later',
-      startedAt: '2026-07-16T18:30:00.000Z',
-      endedAt: '2026-07-16T18:55:00.000Z',
+      startedAt: new Date(requestedEndedAtTime + 5 * 60 * 1_000).toISOString(),
+      endedAt: new Date(requestedEndedAtTime + 30 * 60 * 1_000).toISOString(),
     };
     const milestoneEarnedLater: Milestone = {
       id: 'milestone-earned-later',
