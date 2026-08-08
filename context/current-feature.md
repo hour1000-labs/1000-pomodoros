@@ -1,56 +1,41 @@
-# Current Feature: Diagnose and Fix Settings Test Hang
+# Current Feature: <feature name>
 
-Identify and resolve the test-run stall associated with the Settings Journey-deletion dialog while preserving the intended Settings behavior and reliable regression coverage.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
-Ready to Commit
+<!-- Not Started | In Progress | Ready to Commit -->
+
+Not Started
 
 ## Goal
 
-Developers can run the automated test suite to completion and trust that Settings Journey deletion remains safely covered.
+<!-- User-visible outcome of the feature -->
 
 ## Acceptance Criteria
 
-- [x] The isolated Settings test for cancelling Journey deletion completes with a definitive passing or failing result instead of stalling.
-- [x] The root cause of the stalled test is identified and recorded, including whether it is in application dialog behavior, test setup/cleanup, or their interaction.
-- [x] Settings tests cover cancelling deletion, exact-name confirmation, successful deletion, and persistence-failure recovery without leaking DOM, timers, handlers, or dialog state between tests.
-- [x] Cancelling a Journey deletion leaves persisted data unchanged, and confirming a valid deletion still closes the dialog and reports the successful result.
-- [x] The complete Vitest suite finishes and passes without introducing new test warnings or errors.
-- [x] Existing unrelated worktree changes and application behavior outside this test failure remain unchanged.
+<!-- Checklist of testable outcomes -->
+
+- [ ] Criterion 1
 
 ## Plan
 
-1. Reproduce the isolated cancellation-test stall and inspect the Settings dialog lifecycle plus shared render/cleanup behavior to identify the root cause.
-2. Make the smallest application or test-harness change that removes the stall while preserving the documented deletion flow.
-3. Strengthen focused Settings regression coverage for cancel, confirmation, success, and persistence-failure paths as required by the root cause.
-4. Run focused Settings tests, the full required verification suite, and inspect the final diff for unrelated changes or newly introduced warnings.
+<!-- Implementation steps -->
+
+1. Step 1
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] The isolated Settings cancellation test completes and passes
-- [x] All Settings screen tests complete and pass
-- [x] `git diff --check` passes
-- [x] Settings deletion cancel and confirm flows are verified in the browser if application behavior changes
-- [x] No new relevant test warnings or errors are introduced
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
-- Loading-time reproduction on 2026-08-08: `pnpm test` did not reach a Vitest summary, and an isolated run of `cancelling deletion confirmation leaves saved data unchanged` stalled after jsdom/React warnings without reporting pass or fail.
-- The repeated `Window.scrollTo()` not-implemented messages and empty `href` warning occur across unrelated tests and remain out of scope. The nested `<html>` warning in Settings tests was investigated and proved to be the root cause of the stall.
-- Pre-existing edits in `src/features/settings/settings-screen.tsx` and `src/features/settings/settings-screen.test.tsx`, plus the untracked `.playwright-cli/` directory, belong to the user and must be preserved. Any implementation must account for those edits without reverting unrelated work.
-- No pending product decision materially affects this test-infrastructure fix.
-- This load action does not diagnose or implement the final fix; implementation begins only with `feature start`.
-- Root cause: the test rendered TanStack Start's document-level `<html>` shell into Testing Library's default `<div>`. After the backup-import test forced a repository-driven rerender, the invalid nested document root corrupted the following Radix dialog lifecycle and left Vitest's worker spinning in timer processing. The committed baseline reproduced the same loop with the current installed toolchain.
-- Implementation: render the Settings router into `document`, retain definitive dialog-removal checks, and cover deletion persistence failure. The failure path now keeps the dialog open and renders its assertive error inside the modal instead of behind the modal's `aria-hidden` boundary.
-- Start-phase evidence on 2026-08-08: the isolated cancellation test passed in 1.33 seconds; all Settings tests passed (11 tests); `pnpm check` passed (118 files); `pnpm test` passed (24 files, 215 tests); `pnpm build` passed (client, SSR, and 11 prerendered pages); and `git diff --check` passed. The repeated empty-`href` and jsdom `scrollTo()` messages predate this fix; the nested-`<html>` warning was eliminated from Settings tests.
-- Test-phase evidence on 2026-08-08: `pnpm check` passed (118 files), `pnpm test` passed (24 files, 215 tests), `pnpm build` passed (client, SSR, and 11 prerendered pages), and `git diff --check` passed. Existing jsdom `scrollTo()` messages remained unchanged and no new test warning or error was introduced.
-- Live Playwright verification passed at 1280×800 and 320×568. Cancel closed the dialog and preserved one stored Journey; a forced localStorage write failure kept the dialog open, preserved the Journey, and exposed `Failed to delete “Browser Test Journey”. Try again.` as an in-dialog alert; restoring storage allowed successful deletion, closed the dialog, showed the empty state and success status, and persisted zero Journeys. The 320×568 failure dialog showed its heading, warning, input, error, Delete, Cancel, and close controls without clipping. Browser console totals were zero errors and zero warnings.
-- The final evidence-recording edit is documentation-only and cannot affect runtime, tests, build output, or prior browser behavior. Per the post-verification policy, only `pnpm check` and `git diff --check` are rerun; the current test, build, and browser evidence is reused.
-- Review on 2026-08-08 found no blocking issues. Each acceptance criterion is supported by the document-root test harness, focused Settings coverage for cancel, exact-name, success, and persistence-failure paths, successful full-suite verification, and live browser evidence. The pre-existing backup-hint layout hunk and untracked `.playwright-cli/` artifacts are unrelated user work and must remain excluded from the feature commit.
+<!-- Decisions, blockers, and scope changes -->
 
 ## History
 
@@ -243,3 +228,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/explicit-journey-deletion-guard`
 - Summary: Moved the Manage Journeys section below Saved Data in Settings and added a DeleteJourneyDialog requiring the user to type the exact Journey name before enabling permanent deletion.
 - Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build` (11 pages prerendered), and `git diff --check` passed.
+
+### 2026-08-08 — Diagnose and Fix Settings Test Hang
+
+- Branch: `codex/fix/diagnose-and-fix-settings-test-hang`
+- Summary: Fixed the Settings test harness document root so the suite completes reliably, and kept Journey deletion recoverable with accessible feedback when persistence fails.
+- Verification: `pnpm check` (118 files), `pnpm test` (24 files, 215 tests), `pnpm build` (client, SSR, and 11 prerendered pages), `git diff --check`, focused Settings tests (11 tests), and live browser checks at 1280×800 and 320×568 passed with zero console errors or warnings.
