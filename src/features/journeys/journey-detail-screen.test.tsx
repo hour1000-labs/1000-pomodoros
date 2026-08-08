@@ -114,8 +114,10 @@ describe('JourneyDetailScreen', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Learn guitar' })).toBeTruthy();
     expect(screen.queryByRole('link', { name: '1000 Pomodoros' })).toBeNull();
-    expect(screen.getByRole('link', { name: 'Journey' })).toBeTruthy();
-    expect(screen.queryByRole('link', { name: 'Journeys' })).toBeNull();
+    const journeysNavigation = screen.getByRole('link', { name: 'Journeys' });
+    expect(journeysNavigation.getAttribute('href')).toBe('/journeys');
+    expect(journeysNavigation.getAttribute('aria-current')).toBe('page');
+    expect(screen.queryByRole('link', { name: 'Journey' })).toBeNull();
     expect(screen.getByText('17 hours 55 minutes')).toBeTruthy();
     expect(screen.getByRole('heading', { name: '43 Pomodoros' })).toBeTruthy();
     expect(screen.getByText('72% · 17 pomodoros remaining')).toBeTruthy();

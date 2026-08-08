@@ -21,8 +21,16 @@ describe('LoadingState', () => {
     expect(screen.getByLabelText('Loading custom content')).toBeTruthy();
   });
 
+  it('renders the dedicated Journeys collection skeleton', () => {
+    const { container } = render(<LoadingState variant="journeys" />);
+
+    expect(container.querySelector('header')).toBeTruthy();
+    expect(container.querySelectorAll('section section')).toHaveLength(2);
+  });
+
   const variants: LoadingSkeletonVariant[] = [
     'home',
+    'journeys',
     'journey',
     'milestone',
     'focus',

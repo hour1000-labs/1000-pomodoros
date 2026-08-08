@@ -1,41 +1,71 @@
-# Current Feature: <feature name>
+# Current Feature: Browse All Journeys
 
-<!-- One-sentence description of the feature or fix -->
+Keep Home focused on two recent active Journeys while providing a dedicated page for browsing every saved Journey.
 
 ## Status
 
-<!-- Not Started | In Progress | Ready to Commit -->
-
-Not Started
+Ready to Commit
 
 ## Goal
 
-<!-- User-visible outcome of the feature -->
+Users can quickly find and open any Journey without turning Home into a long collection screen.
 
 ## Acceptance Criteria
 
-<!-- Checklist of testable outcomes -->
-
-- [ ] Criterion 1
+- [x] Home continues to show at most two active Journey cards, ordered by the existing recency model: the valid active `lastActiveJourneyId` first, followed by active Journeys in descending `lastActiveAt` order with a deterministic tie-break.
+- [x] When any saved Journey is omitted from the two-card Home preview, a low-emphasis `View all Journeys` link appears directly below the cards and routes to `/journeys`; when no active preview exists, the same destination replaces the single-Journey review action in Home's recovery state. Home does not expand the collection inline.
+- [x] `/journeys` displays every saved Journey, with active Journeys first and inactive Journeys clearly separated and labeled; each group is ordered by the same recent-activity model used on Home.
+- [x] Every Journey entry opens its Journey detail page and communicates its name, focused time, current milestone or target, current Next step, and inactive status when applicable.
+- [x] Active Journey entries preserve the existing Start or Add step action, while paused, completed, and archived Journey entries never offer a Focus-session action.
+- [x] The collection page provides an `Add Journey` action that reuses the existing fresh onboarding flow without changing Journey creation or persistence behavior.
+- [x] The application navigation item is labeled `Journeys`, routes to `/journeys`, and remains identified as the current section on both the collection and Journey detail routes.
+- [x] With no saved Journeys, direct access to `/journeys` provides the existing Journey-creation recovery path instead of rendering an empty collection shell.
+- [x] Home and the collection page remain keyboard accessible, semantically structured, readable, and free of horizontal overflow on supported mobile, zoom-equivalent, and desktop layouts.
 
 ## Plan
 
-<!-- Implementation steps -->
-
-1. Step 1
+1. Extract or extend Journey-summary derivation so Home and the collection page share deterministic recency ordering without duplicating progress calculations.
+2. Add the typed `/journeys` route and a responsive collection screen for active and inactive saved Journeys, including safe status-aware card actions and fresh Journey creation.
+3. Keep Home's two-card preview and add the conditional `View all Journeys` link when another saved Journey exists outside that preview.
+4. Point the existing application Journey navigation item to the collection, pluralize its label, and preserve its active state throughout Journey routes.
+5. Add focused selector, route, navigation, and interaction tests covering ordering, complete inclusion, conditional Home linking, statuses, actions, and empty recovery.
+6. Verify Home, the collection, Journey navigation, and representative active/inactive states at mobile, zoom-equivalent, and desktop sizes.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] Affected UI verified in the browser, if applicable
+- [x] Mobile and desktop verified, if responsive UI changed
+- [x] No relevant console errors
+- [x] `git diff --check` passes
+- [x] Selector tests cover deterministic recent-first ordering, active-first grouping, and complete saved-Journey inclusion
+- [x] Home tests cover the conditional link and unchanged two-card preview
+- [x] Collection tests cover active and inactive entries, safe actions, fresh Journey creation, navigation, and empty recovery
+- [x] Keyboard operation, page landmarks, headings, link names, and current-navigation semantics verified
+- [x] Maximum-count and maximum-content collection states verified at 320px, desktop, and a 200%-zoom equivalent
 
 ## Notes
 
-<!-- Decisions, blockers, and scope changes -->
+- Revised UX decision: Use a dedicated collection page rather than inline expansion. This scales to the currently unlimited Journey count, keeps Recent Sessions from being pushed far down Home, and provides a stable destination for the complete collection.
+- The Home link uses the concise copy `View all Journeys`; it appears only when the collection contains a Journey not represented by the two visible active cards, including an inactive Journey.
+- When every saved Journey is inactive, Home's existing `No active Journeys` state links to the complete collection instead of choosing one inactive Journey arbitrarily.
+- “Recent” follows the existing Home recency signals rather than introducing a new activity model: a valid active `lastActiveJourneyId` is first, then `lastActiveAt` descending. Inactive groups use `lastActiveAt` descending with the same deterministic tie-break.
+- “All” means every persisted Journey. Inactive Journeys remain readable and navigable, but changing Journey status is out of scope.
+- The `Journeys` navigation destination replaces the current single-Journey shortcut; Home's Continue and Journey cards retain direct access to recent work.
+- Search, filtering, sorting controls, pagination, and new Journey-management behavior are out of scope until real collection sizes demonstrate a need.
+- The pending free-tier Journey limit does not block this feature because it neither changes Journey creation rules nor introduces a cap.
+- Revision approved on 2026-08-08 before implementation. Implementation started on `codex/feature/browse-all-journeys`; TanStack Intent's router navigation guidance was loaded for the typed collection link and nested active-state behavior.
+- Implementation smoke checks before formal feature testing on 2026-08-08: `pnpm check`, `pnpm exec tsc --noEmit`, `git diff --check`, and 75 focused tests across seven selector, Home, collection, navigation, Settings, and loading files passed.
+- Formal feature test on 2026-08-08: `pnpm check` passed across 125 files; `pnpm test` passed 27 files and 249 tests; `pnpm build` passed client and SSR builds and prerendered 12 pages including `/journeys`; and `git diff --check` passed. Vitest emitted 95 non-failing jsdom `Window.scrollTo()` not-implemented notices already associated with router scroll restoration; the production browser emitted no warnings or errors.
+- Production-browser verification used a seven-Journey maximum-content fixture with four active and paused, completed, and archived examples. Home rendered exactly the pointer-prioritized Journey plus the most recent remaining active Journey, linked to the collection, and did not expose omitted cards. `/journeys` rendered all seven once in active-first recent order with focused time, milestones, Next steps, visible inactive statuses, safe active actions, and no inactive Focus actions. The fresh Add Journey link opened `Name your next Journey`; empty storage showed the existing creation recovery; and an inactive-only Home linked to an Other Journeys collection whose cards exposed only detail links.
+- Browser accessibility and responsive checks passed at 1280×800, 320×568, and 640×400 as a 200%-zoom equivalent. There was one H1 and one current navigation item, keyboard Tab order reached Home, Journeys, Settings, Add Journey, the first card, and its separate Start action with visible focus, Enter opened the detail route, `Journeys` remained current on active and inactive detail routes, long names and Next steps wrapped without horizontal overflow, and the final mobile card cleared the fixed navigation.
+- Post-verification revalidation was documentation-only: only this feature file's evidence and checkboxes changed, so runtime, test, build, and browser evidence remained applicable. The required `pnpm check` and `git diff --check` reruns passed after recording the evidence.
+- Feature review on 2026-08-08 found one blocking accessibility issue in `JourneyCard`: the detail link's explicit `aria-label` overrides the visible focused-time, Next-step, and milestone summary in its accessible name, so keyboard screen-reader users do not receive the complete entry summary on focus. Acceptance criteria 4 and 9 and the link-name verification item were reopened. No implementation code changed during review; the remaining criteria and earlier runtime, test, build, responsive, and visual evidence remain applicable.
+- The review remediation was classified as localized behavioral. `JourneyCard` now keeps its concise link name and associates an SSR-safe unique description containing focused time, the current Next step, milestone or target, and rounded completion percentage; visible layout, card actions, navigation, ordering, and persistence are unchanged. Collection regression coverage now asserts exact active, active-without-step, and inactive accessible descriptions.
+- Remediation revalidation on 2026-08-08: `pnpm check` passed across 125 files; `pnpm exec tsc --noEmit` passed; 15 focused Home and collection tests passed; `pnpm build` passed client, SSR, and 12-page prerendering; and `git diff --check` passed. A Chromium accessibility-tree check on Home and `/journeys` confirmed concise names plus complete descriptions for active and inactive card links, verified the active link could receive focus, and reported zero console errors or warnings. The earlier full-suite, responsive, maximum-content, and visual evidence was reused because the localized accessible-description change cannot affect those results.
+- Remediation review on 2026-08-08 inspected the accessibility delta separately and then rechecked the complete feature diff. The localized-behavioral classification and evidence reuse were accepted; all acceptance and verification items pass, no dependency or configuration changes were introduced, and no blocking finding or unapproved scope expansion remains.
 
 ## History
 

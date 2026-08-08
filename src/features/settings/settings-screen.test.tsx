@@ -35,7 +35,12 @@ describe('SettingsScreen', () => {
 
     expect(await screen.findByRole('heading', { name: 'Settings' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Settings' }).getAttribute('href')).toBe('/settings');
-    expect(screen.getByText('Journeys')).toBeTruthy();
+    const journeysNavigation = screen.getByRole('link', { name: 'Journeys' });
+    expect(journeysNavigation.getAttribute('href')).toBe('/journeys');
+    expect(journeysNavigation.getAttribute('aria-current')).toBeNull();
+    expect(
+      within(screen.getByRole('region', { name: 'Saved data' })).getByText('Journeys')
+    ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Export saved data' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Choose backup to import' })).toBeTruthy();
   });

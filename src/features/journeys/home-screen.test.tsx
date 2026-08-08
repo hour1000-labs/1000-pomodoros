@@ -128,6 +128,9 @@ describe('HomeScreen', () => {
     expect(
       within(activeJourneysSection).getAllByRole('link', { name: /^View .* Journey$/ })
     ).toHaveLength(1);
+    expect(
+      within(activeJourneysSection).queryByRole('link', { name: 'View all Journeys' })
+    ).toBeNull();
     expect(within(recentSessionsSection).getAllByRole('listitem')).toHaveLength(3);
 
     expectBefore(continueSection, todaySection);
@@ -254,8 +257,8 @@ describe('HomeScreen', () => {
     await renderHome(state);
 
     expect(await screen.findByRole('heading', { name: 'No active Journeys' })).toBeTruthy();
-    const reviewLink = screen.getByRole('link', { name: 'Review Learn guitar Journey' });
-    expect(reviewLink.getAttribute('href')).toBe(`/journeys/${LEARN_GUITAR_JOURNEY_ID}`);
+    const reviewLink = screen.getByRole('link', { name: 'View all Journeys' });
+    expect(reviewLink.getAttribute('href')).toBe('/journeys');
     expect(screen.getByRole('link', { name: 'Add Journey' })).toBeTruthy();
     expect(screen.queryByRole('link', { name: /Start 25:00/ })).toBeNull();
   });
@@ -313,6 +316,37 @@ describe('HomeScreen', () => {
       within(activeJourneysSection).queryByRole('link', {
         name: 'View Learn guitar Journey',
       })
+    ).toBeNull();
+    expect(
+      within(activeJourneysSection)
+        .getByRole('link', { name: 'View all Journeys' })
+        .getAttribute('href')
+    ).toBe('/journeys');
+  });
+
+  it('offers the collection when an inactive Journey is omitted from the active preview', async () => {
+    const state = createSeedAppState();
+    addActiveJourney(state, {
+      id: 'journey-paused',
+      name: 'Paused Journey',
+      lastActiveAt: '2026-07-15T18:00:00.000Z',
+    });
+    state.journeys = state.journeys.map((journey) =>
+      journey.id === 'journey-paused' ? { ...journey, status: 'paused' } : journey
+    );
+
+    await renderHome(state);
+
+    const activeJourneysSection = await screen.findByRole('region', {
+      name: 'Active Journeys',
+    });
+    expect(
+      within(activeJourneysSection)
+        .getByRole('link', { name: 'View all Journeys' })
+        .getAttribute('href')
+    ).toBe('/journeys');
+    expect(
+      within(activeJourneysSection).queryByRole('link', { name: 'View Paused Journey Journey' })
     ).toBeNull();
   });
 });

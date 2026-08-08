@@ -6,7 +6,6 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { deriveJourneyDetailData } from '@/features/journeys/journey-detail-data';
 import { formatFocusedDuration } from '@/lib/format-focused-duration';
-import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data';
 import type { AppState, NextStep } from '@/lib/models';
 
 import { ApplicationLayout } from './components/application-layout';
@@ -18,14 +17,9 @@ import {
 import { JourneyDetailProgress } from './components/journey-detail-progress';
 import { JourneyDetailRecentSessions } from './components/journey-detail-recent-sessions';
 
-function JourneyNotFoundState({ state }: { state: AppState }) {
-  const navigationJourneyId =
-    state.journeys.find((journey) => journey.id === state.lastActiveJourneyId)?.id ??
-    state.journeys[0]?.id ??
-    LEARN_GUITAR_JOURNEY_ID;
-
+function JourneyNotFoundState() {
   return (
-    <ApplicationLayout journeyId={navigationJourneyId}>
+    <ApplicationLayout>
       <EmptyState
         className="w-full"
         title="Journey not found"
@@ -71,7 +65,7 @@ function JourneyContent({
   const [addOpen, setAddOpen] = useState(false);
   const detail = deriveJourneyDetailData(state, journeyId);
 
-  if (!detail) return <JourneyNotFoundState state={state} />;
+  if (!detail) return <JourneyNotFoundState />;
 
   const { journey, progress, currentStep } = detail;
   const canStart = !readOnly && journey.status === 'active' && currentStep !== null;
@@ -94,7 +88,6 @@ function JourneyContent({
 
   return (
     <ApplicationLayout
-      journeyId={journey.id}
       className="pb-12 md:pb-16"
       mobileDock={mobileDock}
       showNavigationItems={showNavigationItems}

@@ -21,7 +21,6 @@ import { Input } from '@/components/ui/input';
 import { ApplicationLayout } from '@/features/journeys/components/application-layout';
 import { ApplicationStateBoundary } from '@/features/journeys/components/application-state-boundary';
 import { formatFocusedDuration } from '@/lib/format-focused-duration';
-import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data';
 import type { AppState, Journey } from '@/lib/models';
 import { getFocusedMinutes } from '@/lib/progress';
 import { appRepository, createAppExport } from '@/lib/repository';
@@ -139,7 +138,6 @@ function SettingsContent({ state }: { state: AppState }) {
   const [feedback, setFeedback] = useState<SettingsFeedback | null>(null);
   const [deletionFeedback, setDeletionFeedback] = useState<SettingsFeedback | null>(null);
 
-  const navigationJourneyId = state.journeys[0]?.id ?? LEARN_GUITAR_JOURNEY_ID;
   const focusedMinutes = getFocusedMinutes(state.focusSessions);
 
   function handleExport() {
@@ -183,7 +181,7 @@ function SettingsContent({ state }: { state: AppState }) {
   }
 
   return (
-    <ApplicationLayout journeyId={navigationJourneyId}>
+    <ApplicationLayout>
       <ScreenHeader
         eyebrow="Your data"
         title="Settings"

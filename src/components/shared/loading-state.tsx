@@ -1,5 +1,6 @@
 export type LoadingSkeletonVariant =
   | 'home'
+  | 'journeys'
   | 'journey'
   | 'milestone'
   | 'focus'
@@ -68,6 +69,8 @@ function renderSkeletonVariant(variant: LoadingSkeletonVariant) {
   switch (variant) {
     case 'home':
       return <HomeSkeleton />;
+    case 'journeys':
+      return <JourneysSkeleton />;
     case 'journey':
       return <JourneySkeleton />;
     case 'milestone':
@@ -242,6 +245,47 @@ function HomeSkeleton() {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function JourneysSkeleton() {
+  return (
+    <div className="w-full">
+      <header className="flex items-center justify-between gap-4 border-ink/15 border-b pb-6">
+        <div className="h-10 w-40 animate-pulse rounded-lg bg-ink/8 sm:h-12" />
+        <div className="h-10 w-32 animate-pulse rounded-lg bg-ink/8" />
+      </header>
+
+      <section className="mt-10">
+        <div className="mb-6 h-8 w-48 animate-pulse rounded bg-ink/8" />
+        <div className="grid gap-7 lg:grid-cols-2">
+          {SKELETON_KEYS_2.map((key) => (
+            <div key={key} className="space-y-5 rounded-xl border border-ink/15 p-6">
+              <div className="h-7 w-3/5 animate-pulse rounded bg-ink/8" />
+              <div className="h-5 w-2/5 animate-pulse rounded bg-ink/8" />
+              <div className="h-3 w-full animate-pulse rounded-full bg-ink/8" />
+              <div className="border-ink/10 border-t pt-4">
+                <div className="h-4 w-24 animate-pulse rounded bg-ink/8" />
+                <div className="mt-2 h-5 w-4/5 animate-pulse rounded bg-ink/8" />
+              </div>
+              <div className="h-11 w-full animate-pulse rounded-lg bg-ink/12" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-14">
+        <div className="mb-6 h-8 w-44 animate-pulse rounded bg-ink/8" />
+        <div className="grid gap-7 lg:grid-cols-2">
+          <div className="space-y-5 rounded-xl border border-ink/15 p-6">
+            <div className="h-7 w-1/2 animate-pulse rounded bg-ink/8" />
+            <div className="h-5 w-1/3 animate-pulse rounded bg-ink/8" />
+            <div className="h-3 w-full animate-pulse rounded-full bg-ink/8" />
+            <div className="h-11 w-full animate-pulse rounded-lg bg-ink/8" />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

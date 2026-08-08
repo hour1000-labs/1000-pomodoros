@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SampleRouteImport } from './routes/sample'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JourneysIndexRouteImport } from './routes/journeys/index'
 import { Route as FocusIndexRouteImport } from './routes/focus/index'
 import { Route as OnboardingTargetRouteImport } from './routes/onboarding/target'
 import { Route as OnboardingNextStepRouteImport } from './routes/onboarding/next-step'
@@ -40,6 +41,11 @@ const HomeRoute = HomeRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JourneysIndexRoute = JourneysIndexRouteImport.update({
+  id: '/journeys/',
+  path: '/journeys/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FocusIndexRoute = FocusIndexRouteImport.update({
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/onboarding/next-step': typeof OnboardingNextStepRoute
   '/onboarding/target': typeof OnboardingTargetRoute
   '/focus/': typeof FocusIndexRoute
+  '/journeys/': typeof JourneysIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/onboarding/next-step': typeof OnboardingNextStepRoute
   '/onboarding/target': typeof OnboardingTargetRoute
   '/focus': typeof FocusIndexRoute
+  '/journeys': typeof JourneysIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/onboarding/next-step': typeof OnboardingNextStepRoute
   '/onboarding/target': typeof OnboardingTargetRoute
   '/focus/': typeof FocusIndexRoute
+  '/journeys/': typeof JourneysIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/onboarding/next-step'
     | '/onboarding/target'
     | '/focus/'
+    | '/journeys/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/onboarding/next-step'
     | '/onboarding/target'
     | '/focus'
+    | '/journeys'
   id:
     | '__root__'
     | '/'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/onboarding/next-step'
     | '/onboarding/target'
     | '/focus/'
+    | '/journeys/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   OnboardingNextStepRoute: typeof OnboardingNextStepRoute
   OnboardingTargetRoute: typeof OnboardingTargetRoute
   FocusIndexRoute: typeof FocusIndexRoute
+  JourneysIndexRoute: typeof JourneysIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journeys/': {
+      id: '/journeys/'
+      path: '/journeys'
+      fullPath: '/journeys/'
+      preLoaderRoute: typeof JourneysIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/focus/': {
@@ -288,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingNextStepRoute: OnboardingNextStepRoute,
   OnboardingTargetRoute: OnboardingTargetRoute,
   FocusIndexRoute: FocusIndexRoute,
+  JourneysIndexRoute: JourneysIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

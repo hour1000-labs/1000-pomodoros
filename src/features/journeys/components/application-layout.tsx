@@ -6,13 +6,11 @@ import { AppNavigation } from './app-navigation';
 
 export function ApplicationLayout({
   children,
-  journeyId,
   className,
   mobileDock,
   showNavigationItems = true,
 }: Readonly<{
   children: ReactNode;
-  journeyId: string;
   className?: string;
   mobileDock?: ReactNode;
   showNavigationItems?: boolean;
@@ -24,7 +22,7 @@ export function ApplicationLayout({
         mobileDock && 'max-md:h-dvh max-md:overflow-hidden'
       )}
     >
-      <AppNavigation journeyId={journeyId} showNavigationItems={showNavigationItems} />
+      <AppNavigation showNavigationItems={showNavigationItems} />
       <main
         className={cn(
           'mx-auto w-full max-w-content px-gutter-mobile py-8 pb-28 md:px-gutter-desktop md:py-12 md:pb-12',

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  createEmptyAppState,
   createSeedAppState,
   LEARN_GUITAR_25_HOUR_MILESTONE_ID,
   LEARN_GUITAR_CURRENT_STEP_ID,
@@ -102,6 +103,7 @@ describe('deriveHomeData', () => {
     expect(data.continueJourney?.currentMilestone?.id).toBe(LEARN_GUITAR_25_HOUR_MILESTONE_ID);
     expect(data.continueJourney?.currentMilestonePercentage).toBe(72);
     expect(data.activeJourneys).toHaveLength(1);
+    expect(data.hasJourneyOutsidePreview).toBe(false);
     expect(data.today).toEqual({
       completedPomodoros: 2,
       focusedMinutes: 50,
@@ -152,6 +154,7 @@ describe('deriveHomeData', () => {
       LEARN_GUITAR_JOURNEY_ID,
       'journey-most-recent',
     ]);
+    expect(pointerFirst.hasJourneyOutsidePreview).toBe(true);
 
     state.lastActiveJourneyId = 'journey-paused';
     const inactivePointerIgnored = deriveHomeData(state, LOCAL_SEED_NOW);
@@ -159,6 +162,7 @@ describe('deriveHomeData', () => {
       'journey-most-recent',
       'journey-next-most-recent',
     ]);
+    expect(inactivePointerIgnored.hasJourneyOutsidePreview).toBe(true);
   });
 
   it('uses only a deterministic current Next step and never falls back to upcoming work', () => {
@@ -556,5 +560,68 @@ describe('deriveHomeData', () => {
     expect(noActiveJourneys.continueJourney).toBeNull();
     expect(noActiveJourneys.activeJourneys).toEqual([]);
     expect(noActiveJourneys.hasCompletedActivity).toBe(false);
+  });
+
+  it.each([
+    {
+      name: 'no saved Journeys',
+      statuses: [] as Journey['status'][],
+      expectedPreviewCount: 0,
+      expectedOmitted: false,
+    },
+    {
+      name: 'one active Journey',
+      statuses: ['active'] as Journey['status'][],
+      expectedPreviewCount: 1,
+      expectedOmitted: false,
+    },
+    {
+      name: 'two active Journeys',
+      statuses: ['active', 'active'] as Journey['status'][],
+      expectedPreviewCount: 2,
+      expectedOmitted: false,
+    },
+    {
+      name: 'three active Journeys',
+      statuses: ['active', 'active', 'active'] as Journey['status'][],
+      expectedPreviewCount: 2,
+      expectedOmitted: true,
+    },
+    {
+      name: 'an inactive Journey beside one active Journey',
+      statuses: ['active', 'paused'] as Journey['status'][],
+      expectedPreviewCount: 1,
+      expectedOmitted: true,
+    },
+    {
+      name: 'an inactive Journey beyond a full active preview',
+      statuses: ['active', 'active', 'archived'] as Journey['status'][],
+      expectedPreviewCount: 2,
+      expectedOmitted: true,
+    },
+    {
+      name: 'only inactive Journeys',
+      statuses: ['paused', 'completed'] as Journey['status'][],
+      expectedPreviewCount: 0,
+      expectedOmitted: true,
+    },
+  ])('reports whether the Home preview omits a saved Journey with $name', ({
+    expectedOmitted,
+    expectedPreviewCount,
+    statuses,
+  }) => {
+    const state = createEmptyAppState();
+    state.journeys = statuses.map((status, index) =>
+      createJourney({
+        id: `journey-${status}-${index}`,
+        lastActiveAt: new Date(Date.UTC(2026, 6, 10 + index)).toISOString(),
+        status,
+      })
+    );
+
+    const data = deriveHomeData(state, LOCAL_SEED_NOW);
+
+    expect(data.activeJourneys).toHaveLength(expectedPreviewCount);
+    expect(data.hasJourneyOutsidePreview).toBe(expectedOmitted);
   });
 });

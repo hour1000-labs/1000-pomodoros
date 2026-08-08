@@ -22,27 +22,19 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
   }
 
   const home = deriveHomeData(state, now);
-  const navigationJourney =
-    state.journeys.find(({ id }) => id === state.lastActiveJourneyId) ?? state.journeys[0];
   const continueJourney = home.continueJourney;
 
   if (continueJourney === null) {
     return (
-      <ApplicationLayout journeyId={navigationJourney.id}>
+      <ApplicationLayout>
         <h1 className="sr-only">Home</h1>
         <EmptyState
           title="No active Journeys"
-          description="Open a Journey to choose what comes next."
+          description="Review your saved Journeys or create a new one."
           action={
             <div className="flex flex-wrap gap-3">
               <PrimaryButton asChild>
-                <Link
-                  to="/journeys/$journeyId"
-                  params={{ journeyId: navigationJourney.id }}
-                  aria-label={`Review ${navigationJourney.name} Journey`}
-                >
-                  Review Journey
-                </Link>
+                <Link to="/journeys">View all Journeys</Link>
               </PrimaryButton>
               <Button asChild variant="outline">
                 <Link to="/onboarding/journey" search={{ fresh: true }}>
@@ -57,7 +49,7 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
   }
 
   return (
-    <ApplicationLayout journeyId={continueJourney.journey.id}>
+    <ApplicationLayout>
       <section aria-labelledby="home-continue-heading">
         <ContinueCard
           hasCompletedActivity={home.hasCompletedActivity}
@@ -111,9 +103,15 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
               }`}
               milestonePercent={summary.currentMilestonePercentage}
               nextStep={summary.currentStep}
+              status={summary.journey.status}
             />
           ))}
         </div>
+        {home.hasJourneyOutsidePreview ? (
+          <Button asChild variant="link" className="mt-4 px-0">
+            <Link to="/journeys">View all Journeys</Link>
+          </Button>
+        ) : null}
       </section>
 
       <div className="mt-16">

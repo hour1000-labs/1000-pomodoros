@@ -12,11 +12,9 @@ const activeNavItemClass = cn(
 );
 
 export function AppNavigation({
-  journeyId,
   className,
   showNavigationItems = true,
 }: {
-  journeyId: string;
   className?: string;
   showNavigationItems?: boolean;
 }) {
@@ -58,8 +56,7 @@ export function AppNavigation({
             </li>
             <li className="flex flex-1 md:flex-none">
               <Link
-                to="/journeys/$journeyId"
-                params={{ journeyId }}
+                to="/journeys"
                 className={navItemClass}
                 activeOptions={{ exact: false }}
                 activeProps={{
@@ -68,7 +65,7 @@ export function AppNavigation({
                 }}
               >
                 <MapIcon aria-hidden="true" className="size-4" />
-                Journey
+                Journeys
               </Link>
             </li>
             <li className="flex flex-1 md:flex-none">
