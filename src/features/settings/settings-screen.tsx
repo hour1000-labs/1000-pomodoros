@@ -1,6 +1,8 @@
-import { Download, ShieldCheck } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { Download, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { ImportSavedData } from '@/components/shared/import-saved-data';
 import { ScreenHeader } from '@/components/shared/screen-header';
 import { Button } from '@/components/ui/button';
@@ -9,11 +11,11 @@ import { ApplicationLayout } from '@/features/journeys/components/application-la
 import { ApplicationStateBoundary } from '@/features/journeys/components/application-state-boundary';
 import { formatFocusedTime } from '@/features/journeys/format-focused-time';
 import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data';
-import type { AppState } from '@/lib/models';
+import type { AppState, Journey } from '@/lib/models';
 import { getFocusedMinutes } from '@/lib/progress';
-import { createAppExport } from '@/lib/repository';
+import { appRepository, createAppExport } from '@/lib/repository';
 
-type ExportFeedback = {
+type SettingsFeedback = {
   kind: 'error' | 'success';
   message: string;
 };
@@ -26,8 +28,18 @@ function createBackupFileName() {
   return `1000-pomodoros-backup-${new Date().toISOString().slice(0, 10)}.json`;
 }
 
+function journeyHasActiveWork(state: AppState, journeyId: string) {
+  if (!state.activeTimer) return false;
+  const activeSession = state.focusSessions.find(
+    (session) => session.id === state.activeTimer?.sessionId
+  );
+  return activeSession?.journeyId === journeyId;
+}
+
 function SettingsContent({ state }: { state: AppState }) {
-  const [feedback, setFeedback] = useState<ExportFeedback | null>(null);
+  const [feedback, setFeedback] = useState<SettingsFeedback | null>(null);
+  const [deletionFeedback, setDeletionFeedback] = useState<SettingsFeedback | null>(null);
+
   const navigationJourneyId = state.journeys[0]?.id ?? LEARN_GUITAR_JOURNEY_ID;
   const focusedMinutes = getFocusedMinutes(state.focusSessions);
 
@@ -55,15 +67,116 @@ function SettingsContent({ state }: { state: AppState }) {
     }
   }
 
+  function handleDeleteJourney(journey: Journey) {
+    const result = appRepository.deleteJourney(journey.id);
+
+    if (result.status === 'saved') {
+      setDeletionFeedback({
+        kind: 'success',
+        message: `Deleted “${journey.name}” and its saved progress.`,
+      });
+    } else {
+      setDeletionFeedback({
+        kind: 'error',
+        message: `Failed to delete “${journey.name}”. Try again.`,
+      });
+    }
+  }
+
   return (
     <ApplicationLayout journeyId={navigationJourneyId}>
       <ScreenHeader
         eyebrow="Your data"
         title="Settings"
-        description="Move your saved Journeys and progress between devices with a local backup."
+        description="Manage saved Journeys or move your progress between devices with a local backup."
       />
 
       <div className="mt-10 grid max-w-reading gap-6">
+        <section aria-labelledby="manage-journeys-heading">
+          <Card className="border border-ink/15 bg-paper py-0 ring-0">
+            <CardHeader className="border-b p-6 sm:p-8">
+              <CardTitle id="manage-journeys-heading" className="text-xl">
+                Manage Journeys
+              </CardTitle>
+              <CardDescription>Review or remove saved Journeys from this device.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 sm:p-8">
+              {state.journeys.length === 0 ? (
+                <div className="text-ink/70 text-sm">
+                  <p className="mb-4">No saved Journeys on this device.</p>
+                  <Button variant="outline" asChild>
+                    <Link to="/onboarding/journey" search={{ fresh: true }}>
+                      <Plus aria-hidden="true" />
+                      Create a Journey
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <ul className="divide-y divide-ink/10 rounded-lg border border-ink/15 bg-background">
+                  {state.journeys.map((journey) => {
+                    const journeyMinutes = getFocusedMinutes(state.focusSessions, journey.id);
+                    const journeySessionsCount = state.focusSessions.filter(
+                      (session) => session.journeyId === journey.id
+                    ).length;
+                    const hasActiveWork = journeyHasActiveWork(state, journey.id);
+
+                    const confirmDescription = `Permanently delete “${journey.name}” and all of its Next steps, focus sessions, milestones, and focused progress. This action cannot be undone.${
+                      hasActiveWork
+                        ? ' An active focus session for this Journey is currently running or paused and will also be ended.'
+                        : ''
+                    }`;
+
+                    return (
+                      <li
+                        key={journey.id}
+                        className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div>
+                          <p className="mb-1 font-bold text-base text-ink">{journey.name}</p>
+                          <p className="mb-0 text-ink/60 text-sm">
+                            {formatFocusedTime(journeyMinutes)} · {journeySessionsCount}{' '}
+                            {getPluralizedLabel(journeySessionsCount, 'session')}
+                          </p>
+                        </div>
+                        <ConfirmDialog
+                          title={`Delete “${journey.name}”?`}
+                          description={confirmDescription}
+                          confirmLabel="Delete Journey"
+                          confirmVariant="destructive"
+                          onConfirm={() => handleDeleteJourney(journey)}
+                          trigger={
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full border-pomodoro-red/30 text-pomodoro-red hover:border-pomodoro-red/60 hover:bg-pomodoro-red/10 sm:w-auto"
+                              aria-label={`Delete ${journey.name}`}
+                            >
+                              <Trash2 aria-hidden="true" />
+                              Delete Journey
+                            </Button>
+                          }
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              {deletionFeedback ? (
+                <p
+                  className={`mt-5 mb-0 font-bold text-sm ${
+                    deletionFeedback.kind === 'error' ? 'text-pomodoro-red' : 'text-ink/70'
+                  }`}
+                  role={deletionFeedback.kind === 'error' ? 'alert' : 'status'}
+                  aria-live="polite"
+                >
+                  {deletionFeedback.message}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+        </section>
+
         <section aria-labelledby="saved-data-heading">
           <Card className="border border-ink/15 bg-paper py-0 ring-0">
             <CardHeader className="border-b p-6 sm:p-8">

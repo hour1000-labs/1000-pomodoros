@@ -99,6 +99,7 @@ export interface AppRepository {
   subscribe(listener: () => void): () => void;
   saveOnboardingDraft(draft: OnboardingDraft | null): RepositorySaveResult;
   upsertJourney(journey: Journey): RepositorySaveResult;
+  deleteJourney(journeyId: string): RepositorySaveResult;
   upsertNextStep(nextStep: NextStep): RepositorySaveResult;
   addNextStep(
     journeyId: string,
@@ -578,6 +579,65 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     }));
   }
 
+  function deleteJourney(journeyId: string) {
+    return update((state) => {
+      const journeyToDelete = state.journeys.find((journey) => journey.id === journeyId);
+
+      if (!journeyToDelete) {
+        return state;
+      }
+
+      const remainingJourneys = state.journeys.filter((journey) => journey.id !== journeyId);
+      const remainingNextSteps = state.nextSteps.filter((step) => step.journeyId !== journeyId);
+
+      const deletedSessionIds = new Set(
+        state.focusSessions
+          .filter((session) => session.journeyId === journeyId)
+          .map((session) => session.id)
+      );
+      const remainingFocusSessions = state.focusSessions.filter(
+        (session) => session.journeyId !== journeyId
+      );
+
+      const remainingMilestones = state.milestones.filter(
+        (milestone) => milestone.journeyId !== journeyId
+      );
+
+      const weeklyGoal = state.weeklyGoal?.journeyId === journeyId ? null : state.weeklyGoal;
+
+      const activeTimer =
+        state.activeTimer !== null && deletedSessionIds.has(state.activeTimer.sessionId)
+          ? null
+          : state.activeTimer;
+
+      const lastCompletedSessionId =
+        state.lastCompletedSessionId !== null && deletedSessionIds.has(state.lastCompletedSessionId)
+          ? null
+          : state.lastCompletedSessionId;
+
+      let lastActiveJourneyId = state.lastActiveJourneyId;
+      if (
+        lastActiveJourneyId === journeyId ||
+        (lastActiveJourneyId !== null &&
+          !remainingJourneys.some((journey) => journey.id === lastActiveJourneyId))
+      ) {
+        lastActiveJourneyId = remainingJourneys.length > 0 ? remainingJourneys[0].id : null;
+      }
+
+      return {
+        ...state,
+        journeys: remainingJourneys,
+        nextSteps: remainingNextSteps,
+        focusSessions: remainingFocusSessions,
+        milestones: remainingMilestones,
+        weeklyGoal,
+        activeTimer,
+        lastCompletedSessionId,
+        lastActiveJourneyId,
+      };
+    });
+  }
+
   function upsertNextStep(nextStep: NextStep) {
     return update((state) => ({
       ...state,
@@ -881,6 +941,7 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     subscribe,
     saveOnboardingDraft,
     upsertJourney,
+    deleteJourney,
     upsertNextStep,
     addNextStep,
     completeCurrentNextStep,

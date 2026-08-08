@@ -891,4 +891,417 @@ describe('localStorage repository', () => {
     expect(result.status).toBe('saved');
     expect(repository.load().status).toBe('ready');
   });
+
+  describe('deleteJourney', () => {
+    it('deletes a journey and cascades through its owned records while preserving unrelated data', () => {
+      const storage = new MemoryStorage();
+      const repository = createLocalStorageRepository({ getStorage: () => storage });
+      repository.load();
+
+      const j1: Journey = {
+        id: 'j-1',
+        name: 'Learn Guitar',
+        reason: 'Music',
+        targetMinutes: 600,
+        status: 'active',
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+        lastActiveAt: '2026-08-01T00:00:00.000Z',
+      };
+      const j2: Journey = {
+        id: 'j-2',
+        name: 'Learn Spanish',
+        reason: 'Travel',
+        targetMinutes: 300,
+        status: 'active',
+        createdAt: '2026-08-02T00:00:00.000Z',
+        updatedAt: '2026-08-02T00:00:00.000Z',
+        lastActiveAt: '2026-08-02T00:00:00.000Z',
+      };
+
+      const step1: NextStep = {
+        id: 'step-1',
+        journeyId: 'j-1',
+        title: 'Practice C Chord',
+        description: '',
+        status: 'current',
+        position: 0,
+        createdAt: '2026-08-01T00:00:00.000Z',
+        completedAt: null,
+      };
+      const step2: NextStep = {
+        id: 'step-2',
+        journeyId: 'j-2',
+        title: 'Learn Basic Words',
+        description: '',
+        status: 'current',
+        position: 0,
+        createdAt: '2026-08-02T00:00:00.000Z',
+        completedAt: null,
+      };
+
+      const session1: FocusSession = {
+        id: 'sess-1',
+        journeyId: 'j-1',
+        nextStepId: 'step-1',
+        plannedMinutes: 25,
+        focusedMinutes: 25,
+        status: 'completed',
+        source: 'timer',
+        startedAt: '2026-08-01T10:00:00.000Z',
+        endedAt: '2026-08-01T10:25:00.000Z',
+        reflection: 'Good session',
+      };
+      const session2: FocusSession = {
+        id: 'sess-2',
+        journeyId: 'j-2',
+        nextStepId: 'step-2',
+        plannedMinutes: 25,
+        focusedMinutes: 25,
+        status: 'completed',
+        source: 'timer',
+        startedAt: '2026-08-02T10:00:00.000Z',
+        endedAt: '2026-08-02T10:25:00.000Z',
+        reflection: '',
+      };
+
+      const milestone1: Milestone = {
+        id: 'm-1',
+        journeyId: 'j-1',
+        name: 'First Pomodoro',
+        targetFocusedMinutes: 25,
+        earnedAt: '2026-08-01T10:25:00.000Z',
+      };
+      const milestone2: Milestone = {
+        id: 'm-2',
+        journeyId: 'j-2',
+        name: 'First Pomodoro',
+        targetFocusedMinutes: 25,
+        earnedAt: '2026-08-02T10:25:00.000Z',
+      };
+
+      repository.upsertJourney(j1);
+      repository.upsertJourney(j2);
+      repository.upsertNextStep(step1);
+      repository.upsertNextStep(step2);
+      repository.completeSession(session1);
+      repository.completeSession(session2);
+      repository.upsertMilestone(milestone1);
+      repository.upsertMilestone(milestone2);
+      repository.saveOnboardingDraft(draft);
+      repository.setWeeklyGoal({
+        id: 'wg-1',
+        journeyId: 'j-1',
+        targetPomodoros: 10,
+        weekStartsOn: 1,
+        createdAt: '2026-08-01T00:00:00.000Z',
+      });
+
+      // Verify setup state
+      const initial = repository.load();
+      if (initial.status !== 'ready') throw new Error('Setup failed');
+      expect(initial.state.journeys).toHaveLength(2);
+      expect(initial.state.lastActiveJourneyId).toBe('j-2');
+      expect(initial.state.lastCompletedSessionId).toBe('sess-2');
+
+      // Now delete j-1
+      const result = repository.deleteJourney('j-1');
+      expect(result.status).toBe('saved');
+
+      const reloaded = repository.load();
+      if (reloaded.status !== 'ready') throw new Error('Reload failed');
+
+      // Check remaining items
+      expect(reloaded.state.journeys.map((j) => j.id)).toEqual(['j-2']);
+      expect(reloaded.state.nextSteps.map((s) => s.id)).toEqual(['step-2']);
+      expect(reloaded.state.focusSessions.map((s) => s.id)).toEqual(['sess-2']);
+      expect(reloaded.state.milestones.map((m) => m.id)).toEqual(['m-2']);
+
+      // Weekly goal for j-1 cleared
+      expect(reloaded.state.weeklyGoal).toBeNull();
+
+      // Pointers: lastActiveJourneyId was j-2, so preserved
+      expect(reloaded.state.lastActiveJourneyId).toBe('j-2');
+      // lastCompletedSessionId was sess-2, so preserved
+      expect(reloaded.state.lastCompletedSessionId).toBe('sess-2');
+
+      // Onboarding draft preserved
+      expect(reloaded.state.onboardingDraft).toEqual(draft);
+    });
+
+    it('falls back to remaining journey when deleted journey was lastActiveJourneyId', () => {
+      const storage = new MemoryStorage();
+      const repository = createLocalStorageRepository({ getStorage: () => storage });
+      repository.load();
+
+      const j1: Journey = {
+        id: 'j-1',
+        name: 'Journey 1',
+        reason: '',
+        targetMinutes: 100,
+        status: 'active',
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+        lastActiveAt: '2026-08-01T00:00:00.000Z',
+      };
+      const j2: Journey = {
+        id: 'j-2',
+        name: 'Journey 2',
+        reason: '',
+        targetMinutes: 100,
+        status: 'active',
+        createdAt: '2026-08-02T00:00:00.000Z',
+        updatedAt: '2026-08-02T00:00:00.000Z',
+        lastActiveAt: '2026-08-02T00:00:00.000Z',
+      };
+
+      repository.upsertJourney(j1);
+      repository.upsertJourney(j2);
+
+      // Set j-2 as last active journey
+      repository.update((state) => ({ ...state, lastActiveJourneyId: 'j-2' }));
+
+      // Delete j-2
+      repository.deleteJourney('j-2');
+
+      const reloaded = repository.load();
+      if (reloaded.status !== 'ready') throw new Error('Reload failed');
+
+      expect(reloaded.state.journeys.map((j) => j.id)).toEqual(['j-1']);
+      expect(reloaded.state.lastActiveJourneyId).toBe('j-1');
+    });
+
+    it('clears all pointers and active timer when deleting the last journey', () => {
+      const storage = new MemoryStorage();
+      const repository = createLocalStorageRepository({ getStorage: () => storage });
+      repository.load();
+
+      const j1: Journey = {
+        id: 'j-1',
+        name: 'Solo Journey',
+        reason: '',
+        targetMinutes: 100,
+        status: 'active',
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+        lastActiveAt: '2026-08-01T00:00:00.000Z',
+      };
+      const session1: FocusSession = {
+        id: 'sess-1',
+        journeyId: 'j-1',
+        nextStepId: null,
+        plannedMinutes: 25,
+        focusedMinutes: 0,
+        status: 'running',
+        source: 'timer',
+        startedAt: '2026-08-01T10:00:00.000Z',
+        endedAt: null,
+        reflection: '',
+      };
+      const timer1: ActiveTimer = {
+        sessionId: 'sess-1',
+        status: 'running',
+        remainingSeconds: 1500,
+        accumulatedFocusedSeconds: 0,
+        targetEndAt: '2026-08-01T10:25:00.000Z',
+        pausedAt: null,
+      };
+
+      repository.upsertJourney(j1);
+      repository.startFocusSession(session1, timer1);
+      repository.update((state) => ({
+        ...state,
+        lastCompletedSessionId: 'sess-1',
+        lastActiveJourneyId: 'j-1',
+      }));
+
+      // Delete the only journey
+      repository.deleteJourney('j-1');
+
+      const reloaded = repository.load();
+      if (reloaded.status !== 'ready') throw new Error('Reload failed');
+
+      expect(reloaded.state.journeys).toEqual([]);
+      expect(reloaded.state.nextSteps).toEqual([]);
+      expect(reloaded.state.focusSessions).toEqual([]);
+      expect(reloaded.state.milestones).toEqual([]);
+      expect(reloaded.state.activeTimer).toBeNull();
+      expect(reloaded.state.lastActiveJourneyId).toBeNull();
+      expect(reloaded.state.lastCompletedSessionId).toBeNull();
+    });
+
+    it('preserves active timer if it belongs to another journey', () => {
+      const storage = new MemoryStorage();
+      const repository = createLocalStorageRepository({ getStorage: () => storage });
+      repository.load();
+
+      const j1: Journey = {
+        id: 'j-1',
+        name: 'Journey 1',
+        reason: '',
+        targetMinutes: 100,
+        status: 'active',
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+        lastActiveAt: '2026-08-01T00:00:00.000Z',
+      };
+      const j2: Journey = {
+        id: 'j-2',
+        name: 'Journey 2',
+        reason: '',
+        targetMinutes: 100,
+        status: 'active',
+        createdAt: '2026-08-02T00:00:00.000Z',
+        updatedAt: '2026-08-02T00:00:00.000Z',
+        lastActiveAt: '2026-08-02T00:00:00.000Z',
+      };
+      const session2: FocusSession = {
+        id: 'sess-2',
+        journeyId: 'j-2',
+        nextStepId: null,
+        plannedMinutes: 25,
+        focusedMinutes: 0,
+        status: 'running',
+        source: 'timer',
+        startedAt: '2026-08-02T10:00:00.000Z',
+        endedAt: null,
+        reflection: '',
+      };
+      const timer2: ActiveTimer = {
+        sessionId: 'sess-2',
+        status: 'running',
+        remainingSeconds: 1500,
+        accumulatedFocusedSeconds: 0,
+        targetEndAt: '2026-08-02T10:25:00.000Z',
+        pausedAt: null,
+      };
+
+      repository.upsertJourney(j1);
+      repository.upsertJourney(j2);
+      repository.startFocusSession(session2, timer2);
+
+      // Delete j-1 (timer belongs to j-2)
+      repository.deleteJourney('j-1');
+
+      const reloaded = repository.load();
+      if (reloaded.status !== 'ready') throw new Error('Reload failed');
+
+      expect(reloaded.state.activeTimer).toEqual(timer2);
+    });
+
+    it('preserves global weekly goal without journeyId when a journey is deleted', () => {
+      const storage = new MemoryStorage();
+      const repository = createLocalStorageRepository({ getStorage: () => storage });
+      repository.load();
+
+      const j1: Journey = {
+        id: 'j-1',
+        name: 'Journey 1',
+        reason: '',
+        targetMinutes: 100,
+        status: 'active',
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+        lastActiveAt: '2026-08-01T00:00:00.000Z',
+      };
+      repository.upsertJourney(j1);
+      const globalGoal = {
+        id: 'wg-global',
+        journeyId: null,
+        targetPomodoros: 15,
+        weekStartsOn: 1 as const,
+        createdAt: '2026-08-01T00:00:00.000Z',
+      };
+      repository.setWeeklyGoal(globalGoal);
+
+      repository.deleteJourney('j-1');
+
+      const reloaded = repository.load();
+      if (reloaded.status !== 'ready') throw new Error('Reload failed');
+
+      expect(reloaded.state.weeklyGoal).toEqual(globalGoal);
+    });
+
+    it('is a no-op when deleting an unknown journey ID', () => {
+      const storage = new MemoryStorage();
+      const repository = createLocalStorageRepository({ getStorage: () => storage });
+      repository.load();
+
+      const j1: Journey = {
+        id: 'j-1',
+        name: 'Journey 1',
+        reason: '',
+        targetMinutes: 100,
+        status: 'active',
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+        lastActiveAt: '2026-08-01T00:00:00.000Z',
+      };
+      repository.upsertJourney(j1);
+
+      const beforeState = repository.load();
+      const result = repository.deleteJourney('unknown-id');
+
+      expect(result.status).toBe('saved');
+      expect(repository.load()).toEqual(beforeState);
+    });
+
+    it('handles persistence write failure gracefully', () => {
+      const storage = new MemoryStorage();
+      const repository = createLocalStorageRepository({ getStorage: () => storage });
+      repository.load();
+
+      const j1: Journey = {
+        id: 'j-1',
+        name: 'Journey 1',
+        reason: '',
+        targetMinutes: 100,
+        status: 'active',
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+        lastActiveAt: '2026-08-01T00:00:00.000Z',
+      };
+      repository.upsertJourney(j1);
+
+      // Make storage setItem throw error
+      storage.setItem = () => {
+        throw new Error('QuotaExceededError');
+      };
+
+      const result = repository.deleteJourney('j-1');
+
+      expect(result.status).toBe('error');
+      if (result.status === 'error') {
+        expect(result.error.code).toBe('storage-write-failed');
+      }
+    });
+
+    it('produces clean exports that exclude deleted journey data', () => {
+      const storage = new MemoryStorage();
+      const repository = createLocalStorageRepository({ getStorage: () => storage });
+      repository.load();
+
+      const j1: Journey = {
+        id: 'j-1',
+        name: 'Journey 1',
+        reason: '',
+        targetMinutes: 100,
+        status: 'active',
+        createdAt: '2026-08-01T00:00:00.000Z',
+        updatedAt: '2026-08-01T00:00:00.000Z',
+        lastActiveAt: '2026-08-01T00:00:00.000Z',
+      };
+      repository.upsertJourney(j1);
+      repository.deleteJourney('j-1');
+
+      const state = repository.load();
+      if (state.status !== 'ready') throw new Error('State not ready');
+
+      const exportData = createAppExport(state.state);
+      const parsedState = parseAppExport(exportData);
+
+      expect(parsedState).not.toBeNull();
+      expect(parsedState?.journeys).toEqual([]);
+    });
+  });
 });

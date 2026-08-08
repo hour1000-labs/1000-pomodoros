@@ -18,6 +18,7 @@ export function ConfirmDialog({
   description,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
+  confirmVariant = 'default',
   onOpenChange,
   onConfirm,
 }: {
@@ -26,6 +27,7 @@ export function ConfirmDialog({
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  confirmVariant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   onOpenChange?: (open: boolean) => void;
   onConfirm: () => void;
 }) {
@@ -42,7 +44,9 @@ export function ConfirmDialog({
             <Button variant="outline">{cancelLabel}</Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button onClick={onConfirm}>{confirmLabel}</Button>
+            <Button variant={confirmVariant} onClick={onConfirm}>
+              {confirmLabel}
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

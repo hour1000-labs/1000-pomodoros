@@ -95,7 +95,9 @@ describe('Session Complete', () => {
   it('keeps an older completion attributed to its own Pomodoros and milestones', async () => {
     const state = createSeedAppState();
     const requestedSession = addCompletedSession(state);
-    const requestedEndedAtTime = new Date(requestedSession.endedAt).getTime();
+    const requestedEndedAtTime = new Date(
+      requestedSession.endedAt ?? requestedSession.startedAt
+    ).getTime();
     const laterSession: FocusSession = {
       ...requestedSession,
       id: 'session-completed-later',
