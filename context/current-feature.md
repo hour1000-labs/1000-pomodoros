@@ -38,9 +38,6 @@ Not Started
 <!-- Decisions, blockers, and scope changes -->
 
 
-
-
-
 ## History
 
 <!--
@@ -221,3 +218,8 @@ Append completed work from earliest to latest using this format:
 - Summary: Replaced generic loading fallback blocks with realistic, layout-matched skeleton components across Home, Journey Detail, Milestone Detail, Focus Setup, Session Complete, Onboarding, Settings, and Landing Page.
 - Verification: `pnpm check`, `pnpm test` (24 files, 200 tests), `pnpm build` (client, SSR, and 11 prerendered pages), `git diff --check`, and visual skeleton layout alignment checks passed.
 
+### 2026-08-07 — Delete Journey from Settings
+
+- Branch: `codex/feature/delete-journey-from-settings`
+- Summary: Added safe, permanent Journey deletion from Settings with confirmation dialogs, cascade cleanup of owned records, pointer and goal repair, accessible status feedback, and empty state support.
+- Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build` (11 pages prerendered), `git diff --check`, 39 repository tests, and 9 Settings interaction tests passed.
