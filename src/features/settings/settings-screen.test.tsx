@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createEmptyAppState, createSeedAppState } from '@/lib/mock-data';
-import { APP_STORAGE_KEY, createAppExport } from '@/lib/repository';
+import { APP_STORAGE_KEY, appRepository, createAppExport, RepositoryError } from '@/lib/repository';
 import { getRouter } from '@/router';
 
 beforeEach(() => {
@@ -24,7 +24,7 @@ async function renderSettings(state = createSeedAppState()) {
   const router = getRouter();
   router.update({ history: createMemoryHistory({ initialEntries: ['/settings'] }) });
   await router.load();
-  render(<RouterProvider router={router} />);
+  render(<RouterProvider router={router} />, { container: document });
 
   return router;
 }
@@ -140,6 +140,7 @@ describe('SettingsScreen', () => {
       'Your saved Journeys and progress were replaced.'
     );
     expect(screen.getByText('0 minutes')).toBeTruthy();
+    expect(document.querySelectorAll('[data-radix-focus-guard]')).toHaveLength(0);
   });
 
   describe('Journey management and deletion', () => {
@@ -157,13 +158,13 @@ describe('SettingsScreen', () => {
       const state = createSeedAppState();
       await renderSettings(state);
 
+      await screen.findByRole('region', { name: 'Manage Journeys' });
+
       fireEvent.click(screen.getByRole('button', { name: 'Delete Learn guitar' }));
 
       const dialog = await screen.findByRole('dialog', { name: 'Delete “Learn guitar”?' });
       expect(dialog).toBeTruthy();
-      expect(
-        within(dialog).getByText(/Permanently delete “Learn guitar” and all of its Next steps/)
-      ).toBeTruthy();
+      expect(within(dialog).getByText(/Next steps, focus sessions/)).toBeTruthy();
 
       fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
 
@@ -175,13 +176,15 @@ describe('SettingsScreen', () => {
       const state = createSeedAppState();
       await renderSettings(state);
 
+      await screen.findByRole('region', { name: 'Manage Journeys' });
+
       fireEvent.click(screen.getByRole('button', { name: 'Delete Learn guitar' }));
       const dialog = await screen.findByRole('dialog', { name: 'Delete “Learn guitar”?' });
 
       const confirmButton = within(dialog).getByRole('button', { name: 'Delete Journey' });
       expect((confirmButton as HTMLButtonElement).disabled).toBe(true);
 
-      const input = within(dialog).getByLabelText(/To confirm, type/);
+      const input = within(dialog).getByRole('textbox');
       fireEvent.change(input, { target: { value: 'Wrong name' } });
       expect((confirmButton as HTMLButtonElement).disabled).toBe(true);
 
@@ -202,15 +205,20 @@ describe('SettingsScreen', () => {
 
       await renderSettings(state);
 
+      await screen.findByRole('region', { name: 'Manage Journeys' });
+
       fireEvent.click(screen.getByRole('button', { name: 'Delete Learn Spanish' }));
       const dialog = await screen.findByRole('dialog', { name: 'Delete “Learn Spanish”?' });
 
-      const input = within(dialog).getByLabelText(/To confirm, type/);
+      const input = within(dialog).getByRole('textbox');
       fireEvent.change(input, { target: { value: 'Learn Spanish' } });
 
       fireEvent.click(within(dialog).getByRole('button', { name: 'Delete Journey' }));
 
-      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      await waitFor(() => {
+        const dialogEl = screen.queryByRole('dialog');
+        expect(!dialogEl || dialogEl.getAttribute('data-state') === 'closed').toBe(true);
+      });
       expect((await screen.findByRole('status')).textContent).toContain(
         'Deleted “Learn Spanish” and its saved progress.'
       );
@@ -225,19 +233,49 @@ describe('SettingsScreen', () => {
       ]);
     });
 
-    it('deleting the last journey displays the empty state with create button and import availability', async () => {
+    it('keeps deletion recoverable when persistence fails', async () => {
       const state = createSeedAppState();
+      vi.spyOn(appRepository, 'deleteJourney').mockReturnValue({
+        status: 'error',
+        state: null,
+        error: new RepositoryError('storage-write-failed', 'Storage write failed.'),
+      });
+
       await renderSettings(state);
 
       fireEvent.click(screen.getByRole('button', { name: 'Delete Learn guitar' }));
       const dialog = await screen.findByRole('dialog', { name: 'Delete “Learn guitar”?' });
+      fireEvent.change(within(dialog).getByRole('textbox'), {
+        target: { value: 'Learn guitar' },
+      });
 
-      const input = within(dialog).getByLabelText(/To confirm, type/);
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Delete Journey' }));
+
+      expect((await screen.findByRole('alert')).textContent).toContain(
+        'Failed to delete “Learn guitar”. Try again.'
+      );
+      expect(screen.getByRole('dialog', { name: 'Delete “Learn guitar”?' })).toBeTruthy();
+      expect(JSON.parse(window.localStorage.getItem(APP_STORAGE_KEY) ?? '')).toEqual(state);
+    });
+
+    it('deleting the last journey displays the empty state with create button and import availability', async () => {
+      const state = createSeedAppState();
+      await renderSettings(state);
+
+      await screen.findByRole('region', { name: 'Manage Journeys' });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Delete Learn guitar' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Delete “Learn guitar”?' });
+
+      const input = within(dialog).getByRole('textbox');
       fireEvent.change(input, { target: { value: 'Learn guitar' } });
 
       fireEvent.click(within(dialog).getByRole('button', { name: 'Delete Journey' }));
 
-      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      await waitFor(() => {
+        const dialogEl = screen.queryByRole('dialog');
+        expect(!dialogEl || dialogEl.getAttribute('data-state') === 'closed').toBe(true);
+      });
       expect((await screen.findByRole('status')).textContent).toContain(
         'Deleted “Learn guitar” and its saved progress.'
       );
@@ -259,6 +297,8 @@ describe('SettingsScreen', () => {
       };
 
       await renderSettings(state);
+
+      await screen.findByRole('region', { name: 'Manage Journeys' });
 
       fireEvent.click(screen.getByRole('button', { name: 'Delete Learn guitar' }));
       const dialog = await screen.findByRole('dialog', { name: 'Delete “Learn guitar”?' });

@@ -50,12 +50,16 @@ function journeyHasActiveWork(state: AppState, journeyId: string) {
 function DeleteJourneyDialog({
   journey,
   hasActiveWork,
+  errorMessage,
   trigger,
+  onOpen,
   onConfirm,
 }: {
   journey: Journey;
   hasActiveWork: boolean;
+  errorMessage: string | null;
   trigger: React.ReactNode;
+  onOpen: () => void;
   onConfirm: () => void;
 }) {
   const [confirmInput, setConfirmInput] = useState('');
@@ -64,8 +68,9 @@ function DeleteJourneyDialog({
   return (
     <Dialog
       onOpenChange={(open) => {
-        if (!open) {
+        if (open) {
           setConfirmInput('');
+          onOpen();
         }
       }}
     >
@@ -107,15 +112,23 @@ function DeleteJourneyDialog({
           </div>
         </div>
 
+        {errorMessage ? (
+          <p
+            className="mb-0 font-bold text-pomodoro-red text-sm"
+            role="alert"
+            aria-live="assertive"
+          >
+            {errorMessage}
+          </p>
+        ) : null}
+
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <DialogClose asChild disabled={!isMatch}>
-            <Button variant="destructive" disabled={!isMatch} onClick={onConfirm}>
-              Delete Journey
-            </Button>
-          </DialogClose>
+          <Button variant="destructive" disabled={!isMatch} onClick={onConfirm}>
+            Delete Journey
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -273,6 +286,10 @@ function SettingsContent({ state }: { state: AppState }) {
                         <DeleteJourneyDialog
                           journey={journey}
                           hasActiveWork={hasActiveWork}
+                          errorMessage={
+                            deletionFeedback?.kind === 'error' ? deletionFeedback.message : null
+                          }
+                          onOpen={() => setDeletionFeedback(null)}
                           onConfirm={() => handleDeleteJourney(journey)}
                           trigger={
                             <Button
@@ -292,12 +309,10 @@ function SettingsContent({ state }: { state: AppState }) {
                 </ul>
               )}
 
-              {deletionFeedback ? (
+              {deletionFeedback?.kind === 'success' ? (
                 <p
-                  className={`mt-5 mb-0 font-bold text-sm ${
-                    deletionFeedback.kind === 'error' ? 'text-pomodoro-red' : 'text-ink/70'
-                  }`}
-                  role={deletionFeedback.kind === 'error' ? 'alert' : 'status'}
+                  className="mt-5 mb-0 font-bold text-ink/70 text-sm"
+                  role="status"
                   aria-live="polite"
                 >
                   {deletionFeedback.message}
