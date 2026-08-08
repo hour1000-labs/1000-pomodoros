@@ -171,7 +171,25 @@ describe('SettingsScreen', () => {
       expect(JSON.parse(window.localStorage.getItem(APP_STORAGE_KEY) ?? '')).toEqual(state);
     });
 
-    it('confirming deletion of a journey removes it, updates state, and announces success', async () => {
+    it('keeps delete button disabled until the exact journey name is typed', async () => {
+      const state = createSeedAppState();
+      await renderSettings(state);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Delete Learn guitar' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Delete “Learn guitar”?' });
+
+      const confirmButton = within(dialog).getByRole('button', { name: 'Delete Journey' });
+      expect((confirmButton as HTMLButtonElement).disabled).toBe(true);
+
+      const input = within(dialog).getByLabelText(/To confirm, type/);
+      fireEvent.change(input, { target: { value: 'Wrong name' } });
+      expect((confirmButton as HTMLButtonElement).disabled).toBe(true);
+
+      fireEvent.change(input, { target: { value: 'Learn guitar' } });
+      expect((confirmButton as HTMLButtonElement).disabled).toBe(false);
+    });
+
+    it('confirming deletion of a journey removes it after typing name, updates state, and announces success', async () => {
       const state = createSeedAppState();
       const firstJourney = state.journeys[0];
       if (!firstJourney) throw new Error('Expected first journey');
@@ -186,6 +204,10 @@ describe('SettingsScreen', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Delete Learn Spanish' }));
       const dialog = await screen.findByRole('dialog', { name: 'Delete “Learn Spanish”?' });
+
+      const input = within(dialog).getByLabelText(/To confirm, type/);
+      fireEvent.change(input, { target: { value: 'Learn Spanish' } });
+
       fireEvent.click(within(dialog).getByRole('button', { name: 'Delete Journey' }));
 
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
@@ -209,6 +231,10 @@ describe('SettingsScreen', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Delete Learn guitar' }));
       const dialog = await screen.findByRole('dialog', { name: 'Delete “Learn guitar”?' });
+
+      const input = within(dialog).getByLabelText(/To confirm, type/);
+      fireEvent.change(input, { target: { value: 'Learn guitar' } });
+
       fireEvent.click(within(dialog).getByRole('button', { name: 'Delete Journey' }));
 
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
