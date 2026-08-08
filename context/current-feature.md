@@ -223,3 +223,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/delete-journey-from-settings`
 - Summary: Added safe, permanent Journey deletion from Settings with confirmation dialogs, cascade cleanup of owned records, pointer and goal repair, accessible status feedback, and empty state support.
 - Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build` (11 pages prerendered), `git diff --check`, 39 repository tests, and 9 Settings interaction tests passed.
+
+### 2026-08-07 — Explicit Journey Deletion Guard in Settings
+
+- Branch: `codex/feature/explicit-journey-deletion-guard`
+- Summary: Moved the Manage Journeys section below Saved Data in Settings and added a DeleteJourneyDialog requiring the user to type the exact Journey name before enabling permanent deletion.
+- Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build` (11 pages prerendered), and `git diff --check` passed.
