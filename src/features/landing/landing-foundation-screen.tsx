@@ -4,6 +4,7 @@ import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { ScreenHeader } from '@/components/shared/screen-header';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 
 import { PublicLayout } from './components/public-layout';
 
@@ -30,7 +31,9 @@ export function LandingFoundationScreen() {
               </div>
               <div className="text-right">
                 <p className="mb-1 text-ink/60 text-sm">Focused time</p>
-                <p className="mb-0 font-bold text-lg tabular-nums">17h 55m</p>
+                <p className="mb-0 font-bold text-lg tabular-nums">
+                  {formatFocusedDuration(43 * 25)}
+                </p>
               </div>
             </div>
 

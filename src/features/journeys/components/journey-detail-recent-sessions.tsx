@@ -1,4 +1,5 @@
 import { EmptyState } from '@/components/shared/empty-state';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import type { FocusSession } from '@/lib/models';
 
 function formatSessionDate(value: string | null) {
@@ -12,11 +13,6 @@ function formatSessionDate(value: string | null) {
     month: 'short',
     year: date.getFullYear() === new Date().getFullYear() ? undefined : 'numeric',
   }).format(date);
-}
-
-function formatDuration(minutes: number) {
-  const roundedMinutes = Math.round(minutes * 10) / 10;
-  return `${roundedMinutes} min`;
 }
 
 export function JourneyDetailRecentSessions({
@@ -55,7 +51,7 @@ export function JourneyDetailRecentSessions({
                 {nextStepTitle ?? 'Next step unavailable'}
               </p>
               <span className="font-bold text-sm sm:justify-self-end">
-                {formatDuration(session.focusedMinutes)}
+                {formatFocusedDuration(session.focusedMinutes)}
                 {session.source === 'manual' ? (
                   <span className="text-ink/65">· Added manually</span>
                 ) : null}

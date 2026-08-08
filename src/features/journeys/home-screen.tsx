@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { Button } from '@/components/ui/button';
 import { useCurrentLocalDate } from '@/hooks/use-current-local-date';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import type { AppState } from '@/lib/models';
 
 import { ApplicationLayout } from './components/application-layout';
@@ -13,7 +14,6 @@ import { HomeRecentSessions } from './components/home-recent-sessions';
 import { HomeWeeklyProgress } from './components/home-weekly-progress';
 import { JourneyCard } from './components/journey-card';
 import { StatItem } from './components/stat-item';
-import { formatFocusedTime } from './format-focused-time';
 import { deriveHomeData } from './home-data';
 
 function HomeContent({ now, state }: { now: Date; state: AppState }) {
@@ -77,7 +77,11 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
           </h2>
           <dl className="grid grid-cols-2 gap-6">
             <StatItem value={String(home.today.completedPomodoros)} label="Pomodoros" />
-            <StatItem value={String(home.today.focusedMinutes)} label="Focused minutes" />
+            <StatItem
+              value={formatFocusedDuration(home.today.focusedMinutes)}
+              label="Focused time"
+              className="[&_dd]:text-lg [&_dd]:leading-snug [&_dd]:tracking-normal [&_dd]:[overflow-wrap:normal] sm:[&_dd]:text-2xl"
+            />
           </dl>
         </section>
 
@@ -101,7 +105,7 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
               key={summary.journey.id}
               journeyId={summary.journey.id}
               name={summary.journey.name}
-              focusedTime={formatFocusedTime(summary.progress.focusedMinutes)}
+              focusedTime={formatFocusedDuration(summary.progress.focusedMinutes)}
               milestoneLabel={`Current milestone: ${
                 summary.currentMilestone?.name ?? 'Journey target'
               }`}

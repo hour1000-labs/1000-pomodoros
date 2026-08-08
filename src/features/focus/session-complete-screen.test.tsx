@@ -138,7 +138,7 @@ describe('Session Complete', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: '2 pomodoros complete.' })
     ).toBeTruthy();
-    expect(screen.getByText('50 focused minutes')).toBeTruthy();
+    expect(screen.getByText('50 minutes')).toBeTruthy();
     expect(screen.getByText('Practice the F chord transition')).toBeTruthy();
     expect(screen.getByText(/45 of .* Pomodoros/)).toBeTruthy();
     expect(screen.getByText('2 newly earned Pomodoros are outlined.')).toBeTruthy();

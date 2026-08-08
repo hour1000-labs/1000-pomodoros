@@ -1,4 +1,5 @@
 import { EmptyState } from '@/components/shared/empty-state';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 
 import type { HomeRecentSession } from '../home-data';
 
@@ -23,11 +24,6 @@ function formatSessionDay(value: string | null, now: Date) {
     month: 'short',
     year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
   }).format(date);
-}
-
-function formatDuration(minutes: number) {
-  const roundedMinutes = Math.round(minutes * 10) / 10;
-  return `${roundedMinutes} min`;
 }
 
 export function HomeRecentSessions({
@@ -77,7 +73,7 @@ export function HomeRecentSessions({
                 </p>
               </div>
               <span className="font-bold text-sm tabular-nums sm:justify-self-end">
-                {formatDuration(session.focusedMinutes)}
+                {formatFocusedDuration(session.focusedMinutes)}
               </span>
             </li>
           ))}

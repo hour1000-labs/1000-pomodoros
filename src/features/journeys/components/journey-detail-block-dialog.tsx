@@ -3,6 +3,7 @@ import { type FormEvent, useRef, useState } from 'react';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import type { FocusSession, NextStep } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
 
@@ -35,11 +36,6 @@ function formatDate(value: string | null) {
     month: 'short',
     year: 'numeric',
   }).format(date);
-}
-
-function formatMinutes(minutes: number) {
-  const roundedMinutes = Math.round(minutes * 10) / 10;
-  return `${roundedMinutes} minute${roundedMinutes === 1 ? '' : 's'}`;
 }
 
 function createManualSessionIdentity() {
@@ -81,7 +77,7 @@ function SavedManualSession({
         <div className="flex flex-wrap justify-between gap-3">
           <dt className="text-ink/65">Focused time</dt>
           <dd className="m-0 font-bold">
-            {formatMinutes(session.focusedMinutes)} · Added manually
+            {formatFocusedDuration(session.focusedMinutes)} · Added manually
           </dd>
         </div>
       </dl>
@@ -218,7 +214,7 @@ export function JourneyDetailBlockDialog({
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <p className="mb-0 font-bold text-sm">{formatDate(contribution.date)}</p>
                 <span className="font-bold text-ink/65 text-xs">
-                  {formatMinutes(contribution.focusedMinutes)}
+                  {formatFocusedDuration(contribution.focusedMinutes)}
                 </span>
               </div>
               <p className="mb-1 font-bold leading-snug [overflow-wrap:anywhere]">
@@ -227,7 +223,7 @@ export function JourneyDetailBlockDialog({
               <p className="mb-0 text-ink/60 text-sm">
                 {contribution.source === 'manual' ? 'Added manually' : 'Timer'}
                 {contribution.contributionMinutes !== contribution.focusedMinutes
-                  ? ` · ${formatMinutes(contribution.contributionMinutes)} added to this Pomodoro`
+                  ? ` · ${formatFocusedDuration(contribution.contributionMinutes)} added to this Pomodoro`
                   : ''}
               </p>
             </li>

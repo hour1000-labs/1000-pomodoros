@@ -3,7 +3,7 @@ import { type ChangeEvent, useRef, useState } from 'react';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
-import { formatFocusedTime } from '@/features/journeys/format-focused-time';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import type { AppState } from '@/lib/models';
 import { getFocusedMinutes } from '@/lib/progress';
 import {
@@ -34,7 +34,7 @@ function getImportError(result: RepositorySaveResult) {
 }
 
 function getPendingImportDescription(pendingImport: PendingImport) {
-  return `${pendingImport.fileName} contains ${pendingImport.state.journeys.length} ${getPluralizedLabel(pendingImport.state.journeys.length, 'Journey')} and ${formatFocusedTime(getFocusedMinutes(pendingImport.state.focusSessions))} of focused progress. This replaces every saved Journey and progress record on this device, including Next steps, sessions, milestones, goals, and timer state. This cannot be undone.`;
+  return `${pendingImport.fileName} contains ${pendingImport.state.journeys.length} ${getPluralizedLabel(pendingImport.state.journeys.length, 'Journey')} and ${formatFocusedDuration(getFocusedMinutes(pendingImport.state.focusSessions))} of focused progress. This replaces every saved Journey and progress record on this device, including Next steps, sessions, milestones, goals, and timer state. This cannot be undone.`;
 }
 
 function readTextFile(file: File) {
@@ -200,7 +200,7 @@ export function ImportSavedData({
           <p className="mb-4 text-ink/65 text-sm leading-relaxed">
             {pendingImport.fileName} contains {pendingImport.state.journeys.length}{' '}
             {getPluralizedLabel(pendingImport.state.journeys.length, 'Journey')} and{' '}
-            {formatFocusedTime(getFocusedMinutes(pendingImport.state.focusSessions))} of focused
+            {formatFocusedDuration(getFocusedMinutes(pendingImport.state.focusSessions))} of focused
             progress.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

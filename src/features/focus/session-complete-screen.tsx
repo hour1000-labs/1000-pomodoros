@@ -12,6 +12,7 @@ import { RecoverableErrorState } from '@/components/shared/recoverable-error-sta
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppState } from '@/hooks/use-app-state';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import type { AppState, FocusSession, Journey, Milestone, NextStep } from '@/lib/models';
 import { deriveJourneyProgress, getFocusedMinutes, POMODORO_MINUTES } from '@/lib/progress';
 import { appRepository, SESSION_REFLECTION_MAX_LENGTH } from '@/lib/repository';
@@ -167,19 +168,6 @@ export function formatPomodoroCount(value: number) {
   return numberFormatter.format(value);
 }
 
-function formatMinutes(value: number) {
-  return numberFormatter.format(value);
-}
-
-function formatFocusedDuration(minutes: number) {
-  const hours = Math.floor(minutes / 60);
-  const remainder = minutes - hours * 60;
-
-  if (hours === 0) return `${formatMinutes(remainder)} min`;
-  if (remainder === 0) return `${hours}h`;
-  return `${hours}h ${formatMinutes(remainder)}m`;
-}
-
 function CompletionExperience({ context }: { context: SessionCompletionContext }) {
   const [reflectionOpen, setReflectionOpen] = useState(false);
   const [reflection, setReflection] = useState(context.session.reflection);
@@ -229,9 +217,9 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
             <p className="mb-8 max-w-[38rem] text-base text-ink/60 leading-relaxed [overflow-wrap:anywhere] sm:text-lg">
               Added{' '}
               <strong className="text-ink">
-                {formatMinutes(context.session.focusedMinutes)} focused minutes
+                {formatFocusedDuration(context.session.focusedMinutes)}
               </strong>{' '}
-              to {context.journey.name}.
+              of focused time to {context.journey.name}.
             </p>
 
             <div className="mb-8 border-ink/15 border-y py-5">

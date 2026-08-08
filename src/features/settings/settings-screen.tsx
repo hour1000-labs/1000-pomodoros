@@ -20,7 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { ApplicationLayout } from '@/features/journeys/components/application-layout';
 import { ApplicationStateBoundary } from '@/features/journeys/components/application-state-boundary';
-import { formatFocusedTime } from '@/features/journeys/format-focused-time';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data';
 import type { AppState, Journey } from '@/lib/models';
 import { getFocusedMinutes } from '@/lib/progress';
@@ -211,7 +211,7 @@ function SettingsContent({ state }: { state: AppState }) {
                 <div>
                   <dt className="mb-1 text-ink/60 text-sm">Focused time</dt>
                   <dd className="mb-0 font-bold text-lg tabular-nums">
-                    {formatFocusedTime(focusedMinutes)}
+                    {formatFocusedDuration(focusedMinutes)}
                   </dd>
                 </div>
                 <div>
@@ -279,7 +279,7 @@ function SettingsContent({ state }: { state: AppState }) {
                         <div>
                           <p className="mb-1 font-bold text-base text-ink">{journey.name}</p>
                           <p className="mb-0 text-ink/60 text-sm">
-                            {formatFocusedTime(journeyMinutes)} · {journeySessionsCount}{' '}
+                            {formatFocusedDuration(journeyMinutes)} · {journeySessionsCount}{' '}
                             {getPluralizedLabel(journeySessionsCount, 'session')}
                           </p>
                         </div>

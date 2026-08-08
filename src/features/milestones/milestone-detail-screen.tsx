@@ -9,6 +9,7 @@ import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import type { AppState } from '@/lib/models';
 
 import { deriveMilestoneDetailData } from './milestone-detail-data';
@@ -23,16 +24,6 @@ function formatMilestoneDate(value: string) {
     month: 'long',
     year: 'numeric',
   }).format(date);
-}
-
-function formatFocusedTime(minutes: number) {
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  const hourLabel = `${hours} hour${hours === 1 ? '' : 's'}`;
-
-  if (hours === 0) return `${remainingMinutes} minutes`;
-  if (remainingMinutes === 0) return hourLabel;
-  return `${hourLabel} ${remainingMinutes} minutes`;
 }
 
 function formatPomodoroAmount(value: number) {
@@ -95,7 +86,7 @@ function MilestoneContent({ state, milestoneId }: { state: AppState; milestoneId
               className="mb-5 max-w-[10ch] font-bold text-[clamp(3.5rem,18vw,7rem)] leading-[0.88] tracking-[-0.06em]"
               id="milestone-title"
             >
-              {formatFocusedTime(milestone.targetFocusedMinutes)}
+              {formatFocusedDuration(milestone.targetFocusedMinutes)}
             </h1>
             <p className="mb-8 text-ink/60">
               <time dateTime={milestone.earnedAt}>
@@ -153,7 +144,7 @@ function MilestoneContent({ state, milestoneId }: { state: AppState; milestoneId
                   detail={
                     remainingMinutes === 0
                       ? 'Reached'
-                      : `${formatFocusedTime(remainingMinutes)} remaining`
+                      : `${formatFocusedDuration(remainingMinutes)} remaining`
                   }
                 />
               </section>

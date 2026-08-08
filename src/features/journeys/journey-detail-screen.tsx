@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { deriveJourneyDetailData } from '@/features/journeys/journey-detail-data';
+import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import { LEARN_GUITAR_JOURNEY_ID } from '@/lib/mock-data';
 import type { AppState, NextStep } from '@/lib/models';
 
@@ -16,7 +17,6 @@ import {
 } from './components/journey-detail-next-steps';
 import { JourneyDetailProgress } from './components/journey-detail-progress';
 import { JourneyDetailRecentSessions } from './components/journey-detail-recent-sessions';
-import { formatFocusedTime } from './format-focused-time';
 
 function JourneyNotFoundState({ state }: { state: AppState }) {
   const navigationJourneyId =
@@ -121,7 +121,7 @@ function JourneyContent({
             <div>
               <dt className="mb-1 font-bold text-ink/60 text-sm">Focused time</dt>
               <dd className="mb-0 font-bold text-lg tabular-nums">
-                {formatFocusedTime(progress.focusedMinutes)}
+                {formatFocusedDuration(progress.focusedMinutes)}
               </dd>
             </div>
           </dl>

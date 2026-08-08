@@ -111,7 +111,7 @@ describe('HomeScreen', () => {
     const recentSessionsSection = screen.getByRole('region', { name: 'Recent sessions' });
 
     expect(within(todaySection).getByText('2')).toBeTruthy();
-    expect(within(todaySection).getByText('50')).toBeTruthy();
+    expect(within(todaySection).getByText('50 minutes')).toBeTruthy();
 
     const weeklyText = weeklySection.textContent?.replace(/\s+/g, ' ').trim() ?? '';
     expect(weeklyText).toContain('7 / 10');
@@ -192,7 +192,8 @@ describe('HomeScreen', () => {
     expect(await screen.findByText('Your first Pomodoro starts here.')).toBeTruthy();
 
     const todaySection = screen.getByRole('region', { name: 'Today' });
-    expect(within(todaySection).getAllByText('0')).toHaveLength(2);
+    expect(within(todaySection).getByText('0')).toBeTruthy();
+    expect(within(todaySection).getByText('0 minutes')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'No sessions yet' })).toBeTruthy();
   });
 
@@ -205,11 +206,12 @@ describe('HomeScreen', () => {
 
     const todaySection = screen.getByRole('region', { name: 'Today' });
     expect(within(todaySection).getByText('2')).toBeTruthy();
-    expect(within(todaySection).getByText('50')).toBeTruthy();
+    expect(within(todaySection).getByText('50 minutes')).toBeTruthy();
 
     act(() => vi.advanceTimersByTime(200));
 
-    expect(within(todaySection).getAllByText('0')).toHaveLength(2);
+    expect(within(todaySection).getByText('0')).toBeTruthy();
+    expect(within(todaySection).getByText('0 minutes')).toBeTruthy();
   });
 
   it('presents a calm empty state without a progressbar when no weekly goal exists', async () => {
