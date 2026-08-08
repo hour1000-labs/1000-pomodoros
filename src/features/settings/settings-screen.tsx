@@ -239,6 +239,17 @@ function SettingsContent({ state }: { state: AppState }) {
                   {feedback.message}
                 </p>
               ) : null}
+
+              <div className="mt-6 flex gap-3 rounded-lg border border-ink/15 bg-background p-4 text-ink/65 text-sm leading-relaxed">
+                <ShieldCheck
+                  aria-hidden="true"
+                  className="mt-0.5 size-5 shrink-0 text-pomodoro-red"
+                />
+                <p className="mb-0">
+                  Backups stay on your device until you choose where to save or share the downloaded
+                  file. Keep one somewhere safe if this progress matters to you.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </section>
@@ -321,14 +332,6 @@ function SettingsContent({ state }: { state: AppState }) {
             </CardContent>
           </Card>
         </section>
-
-        <aside className="flex gap-3 rounded-lg border border-ink/15 p-5 text-ink/65 text-sm leading-relaxed">
-          <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-pomodoro-red" />
-          <p className="mb-0">
-            Backups stay on your device until you choose where to save or share the downloaded file.
-            Keep one somewhere safe if this progress matters to you.
-          </p>
-        </aside>
       </div>
     </ApplicationLayout>
   );
