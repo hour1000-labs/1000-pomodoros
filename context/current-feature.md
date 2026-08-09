@@ -1,41 +1,97 @@
-# Current Feature: <feature name>
+# Current Feature: Manage and Reorder Next Steps
 
-<!-- One-sentence description of the feature or fix -->
+Let users reorder Upcoming steps, choose what is current, and complete or delete steps they no longer need.
 
 ## Status
 
-<!-- Not Started | In Progress | Ready to Commit -->
-
-Not Started
+Ready to Commit
 
 ## Goal
 
-<!-- User-visible outcome of the feature -->
+People can shape a lightweight, flexible queue of work, act on what feels right now, and leave a Journey with no unfinished Next steps when everything is done.
 
 ## Acceptance Criteria
 
-<!-- Checklist of testable outcomes -->
-
-- [ ] Criterion 1
+- [x] Every Upcoming step on a persisted Journey has a dedicated drag handle and one compact, keyboard-accessible More actions control with `Work on this next`, `Mark complete`, `Move up`/`Move down`, and `Delete` actions as applicable; the read-only sample Journey exposes none of these controls.
+- [x] Users can drag Upcoming steps into a new order with mouse or touch. The lifted row tracks the pointer, neighboring rows glide into the valid drop position, and the dropped row settles fluidly into place without obscuring step titles or the Journey's primary Start action. A successful drop does not add a persistent visible `Moved … to position …` message; concise assistive-technology confirmation remains available.
+- [x] On a focused drag handle, Space or Enter picks up/drops, Arrow Up/Down moves, and Escape cancels; focus stays on that handle, boundaries are announced without moving, and announcements name the step plus its position and list size. `Move up`/`Move down` provide a non-drag fallback and are unavailable at their respective boundaries.
+- [x] Every successful active-queue mutation normalizes that Journey's current step to position `0` and its Upcoming steps to contiguous positions `1…n`; reloading preserves the order, and completing the current step later promotes the first user-ordered Upcoming step.
+- [x] Cancelling a drag, dropping outside the valid list, issuing an invalid/cross-Journey reorder, or encountering a persistence failure leaves the original order unchanged and provides recoverable feedback when appropriate.
+- [x] Choosing `Work on this next` atomically promotes that Upcoming step to the Journey's sole current Next step and places the former current step first in Upcoming, followed by the remaining steps in their prior relative order; neither step is marked complete.
+- [x] After promotion, the Journey detail current-step card and Start action, Home recommendations, and later focus defaults resolve to the newly current step through the existing persisted state.
+- [x] Promotion requires no confirmation, prevents duplicate submissions, and reports a clear recoverable error if persistence fails while leaving the original current and Upcoming steps unchanged.
+- [x] Choosing `Mark complete` on an Upcoming step immediately records it as completed and removes it from the Upcoming list without changing the Journey's current step or promoting another step.
+- [x] A step referenced by the running or paused Focus session cannot be marked complete; selecting the action opens an accessible blocking message that explains the session must be finished or cancelled first and preserves all state.
+- [x] Completing the current step continues to promote the first ordered Upcoming step; if none remains, the Journey has no current step and shows the valid no-unfinished-steps state.
+- [x] Completion rejects missing, already-completed, current-when-using-the-Upcoming-action, or cross-Journey IDs as no-ops, prevents duplicate submissions, and reports a recoverable persistence failure without changing the saved step or list order.
+- [x] Choosing `Delete` for an unused Upcoming step opens a controlled confirmation dialog that names the step, states that deletion cannot be undone, and provides distinct Cancel and `Delete step` actions; no deletion occurs before confirmation.
+- [x] Confirming deletion removes only the selected Upcoming step from persisted state; the Journey, its current/completed/other Upcoming steps, focus-session progress and history, milestones, goals, onboarding data, timers, and other Journeys remain unchanged.
+- [x] An Upcoming step referenced by any Focus session cannot be deleted, preserving its title throughout history; selecting Delete opens an accessible non-destructive message that directs the user to `Mark complete` instead and, for active work, to finish or cancel the session first.
+- [x] Delete rejects current, completed, missing, or cross-Journey step IDs as no-ops, prevents duplicate submissions, and reports a clear recoverable error on persistence failure without dismissing the confirmation or changing saved state.
+- [x] When no current or Upcoming steps remain, the Journey is still valid: Journey detail and Home show a calm empty state with `Add a Next step`, Start Focus is unavailable until a step is added, and no placeholder step is created automatically.
+- [x] Reordering keeps focus on the moved handle; promotion moves focus to the current-step Start action; completion/deletion moves focus to the next row's More actions trigger, the previous row when last, or `Add Next step` when none remains. Assistive technology receives concise confirmation of each change.
+- [x] The ordering and row actions remain understandable and operable with long valid step titles at 320px mobile, desktop, keyboard-only navigation, touch input, and a 200%-zoom-equivalent viewport; ghost-style controls stay visually subordinate and never cover the title.
 
 ## Plan
 
-<!-- Implementation steps -->
-
-1. Step 1
+1. Add focused repository operations and unit tests for normalized active-queue ordering, promotion, completion, and history-safe deletion, including ownership, status, session-reference, persistence-failure, subscriber-notification, and unrelated-state boundaries.
+2. Add a restrained sortable-row treatment to the existing Upcoming list with an accessible drag handle, clear movement feedback, keyboard drag behavior, and Move up/down fallbacks.
+3. Add a compact per-row More actions menu using the established button, menu, dialog, and destructive-action patterns where available.
+4. Connect `Work on this next` and `Mark complete` with in-flight protection, active-session blocking, recoverable feedback, deterministic focus management, and accessible announcements while preserving existing current-step completion behavior.
+5. Add a controlled named delete confirmation plus a non-destructive session-history blocking state, retry-safe failure behavior, deterministic focus restoration, and an accessible success announcement.
+6. Add the no-unfinished-steps state to Journey detail and verify existing Home and focus entry points guide the user to add a new step instead of treating the Journey as broken.
+7. Extend Journey detail and cross-surface tests to prove ordering persistence, ordered promotion, current-step propagation, completion, deletion, progress/history preservation, and read-only sample behavior.
+8. Verify the complete flow in a real browser across desktop, narrow mobile, mouse, touch, keyboard navigation, long content, and a 200%-zoom-equivalent viewport.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] `git diff --check` passes
+- [x] Repository tests cover active-queue normalization, ordered promotion, completion, history-safe deletion, invalid targets, active-session protection, write failure, notifications, and unrelated-state preservation
+- [x] Journey detail tests cover drag/drop and keyboard reordering, Move up/down boundaries, menu semantics, completion, delete confirmation/cancellation, success, retryable failure, focus handoff, announcements, duplicate-action protection, empty state, and read-only sample behavior
+- [x] Reordering is verified to survive reload and control which step is promoted after current-step completion
+- [x] Promotion is verified to update Journey detail, Home, and focus-selection defaults from persisted state
+- [x] Completing every unfinished step is verified to preserve the Journey and earned progress while disabling focus entry until a new step is added
+- [x] Desktop, 320px mobile, and a 200%-zoom-equivalent viewport are verified with maximum-length Next step content and no clipping or horizontal overflow
+- [x] Mouse, touch, and keyboard ordering plus keyboard-only menu/dialog operation, visible focus, touch targets, accessible names, destructive copy, and movement/success/error announcements are verified
+- [x] No relevant browser console errors or warnings
 
 ## Notes
 
-<!-- Decisions, blockers, and scope changes -->
+- UX decision: the dedicated current-step card stays fixed. Only Upcoming rows are sortable; choosing `Work on this next` is the explicit way to move an Upcoming step into the current slot.
+- Each Upcoming row uses a drag handle so scrolling, selecting text, and opening its More actions menu do not accidentally begin a drag. Move up/down actions provide an equivalent fallback for touch and assistive-technology users.
+- `Work on this next` and eligible `Mark complete` actions are immediate, deliberate status changes. Eligible `Delete` removes the record and therefore requires confirmation.
+- Active queue invariant: current is position `0`; Upcoming is contiguous `1…n`. Given current A and Upcoming B/C/D, choosing C produces current C and Upcoming A/B/D. Completed/skipped records do not participate in active ordering.
+- Marking an Upcoming step complete does not affect the current step. Marking the current step complete retains the existing behavior of promoting the first ordered Upcoming step.
+- Zero unfinished Next steps is a supported state, not an error. The user keeps the Journey and all earned progress and can add another step whenever they are ready.
+- Delete is available only for Upcoming steps with no Focus-session references. Worked-on steps retain their record and title and can be marked complete instead; active work must be finished or cancelled before completion.
+- Session-reference blockers open a visible, keyboard/touch-accessible message rather than relying on a disabled menu item or tooltip.
+- The confirmed product decision that each Journey has an ordered list with its current step at the top supports this feature. Completed steps leave the active queue; adding a completed-step history remains excluded, so the pending decision about where completed steps appear does not block this scope.
+- Scope is limited to ordering, promoting, completing, and deleting from Journey detail. Editing step text, deleting the current/completed step, skipping, scheduling, due dates, a completed-step history, undo, and broader task-manager features are excluded.
+- No drag-and-drop dependency is currently installed. Implementation should use the existing stack where practical; adding a dependency requires separate approval under repository rules.
+- The active contract was refined after pre-implementation UX review to resolve queue ordering, session-history preservation, active-session protection, controlled retry behavior, and deterministic keyboard/focus handoff.
+- Feature test baseline on 2026-08-08 passed `pnpm check`, `pnpm test` (27 files, 277 tests), `pnpm build` (client, SSR, and 12 prerendered routes), and `git diff --check`.
+- Coverage review found evidence gaps rather than runtime defects. Test-only, proven non-semantic remediation added 11 tests for real cross-Journey no-ops, operation-specific write failures, unrelated-state preservation, duplicate-action protection, live announcements, last-row focus, and keyboard-only delete cancellation. Focused repository tests passed 58/58 and Journey detail tests passed 35/35.
+- Keyboard-only browser testing exposed one localized behavioral defect: Escape closed the delete confirmation but lost focus to the page body. The dialog now retains its return target independently of closing state; the regression test, rebuilt production preview, and real keyboard menu → dialog → Escape flow confirm focus returns to the originating More actions button. Earlier unaffected responsive and drag evidence was reused; all source gates and the full suite were rerun after the fix.
+- Final verification on 2026-08-08 passed `pnpm check` (128 files), `pnpm exec tsc --noEmit`, `pnpm test` (27 files, 288 tests), `pnpm build` (client, SSR, and 12 prerendered routes), and `git diff --check`. Vitest emitted existing jsdom `window.scrollTo` and empty test-router `href` notices, but no tests failed or were skipped.
+- Production-browser verification passed at 1280×800, 320×800, and 640×400: mouse and keyboard ordering persisted across reload, touch-style pointer ordering passed automated coverage, the lifted row and displaced neighbors animated fluidly, drag-edge auto-scroll stayed within the list above the fixed dock, and the 120-character title had no horizontal overflow. Promotion propagated to Journey detail, Home, and focus defaults; completion/deletion focus and announcements worked; delete confirmation and blockers were accessible; the fully completed queue showed calm Journey-detail and Home add-step states with no Start action or generated placeholder. Browser console errors/warnings: 0/0.
+- Feature review on 2026-08-08 found blocking gaps and made no source changes: zero-current/nonempty-Upcoming saved queues are not normalized by reorder, Upcoming completion, or deletion; keyboard blur and lost pointer capture can leave a drag latched; blocker dialogs and inactive-Journey promotion can lose focus; successful drops can repeat the prior movement string without a new live-region mutation; outcome feedback is duplicated across two live regions; and the 15px `Delete step` label measures approximately 4.38:1 against its tinted background, below WCAG AA. Repository coverage also lacks direct active-Upcoming deletion and historical-session completion cases. A suspected short-viewport dock overlap was disproved by measured browser geometry: the scroll viewport clips before the dock, focused rows scroll fully into view, and the dragged row cannot obscure the Start action.
+- Remediation must keep repository and UI normalization aligned: if a reorder repairs a queue with no current step by promoting the first requested item, the UI must recognize the resulting current-plus-Upcoming order as success, synchronize to the saved Upcoming IDs, and choose an existing focus target. Add focused regressions for every review finding, use one live announcement channel per outcome, and use the approved Paper-on-Pomodoro-Red pairing for the destructive confirmation action.
+- Review remediation on 2026-08-08 now normalizes zero-current and duplicate-current active queues across reorder, Upcoming completion, and deletion; recognizes and synchronizes the saved semantic queue in the UI; cancels keyboard drags on Tab/blur and pointer drags on lost capture; preserves dialog return targets; falls back from an unavailable Start link to the current step's `Mark complete` action; distinguishes movement from committed drops; and uses one announcement source per outcome. The destructive confirmation now uses Paper on Pomodoro Red with an Ink hover state.
+- Remediation coverage adds zero-current first/last/only boundaries, same-order repairs, historical and active-session reference cases, Tab/blur and lost-capture termination, active and inactive promotion focus, blocker return focus, normalized-drop focus/announcements, repeated error announcements, and repeated identical successful-drop announcements. A post-fix static re-review found no remaining repository or interaction issue.
+- Post-remediation verification passed `pnpm check` (128 files), `pnpm exec tsc --noEmit`, `pnpm test` (27 files, 310 tests), `pnpm build` (client, SSR, and 12 prerendered routes), and `git diff --check`. Vitest emitted only the existing jsdom `window.scrollTo` notices.
+- Production-browser remediation checks passed at 1280px, 320×800, and 640×400: a real mouse drag displaced neighbors, settled cleanly, persisted, and restored handle focus; Tab and lost pointer capture cancelled without saving; malformed zero-current data repaired to one current step; inactive promotion focused `Mark complete`; blocker and delete dialogs returned focus to their originating More trigger; the long title stayed contained with 44px row controls; short-viewport edge scrolling clamped the list above the fixed action dock; Paper on Pomodoro Red measured approximately 5.05:1 at 15px; and browser console errors/warnings were 0/0. An independent UI review also found no remaining issue.
+- Repeat feature testing after review remediation was classified broad/high-risk because it changed persistence invariants plus cross-cutting drag and focus behavior. The full baseline passed `pnpm check` (128 files), `pnpm exec tsc --noEmit`, `pnpm test` (27 files, 310 tests), `pnpm build` (client, SSR, and 12 prerendered routes), and `git diff --check`; Vitest emitted only the existing jsdom `window.scrollTo` notices.
+- Fresh production-browser testing passed at desktop, 320×800, and 640×400 with maximum-length content: real mouse dragging displaced neighbors, settled, persisted across reload, restored handle focus, and showed no persistent movement text; Space and Enter drops plus Escape and Tab cancellation behaved correctly; promotion, completion, deletion, confirmation cancellation, active/history blockers, empty-queue recovery, and deterministic focus/announcements all passed. Long titles remained contained, row controls measured 44×44, short-viewport content stayed above the fixed action dock, and browser console errors/warnings were 0/0.
+- During this test action, the repository history-preservation test gained one direct assertion that the completed step record survives an unrelated Upcoming deletion. This was classified as a proven non-semantic test-only change, so the unaffected build and browser evidence was reused; focused repository tests (72/72), `pnpm check`, `pnpm exec tsc --noEmit`, and `git diff --check` were rerun afterward and passed.
+- Final feature review on 2026-08-08 found two blocking gaps and made no source changes. `completeCurrentNextStep` and the current-step card still allow a step referenced by a running or paused Focus session to be completed, leaving active work attached to a completed record. Pointer dragging also publishes a newly keyed assertive live-region message on every qualifying pointer move, even when the projected position is unchanged, rather than limiting announcements to actual position changes. The feature remains `In Progress`; add repository/UI regressions for active current-step completion and repeated same-position pointer moves before repeating `feature test` and `feature review`.
+- The final review inspected the complete tracked and feature-relevant untracked diff and found no dependency, route, build, generated-file, or unrelated-refactor expansion. `pnpm check` passed for 128 files; independent browser review reconfirmed layout, 44px controls, keyboard reordering, menu/dialog focus, empty-state behavior, and 0/0 console errors/warnings from 320px through desktop. Those unaffected results remain valid, while the three announcement/active-session verification items above are reopened.
+- The 2026-08-09 review remediation is classified broad/high-risk because it changes a persisted current-step completion invariant together with focus and live-region behavior. `completeCurrentNextStep` now leaves storage and subscribers unchanged when the exact current step belongs to a running or paused Focus session, while completed/cancelled historical references remain completable. Journey detail opens the existing-style named blocker before persistence and returns focus to `Mark complete`; pointer movement announcements now publish only when the projected position changes, without altering distinct drop confirmation.
+- Focused remediation coverage passed 76/76 repository tests and 45/45 Journey Detail tests. Full revalidation passed `pnpm check` (128 files), `pnpm exec tsc --noEmit`, `pnpm test` (27 files, 316 tests), `pnpm build` (client, SSR, and 12 prerendered routes), and `git diff --check`. The first build attempt ran concurrently with the full suite and its temporary prerender server timed out; the immediate standalone build completed successfully, confirming transient local contention rather than an application failure. Vitest emitted only the existing jsdom `window.scrollTo` notices.
+- Fresh production-browser remediation checks passed at desktop and 320×800. Paused and running current-step sessions opened the named non-destructive blocker, preserved the exact saved state, and returned focus to `Mark complete` on Escape; a completed historical reference remained completable and promoted the first ordered Upcoming step. Real mouse movement caused zero live-region mutations before a midpoint crossing, exactly one when the projected position changed, no repeats within that position, and a distinct saved-drop announcement; the reordered queue persisted and focus returned to its handle. The 320px dialog stayed fully within the viewport with no horizontal overflow, and browser console errors/warnings were 0/0.
+- Final remediation review on 2026-08-09 independently rechecked repository invariants, UI accessibility, focus and announcement behavior, acceptance-to-evidence mapping, and the complete feature scope. No blocking findings remained, so the feature advanced to `Ready to Commit`.
 
 ## History
 

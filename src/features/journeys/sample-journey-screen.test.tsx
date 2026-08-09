@@ -43,6 +43,8 @@ describe('SampleJourneyScreen', () => {
     expect(screen.queryByRole('link', { name: /Start 25:00/ })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Mark complete' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Add Next step' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Reorder / })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^More actions for / })).toBeNull();
   });
 
   it('returns to the landing page when the brand is clicked', async () => {

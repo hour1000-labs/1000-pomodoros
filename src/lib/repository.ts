@@ -107,6 +107,17 @@ export interface AppRepository {
     createdAt: string,
     id: string
   ): RepositorySaveResult;
+  reorderUpcomingNextSteps(
+    journeyId: string,
+    orderedNextStepIds: readonly string[]
+  ): RepositorySaveResult;
+  makeNextStepCurrent(journeyId: string, nextStepId: string): RepositorySaveResult;
+  completeUpcomingNextStep(
+    journeyId: string,
+    nextStepId: string,
+    completedAt: string
+  ): RepositorySaveResult;
+  deleteUpcomingNextStep(journeyId: string, nextStepId: string): RepositorySaveResult;
   completeCurrentNextStep(
     journeyId: string,
     nextStepId: string,
@@ -312,6 +323,68 @@ function upsertById<T extends { id: string }>(items: readonly T[], item: T) {
   }
 
   return items.map((existingItem, index) => (index === existingIndex ? item : existingItem));
+}
+
+function compareNextStepOrder(left: NextStep, right: NextStep) {
+  return (
+    left.position - right.position ||
+    left.createdAt.localeCompare(right.createdAt) ||
+    left.id.localeCompare(right.id)
+  );
+}
+
+function getActiveNextStepOrder(nextSteps: readonly NextStep[], journeyId: string) {
+  const currentSteps = nextSteps
+    .filter((nextStep) => nextStep.journeyId === journeyId && nextStep.status === 'current')
+    .sort(compareNextStepOrder);
+  const upcomingSteps = nextSteps
+    .filter((nextStep) => nextStep.journeyId === journeyId && nextStep.status === 'upcoming')
+    .sort(compareNextStepOrder);
+
+  return { currentSteps, upcomingSteps };
+}
+
+function applyActiveNextStepOrder(
+  nextSteps: readonly NextStep[],
+  journeyId: string,
+  currentStepId: string | null,
+  orderedUpcomingStepIds: readonly string[]
+) {
+  const upcomingPositionById = new Map(
+    orderedUpcomingStepIds.map((nextStepId, index) => [nextStepId, index + 1])
+  );
+  let changed = false;
+  const orderedNextSteps: readonly NextStep[] = nextSteps.map((nextStep) => {
+    if (nextStep.journeyId !== journeyId) {
+      return nextStep;
+    }
+
+    let status: 'current' | 'upcoming';
+    let position: number;
+
+    if (nextStep.id === currentStepId) {
+      status = 'current';
+      position = 0;
+    } else {
+      const upcomingPosition = upcomingPositionById.get(nextStep.id);
+
+      if (upcomingPosition === undefined) {
+        return nextStep;
+      }
+
+      status = 'upcoming';
+      position = upcomingPosition;
+    }
+
+    if (nextStep.status === status && nextStep.position === position) {
+      return nextStep;
+    }
+
+    changed = true;
+    return { ...nextStep, status, position };
+  });
+
+  return changed ? orderedNextSteps : nextSteps;
 }
 
 function completeSessionInState(
@@ -655,24 +728,171 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
         return state;
       }
 
-      const journeySteps = state.nextSteps.filter((nextStep) => nextStep.journeyId === journeyId);
-      const position = journeySteps.reduce(
-        (highestPosition, nextStep) => Math.max(highestPosition, nextStep.position),
-        -1
-      );
-      const hasCurrentStep = journeySteps.some((nextStep) => nextStep.status === 'current');
+      const { currentSteps, upcomingSteps } = getActiveNextStepOrder(state.nextSteps, journeyId);
+      const currentStep = currentSteps[0] ?? null;
       const nextStep: NextStep = {
         id,
         journeyId,
         title: title.trim(),
         description: '',
-        status: hasCurrentStep ? 'upcoming' : 'current',
-        position: position + 1,
+        status: currentStep === null ? 'current' : 'upcoming',
+        position: 0,
         createdAt,
         completedAt: null,
       };
+      const nextStepsWithAddedStep = [...state.nextSteps, nextStep];
+      const orderedUpcomingStepIds =
+        currentStep === null
+          ? upcomingSteps.map(({ id: upcomingStepId }) => upcomingStepId)
+          : [
+              ...currentSteps.slice(1).map(({ id: currentStepId }) => currentStepId),
+              ...upcomingSteps.map(({ id: upcomingStepId }) => upcomingStepId),
+              id,
+            ];
+      const nextSteps = applyActiveNextStepOrder(
+        nextStepsWithAddedStep,
+        journeyId,
+        currentStep?.id ?? id,
+        orderedUpcomingStepIds
+      );
 
-      return { ...state, nextSteps: [...state.nextSteps, nextStep] };
+      return { ...state, nextSteps: [...nextSteps] };
+    });
+  }
+
+  function reorderUpcomingNextSteps(journeyId: string, orderedNextStepIds: readonly string[]) {
+    return update((state) => {
+      if (!state.journeys.some((journey) => journey.id === journeyId)) {
+        return state;
+      }
+
+      const { currentSteps, upcomingSteps } = getActiveNextStepOrder(state.nextSteps, journeyId);
+      const requestedIds = new Set(orderedNextStepIds);
+      const hasExactMembership =
+        orderedNextStepIds.length === upcomingSteps.length &&
+        requestedIds.size === upcomingSteps.length &&
+        upcomingSteps.every(({ id }) => requestedIds.has(id));
+
+      if (!hasExactMembership) {
+        return state;
+      }
+
+      const currentIds = upcomingSteps.map(({ id }) => id);
+      const orderChanged = currentIds.some((id, index) => id !== orderedNextStepIds[index]);
+      const positionsAreNormalized =
+        currentSteps.length <= 1 &&
+        (currentSteps[0]?.position === 0 ||
+          (currentSteps.length === 0 && upcomingSteps.length === 0)) &&
+        upcomingSteps.every((nextStep, index) => nextStep.position === index + 1);
+
+      if (!orderChanged && positionsAreNormalized) {
+        return state;
+      }
+
+      const orderedActiveStepIds = [...currentSteps.map(({ id }) => id), ...orderedNextStepIds];
+      const nextSteps = applyActiveNextStepOrder(
+        state.nextSteps,
+        journeyId,
+        orderedActiveStepIds[0] ?? null,
+        orderedActiveStepIds.slice(1)
+      );
+
+      return nextSteps === state.nextSteps ? state : { ...state, nextSteps: [...nextSteps] };
+    });
+  }
+
+  function makeNextStepCurrent(journeyId: string, nextStepId: string) {
+    return update((state) => {
+      const selectedStep = state.nextSteps.find(
+        (nextStep) => nextStep.journeyId === journeyId && nextStep.id === nextStepId
+      );
+
+      if (selectedStep?.status !== 'upcoming') {
+        return state;
+      }
+
+      const { currentSteps, upcomingSteps } = getActiveNextStepOrder(state.nextSteps, journeyId);
+      const orderedUpcomingStepIds = [
+        ...currentSteps.map(({ id }) => id),
+        ...upcomingSteps.filter(({ id }) => id !== selectedStep.id).map(({ id }) => id),
+      ];
+      const nextSteps = applyActiveNextStepOrder(
+        state.nextSteps,
+        journeyId,
+        selectedStep.id,
+        orderedUpcomingStepIds
+      );
+
+      return { ...state, nextSteps: [...nextSteps] };
+    });
+  }
+
+  function completeUpcomingNextStep(journeyId: string, nextStepId: string, completedAt: string) {
+    return update((state) => {
+      const selectedStep = state.nextSteps.find(
+        (nextStep) => nextStep.journeyId === journeyId && nextStep.id === nextStepId
+      );
+
+      const isActiveSessionStep = state.focusSessions.some(
+        (session) =>
+          session.nextStepId === selectedStep?.id &&
+          (session.status === 'running' || session.status === 'paused')
+      );
+
+      if (selectedStep?.status !== 'upcoming' || isActiveSessionStep) {
+        return state;
+      }
+
+      const { currentSteps, upcomingSteps } = getActiveNextStepOrder(state.nextSteps, journeyId);
+      const completedNextSteps = state.nextSteps.map((nextStep) =>
+        nextStep.journeyId === journeyId && nextStep.id === selectedStep.id
+          ? { ...nextStep, status: 'completed' as const, completedAt }
+          : nextStep
+      );
+      const remainingActiveStepIds = [
+        ...currentSteps.map(({ id }) => id),
+        ...upcomingSteps.filter(({ id }) => id !== selectedStep.id).map(({ id }) => id),
+      ];
+      const nextSteps = applyActiveNextStepOrder(
+        completedNextSteps,
+        journeyId,
+        remainingActiveStepIds[0] ?? null,
+        remainingActiveStepIds.slice(1)
+      );
+
+      return { ...state, nextSteps: [...nextSteps] };
+    });
+  }
+
+  function deleteUpcomingNextStep(journeyId: string, nextStepId: string) {
+    return update((state) => {
+      const selectedStep = state.nextSteps.find(
+        (nextStep) => nextStep.journeyId === journeyId && nextStep.id === nextStepId
+      );
+      const hasSessionReference = state.focusSessions.some(
+        ({ nextStepId: referencedNextStepId }) => referencedNextStepId === selectedStep?.id
+      );
+
+      if (selectedStep?.status !== 'upcoming' || hasSessionReference) {
+        return state;
+      }
+
+      const { currentSteps, upcomingSteps } = getActiveNextStepOrder(state.nextSteps, journeyId);
+      const remainingNextSteps = state.nextSteps.filter(
+        (nextStep) => !(nextStep.journeyId === journeyId && nextStep.id === selectedStep.id)
+      );
+      const remainingActiveStepIds = [
+        ...currentSteps.map(({ id }) => id),
+        ...upcomingSteps.filter(({ id }) => id !== selectedStep.id).map(({ id }) => id),
+      ];
+      const nextSteps = applyActiveNextStepOrder(
+        remainingNextSteps,
+        journeyId,
+        remainingActiveStepIds[0] ?? null,
+        remainingActiveStepIds.slice(1)
+      );
+
+      return { ...state, nextSteps: [...nextSteps] };
     });
   }
 
@@ -681,41 +901,35 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
       const expectedCurrentStep = state.nextSteps.find(
         (nextStep) => nextStep.journeyId === journeyId && nextStep.id === nextStepId
       );
+      const isActiveSessionStep = state.focusSessions.some(
+        (session) =>
+          session.nextStepId === expectedCurrentStep?.id &&
+          (session.status === 'running' || session.status === 'paused')
+      );
 
-      if (expectedCurrentStep?.status !== 'current') {
+      if (expectedCurrentStep?.status !== 'current' || isActiveSessionStep) {
         return state;
       }
 
-      const orderedIncompleteSteps = state.nextSteps
-        .filter(
-          (nextStep) =>
-            nextStep.journeyId === journeyId &&
-            (nextStep.status === 'current' || nextStep.status === 'upcoming')
-        )
-        .sort(
-          (left, right) =>
-            left.position - right.position ||
-            left.createdAt.localeCompare(right.createdAt) ||
-            left.id.localeCompare(right.id)
-        );
-      const promotedStep = orderedIncompleteSteps.find(
-        (nextStep) => nextStep.status === 'upcoming'
+      const { currentSteps, upcomingSteps } = getActiveNextStepOrder(state.nextSteps, journeyId);
+      const remainingActiveSteps = [
+        ...currentSteps.filter(({ id }) => id !== expectedCurrentStep.id),
+        ...upcomingSteps,
+      ];
+      const promotedStep = remainingActiveSteps[0] ?? null;
+      const completedNextSteps = state.nextSteps.map((nextStep) =>
+        nextStep.journeyId === journeyId && nextStep.id === expectedCurrentStep.id
+          ? { ...nextStep, status: 'completed' as const, completedAt }
+          : nextStep
+      );
+      const nextSteps = applyActiveNextStepOrder(
+        completedNextSteps,
+        journeyId,
+        promotedStep?.id ?? null,
+        remainingActiveSteps.slice(1).map(({ id }) => id)
       );
 
-      return {
-        ...state,
-        nextSteps: state.nextSteps.map((nextStep) => {
-          if (nextStep.id === expectedCurrentStep.id) {
-            return { ...nextStep, status: 'completed' as const, completedAt };
-          }
-
-          if (nextStep.id === promotedStep?.id) {
-            return { ...nextStep, status: 'current' as const };
-          }
-
-          return nextStep;
-        }),
-      };
+      return { ...state, nextSteps: [...nextSteps] };
     });
   }
 
@@ -944,6 +1158,10 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     deleteJourney,
     upsertNextStep,
     addNextStep,
+    reorderUpcomingNextSteps,
+    makeNextStepCurrent,
+    completeUpcomingNextStep,
+    deleteUpcomingNextStep,
     completeCurrentNextStep,
     upsertFocusSession,
     setActiveTimer,

@@ -1,15 +1,24 @@
 import { Check, Plus } from 'lucide-react';
 import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
-import { EmptyState } from '@/components/shared/empty-state';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import type { NextStep } from '@/lib/models';
 import { getNextStepError, NEXT_STEP_MAX_LENGTH } from '@/lib/next-step';
 import { appRepository } from '@/lib/repository';
 
 import { JourneyDetailDialog } from './journey-detail-dialog';
+import { JourneyDetailUpcomingSteps } from './journey-detail-upcoming-steps';
 
 function createNextStepIdentity() {
   const createdAt = new Date().toISOString();
@@ -22,12 +31,16 @@ export function JourneyDetailNextSteps({
   upcomingSteps,
   addOpen,
   onAddOpenChange,
+  activeSessionNextStepId,
+  sessionReferencedNextStepIds,
   readOnly = false,
 }: {
   journeyId: string;
   upcomingSteps: readonly NextStep[];
   addOpen: boolean;
   onAddOpenChange: (open: boolean) => void;
+  activeSessionNextStepId: string | null;
+  sessionReferencedNextStepIds: readonly string[];
   readOnly?: boolean;
 }) {
   const [title, setTitle] = useState('');
@@ -86,38 +99,48 @@ export function JourneyDetailNextSteps({
             Next steps
           </h2>
           {!readOnly ? (
-            <Button type="button" variant="outline" onClick={() => changeAddOpen(true)}>
+            <Button
+              data-next-step-add
+              type="button"
+              variant="outline"
+              onClick={() => changeAddOpen(true)}
+            >
               <Plus aria-hidden="true" />
               Add Next step
             </Button>
           ) : null}
         </div>
 
-        {upcomingSteps.length === 0 ? (
-          <EmptyState
-            className="min-h-44"
-            title="No upcoming steps"
-            description="Add the next concrete action when you are ready."
-          />
-        ) : (
-          <ol className="m-0 list-none p-0" aria-label="Upcoming Next steps">
-            {upcomingSteps.map((step, index) => (
-              <li
-                key={step.id}
-                className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-ink/15 border-b py-4"
-              >
-                <span
-                  aria-hidden="true"
-                  className="font-bold text-[0.72rem] text-ink/60 tabular-nums"
+        {readOnly ? (
+          upcomingSteps.length === 0 ? (
+            <p className="mb-0 text-ink/60 text-sm">No upcoming steps.</p>
+          ) : (
+            <ol className="m-0 list-none p-0" aria-label="Upcoming Next steps">
+              {upcomingSteps.map((step, index) => (
+                <li
+                  key={step.id}
+                  className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-ink/15 border-b py-4"
                 >
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <span className="min-w-0 font-bold leading-snug [overflow-wrap:anywhere]">
-                  {step.title}
-                </span>
-              </li>
-            ))}
-          </ol>
+                  <span
+                    aria-hidden="true"
+                    className="font-bold text-[0.72rem] text-ink/60 tabular-nums"
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="min-w-0 font-bold leading-snug [overflow-wrap:anywhere]">
+                    {step.title}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )
+        ) : (
+          <JourneyDetailUpcomingSteps
+            journeyId={journeyId}
+            upcomingSteps={upcomingSteps}
+            activeSessionNextStepId={activeSessionNextStepId}
+            sessionReferencedNextStepIds={sessionReferencedNextStepIds}
+          />
         )}
       </section>
 
@@ -194,18 +217,22 @@ export function JourneyDetailCurrentStep({
   currentStep,
   primaryAction,
   onRequestAdd,
+  hasActiveFocusSession,
   readOnly = false,
 }: {
   journeyId: string;
   currentStep: NextStep | null;
   primaryAction?: ReactNode;
   onRequestAdd: () => void;
+  hasActiveFocusSession: boolean;
   readOnly?: boolean;
 }) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [completeError, setCompleteError] = useState<string | null>(null);
+  const [sessionBlockerOpen, setSessionBlockerOpen] = useState(false);
   const completionInFlight = useRef(false);
   const activeStepId = useRef(currentStep?.id);
+  const completeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (activeStepId.current === currentStep?.id) return;
@@ -218,6 +245,10 @@ export function JourneyDetailCurrentStep({
 
   function handleComplete() {
     if (currentStep === null || completionInFlight.current) return;
+    if (hasActiveFocusSession) {
+      setSessionBlockerOpen(true);
+      return;
+    }
 
     completionInFlight.current = true;
     setIsCompleting(true);
@@ -257,6 +288,8 @@ export function JourneyDetailCurrentStep({
             <>
               {primaryAction ? <div className="mb-3 hidden md:block">{primaryAction}</div> : null}
               <Button
+                ref={completeButtonRef}
+                data-current-next-step-focus-fallback
                 type="button"
                 variant="outline"
                 className="w-full"
@@ -277,12 +310,12 @@ export function JourneyDetailCurrentStep({
       ) : (
         <>
           <h2 className="mb-3 font-bold text-2xl leading-tight tracking-[-0.025em]">
-            Choose what comes next
+            All caught up
           </h2>
           <p className="mb-5 text-ink/60 text-sm">
             {readOnly
               ? 'This is a sample Journey. Create your own Journey to add a Next step.'
-              : 'Add one action to work on next.'}
+              : 'Add a Next step when you are ready to keep going.'}
           </p>
           {!readOnly ? (
             <PrimaryButton
@@ -296,6 +329,28 @@ export function JourneyDetailCurrentStep({
           ) : null}
         </>
       )}
+
+      <Dialog open={sessionBlockerOpen} onOpenChange={setSessionBlockerOpen}>
+        <DialogContent
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            completeButtonRef.current?.focus();
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Finish this Focus session first</DialogTitle>
+            <DialogDescription>
+              “{currentStep?.title ?? 'This step'}” is attached to your running or paused Focus
+              session. Finish or cancel that session before marking it complete.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </aside>
   );
 }

@@ -41,6 +41,7 @@ function StartAction({ journeyId, nextStep }: { journeyId: string; nextStep: Nex
   return (
     <PrimaryButton asChild className="w-full">
       <Link
+        data-current-next-step-start
         to="/focus"
         search={{ journeyId, nextStepId: nextStep.id }}
         aria-label={`Start 25:00 for ${nextStep.title}`}
@@ -68,6 +69,15 @@ function JourneyContent({
   if (!detail) return <JourneyNotFoundState />;
 
   const { journey, progress, currentStep } = detail;
+  const activeSession = state.focusSessions.find(
+    (session) =>
+      session.journeyId === journey.id &&
+      (session.status === 'running' || session.status === 'paused')
+  );
+  const activeSessionNextStepId = activeSession?.nextStepId ?? null;
+  const sessionReferencedNextStepIds = state.focusSessions.flatMap((session) =>
+    session.journeyId === journey.id && session.nextStepId !== null ? [session.nextStepId] : []
+  );
   const canStart = !readOnly && journey.status === 'active' && currentStep !== null;
   const startAction = canStart ? (
     <StartAction journeyId={journey.id} nextStep={currentStep} />
@@ -149,6 +159,7 @@ function JourneyContent({
             currentStep={currentStep}
             primaryAction={startAction}
             onRequestAdd={() => setAddOpen(true)}
+            hasActiveFocusSession={activeSessionNextStepId === currentStep?.id}
             readOnly={readOnly}
           />
           {journey.status !== 'active' ? (
@@ -165,6 +176,8 @@ function JourneyContent({
           upcomingSteps={detail.upcomingSteps}
           addOpen={addOpen}
           onAddOpenChange={setAddOpen}
+          activeSessionNextStepId={activeSessionNextStepId}
+          sessionReferencedNextStepIds={sessionReferencedNextStepIds}
           readOnly={readOnly}
         />
         <JourneyDetailRecentSessions sessions={detail.recentSessions} />
