@@ -1,80 +1,41 @@
-# Current Feature: Timer Tab Countdown and Completion Sound
+# Current Feature: <feature name>
 
-Keep the active focus countdown visible in the browser tab and give users a clear, controllable sound when the timer naturally finishes.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Ready to Commit
+Not Started
 
 ## Goal
 
 <!-- User-visible outcome of the feature -->
 
-A user can trust the browser tab countdown to match the focus timer and choose whether a brief sound alerts them when the session reaches zero.
-
 ## Acceptance Criteria
 
 <!-- Checklist of testable outcomes -->
 
-- [x] Starting or restoring a running focus session on `/focus` changes the current browser tab title to the exact format `MM:SS — 1000 Pomodoros`, using the same formatted, timestamp-derived remaining time shown on the timer screen.
-- [x] The running tab countdown updates at second boundaries without accumulating drift and immediately catches up with the on-screen timer after the tab returns from the background.
-- [x] Pausing freezes both the on-screen timer and tab title at the same `MM:SS`; resuming returns both to the timestamp-derived running countdown without an extra or skipped second.
-- [x] Completing, finishing early, or cancelling the active session, or leaving the active focus view, restores the default tab title `1000 Pomodoros` without leaving a stale countdown behind.
-- [x] The running and paused timer screens each show one compact speaker icon control near the existing fullscreen/control area; its speaker and muted icons clearly reflect whether the completion sound is enabled without adding another primary action.
-- [x] The sound control is a keyboard-operable button with a visible focus state, a minimum 44-by-44-pixel target, and an accessible name that changes between `Mute completion sound` and `Unmute completion sound`; the state is not communicated by color alone.
-- [x] Completion sound starts enabled when the active focus view loads, and a user's mute or unmute choice remains intact while that mounted view moves between running and paused states.
-- [x] When an unmuted countdown naturally reaches zero and the existing session-completion save succeeds, one brief, calm, non-looping completion sound is requested exactly once before or alongside the existing navigation to Session Complete.
-- [x] Muted completion, Finish early, Cancel session, failed completion persistence, rerenders, and repeated timer or visibility callbacks do not play the completion sound.
-- [x] If the browser blocks or rejects audio playback, the session still completes and navigates normally, with no uncaught error or repeated playback attempt.
-- [x] Existing timer persistence, timestamp reconciliation, pause/resume behavior, completion progress, navigation, and meaningful accessibility announcements remain unchanged; the title is not announced every second to assistive technology.
-- [x] The volume control remains usable and does not overlap the timer, Journey/Next step copy, Pause/Resume actions, or fullscreen control at supported mobile, desktop, short-height, and zoom-equivalent layouts.
+- [ ] Criterion 1
 
 ## Plan
 
 <!-- Implementation steps -->
 
-1. Add focused title-formatting and completion-audio helpers that reuse the existing timer formatting/source of truth, clean up the document title safely, and tolerate unavailable browser audio without adding a dependency or remote asset.
-2. Lift the mounted visit's sound-enabled state above the running and paused timer states so the choice survives pause/resume transitions while defaulting to enabled on a new page load.
-3. Synchronize the active `/focus` document title from the same running or paused countdown rendered on screen, including visibility catch-up and default-title restoration on cleanup.
-4. Add the accessible speaker/muted icon button to both active timer states and group it cleanly with the existing fullscreen/control area using established Lucide icons and the current three-color design system.
-5. Trigger the chime only after a natural timeout is successfully persisted, guard it against duplicate completion paths, and keep early finish, cancellation, muted completion, and save failures silent.
-6. Extend focused timer tests for title lifecycle, visibility reconciliation, paused/resumed state, mute behavior, exactly-once playback, silent paths, and rejected playback while preserving existing timer and repository coverage.
-7. Verify the complete active-session flow in a real browser with sound on and muted, then check responsive layout, keyboard/accessibility behavior, title cleanup, and console output.
+1. Step 1
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] `git diff --check` passes
-- [x] Focused automated tests cover running, paused, resumed, visibility catch-up, completion, cleanup, and exact tab-title values
-- [x] Focused automated tests prove one successful natural completion plays once, muted and non-natural endings stay silent, and rejected playback does not block completion
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] The tab title is verified through running, background catch-up, pause, resume, natural completion, early finish, cancellation, and focus-view cleanup
-- [x] A supported real browser audibly plays the unmuted chime once and remains silent when muted
-- [x] The volume control is verified with keyboard navigation, visible focus, accurate accessible names, and at least a 44-by-44-pixel target
-- [x] The running and paused controls are verified at 320-by-568 mobile, 1280-by-800 desktop, a short-height viewport, and a 200%-zoom-equivalent viewport with long allowed Journey and Next step text
-- [x] No relevant console errors
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
 <!-- Decisions, blockers, and scope changes -->
-
-- The supplied Google Timer screenshot is a placement and interaction reference for a familiar speaker/muted icon near the timer controls; it does not add Stopwatch, reset, or other Google Timer features.
-- The tab title and completion sound are scoped to the mounted `/focus` experience, including when that browser tab is backgrounded. This feature does not add a root-level timer worker, cross-route or cross-tab synchronization, a service worker, an operating-system notification, or audio after the user leaves the focus view.
-- Completion sound is enabled by default for each mounted active focus visit. The choice survives running/paused transitions during that visit but intentionally resets after a full reload or a later visit; this feature does not expand the persisted AppState schema or add a Settings preference.
-- Only a natural countdown completion produces the sound. Finish early and Cancel session remain intentional silent actions.
-- The sound is brief, calm, local to the app, and non-looping. There is no volume slider, sound picker, ambient audio, repeated alarm, or new audio dependency.
-- Browser autoplay and device-level mute/volume rules can prevent audible playback. Playback failure must be contained and must never block session persistence or the existing Session Complete flow.
-- Implementation uses the browser Web Audio API for the local two-tone chime; no remote sound asset or dependency was added.
-- Start-stage evidence: `pnpm check`, full `pnpm test` (28 files, 323 tests), `pnpm build`, and `git diff --check` passed. Browser checks covered onboarding into `/focus`, live title updates, mute/unmute state, pause title stability, cancellation cleanup, keyboard focus, a measured 44-by-44-pixel sound target, 320-by-568 and 1280-by-800 layouts, a 640-by-400 short-height viewport, a 200%-zoom-equivalent viewport with no horizontal overflow, and zero browser console errors or warnings.
-- Test-stage revalidation: the first full test run exposed stale title state after confirmed navigation away from `/focus`; a route-aware cleanup effect was added. This is a localized behavioral remediation because it changes only focus-route title cleanup, not timer arithmetic, persistence, audio generation, or control layout. Final `pnpm check`, `pnpm test` (28 files, 323 tests), `pnpm build` (client, SSR, and 12 prerendered pages), and `git diff --check` all passed. A fresh browser smoke check confirmed onboarding into `/focus`, the live `MM:SS — 1000 Pomodoros` title, and zero browser errors; earlier responsive, keyboard, control-size, mute-state, pause, and cancellation checks remain applicable because this remediation did not change their layout or interaction code.
-- Review follow-up audio check: real Chromium completion with sound enabled created exactly one Web Audio context, ran for about 0.62 seconds, and closed alongside navigation; the same-visit muted completion created no audio context and still navigated normally. Browser console output reported zero errors and warnings. The user accepted this real-browser audio-graph evidence as sufficient for completion, acknowledging that automation cannot directly establish acoustic audibility to a human listener.
-- No pending decision in `context/decisions.md` materially blocks this scope: the user has chosen an optional completion sound for the existing focus timer, while break timers, overtime-cap selection, ambient audio, and browser notifications remain unchanged.
-- `public/logo.png` was already untracked before this feature was loaded and is unrelated; preserve it unchanged.
 
 ## History
 
@@ -291,3 +252,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/manage-and-reorder-next-steps`
 - Summary: Added flexible Upcoming-step management with fluid mouse, touch, and keyboard reordering; explicit current-step promotion; completion and history-safe deletion; active-session blockers; deterministic focus and announcements; and a valid empty-queue state.
 - Verification: `pnpm check` (128 files), `pnpm exec tsc --noEmit`, `pnpm test` (27 files, 316 tests), `pnpm build` (client, SSR, and 12 prerendered pages), `git diff --check`, and production-browser checks at desktop, 320×800, and 640×400 for ordering, persistence, focus, announcements, dialogs, maximum-length content, responsive overflow, and console output passed.
+
+### 2026-08-09 — Timer Tab Countdown and Completion Sound
+
+- Branch: `codex/feature/timer-tab-countdown-and-completion-sound`
+- Summary: Added timestamp-synced `/focus` tab countdown titles, accessible running and paused mute controls, and a brief guarded Web Audio completion chime for successful natural timer completion.
+- Verification: `pnpm check`, `pnpm test` (28 files, 323 tests), `pnpm build` (client, SSR, and 12 prerendered pages), `git diff --check`, and browser checks for title lifecycle, responsive layouts, keyboard focus, 44-by-44 control sizing, muted and unmuted completion paths, and zero browser console errors/warnings passed. Real Chromium created one audio context for unmuted completion and none for same-visit muted completion; the user accepted this browser audio-graph evidence as sufficient.
