@@ -4,6 +4,8 @@ import {
   canFinishPausedFocusSession,
   completePausedFocusSession,
   completeRunningFocusSession,
+  formatFocusDocumentTitle,
+  formatRemainingTime,
   getRemainingSeconds,
   pauseRunningFocusSession,
   resumePausedFocusSession,
@@ -33,6 +35,12 @@ const activeTimer: ActiveTimer = {
 };
 
 describe('focus timer calculations', () => {
+  it('formats the countdown consistently for the timer and browser tab', () => {
+    expect(formatRemainingTime(1_505)).toBe('25:05');
+    expect(formatFocusDocumentTitle(1_505)).toBe('25:05 — 1000 Pomodoros');
+    expect(formatRemainingTime(-1)).toBe('00:00');
+  });
+
   it('derives remaining time from the target timestamp after delayed refreshes', () => {
     expect(getRemainingSeconds(activeTimer.targetEndAt, Date.parse(session.startedAt))).toBe(1_500);
     expect(getRemainingSeconds(activeTimer.targetEndAt, Date.parse('2026-07-15T18:06:15Z'))).toBe(

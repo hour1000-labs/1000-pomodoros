@@ -3,6 +3,7 @@ import type { ActiveTimer, FocusSession } from './models';
 const MILLISECONDS_PER_SECOND = 1_000;
 const SECONDS_PER_MINUTE = 60;
 export const MINIMUM_COUNTED_FOCUS_SECONDS = 5 * SECONDS_PER_MINUTE;
+export const DEFAULT_DOCUMENT_TITLE = '1000 Pomodoros';
 
 export function getRemainingSeconds(targetEndAt: string | null, now = Date.now()) {
   if (targetEndAt === null) return 0;
@@ -11,6 +12,18 @@ export function getRemainingSeconds(targetEndAt: string | null, now = Date.now()
   if (!Number.isFinite(targetTime)) return 0;
 
   return Math.max(0, Math.ceil((targetTime - now) / MILLISECONDS_PER_SECOND));
+}
+
+export function formatRemainingTime(seconds: number) {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainingSeconds = safeSeconds % 60;
+
+  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
+export function formatFocusDocumentTitle(remainingSeconds: number) {
+  return `${formatRemainingTime(remainingSeconds)} — ${DEFAULT_DOCUMENT_TITLE}`;
 }
 
 export function pauseRunningFocusSession(

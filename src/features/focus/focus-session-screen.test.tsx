@@ -3,7 +3,7 @@
 import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
+import * as focusSound from '@/lib/focus-sound';
 import { createSeedAppState } from '@/lib/mock-data';
 import type { AppState, FocusSession, Journey, NextStep } from '@/lib/models';
 import { APP_STORAGE_KEY, appRepository } from '@/lib/repository';
@@ -24,6 +24,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   cleanup();
   window.localStorage.clear();
+  document.title = '1000 Pomodoros';
   Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, value: false });
   Reflect.deleteProperty(document.documentElement, 'requestFullscreen');
   Object.defineProperty(Element.prototype, 'requestFullscreen', {
@@ -285,6 +286,7 @@ describe('Timer Setup', () => {
     await renderFocus(createPausedState());
 
     expect(await screen.findByRole('heading', { name: '18:45' })).toBeTruthy();
+    expect(document.title).toBe('18:45 — 1000 Pomodoros');
     expect(screen.getByText('Paused')).toBeTruthy();
     expect(screen.getByText('1000 Pomodoros')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Resume' })).toBeTruthy();
@@ -345,6 +347,51 @@ describe('Running Focus Timer', () => {
     expect(saved.activeTimer?.status).toBe('paused');
     expect(saved.activeTimer?.targetEndAt).toBeNull();
     expect(saved.focusSessions.find(({ id }) => id === 'session-running')?.status).toBe('paused');
+  });
+
+  it('keeps the browser tab title aligned through running, pause, resume, and visibility catch-up', async () => {
+    const baseTime = Date.now();
+    const now = vi.spyOn(Date, 'now').mockReturnValue(baseTime);
+    await renderFocus(
+      createRunningState({
+        remainingSeconds: 125,
+        targetEndAt: new Date(baseTime + 125_000).toISOString(),
+      })
+    );
+
+    expect(document.title).toBe('02:05 — 1000 Pomodoros');
+
+    now.mockReturnValue(baseTime + 1_000);
+    fireEvent(document, new Event('visibilitychange'));
+    await waitFor(() => expect(document.title).toBe('02:04 — 1000 Pomodoros'));
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Pause' }));
+    const pausedHeading = await screen.findByRole('heading', { name: /^\d{2}:\d{2}$/ });
+    expect(document.title).toBe(`${pausedHeading.textContent} — 1000 Pomodoros`);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
+    await screen.findByRole('button', { name: 'Pause' });
+    expect(document.title).toMatch(/^\d{2}:\d{2} — 1000 Pomodoros$/);
+  });
+
+  it('toggles completion sound accessibly and keeps the choice across pause and resume', async () => {
+    await renderFocus(createRunningState());
+
+    const mute = await screen.findByRole('button', { name: 'Mute completion sound' });
+    expect(mute.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(mute);
+
+    expect(
+      screen.getByRole('button', { name: 'Unmute completion sound' }).getAttribute('aria-pressed')
+    ).toBe('true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pause' }));
+    await screen.findByText('Paused');
+    expect(screen.getByRole('button', { name: 'Unmute completion sound' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
+    await screen.findByRole('button', { name: 'Pause' });
+    expect(screen.getByRole('button', { name: 'Unmute completion sound' })).toBeTruthy();
   });
 
   it('keeps the timer running and reports an error when Pause cannot be persisted', async () => {
@@ -408,6 +455,7 @@ describe('Running Focus Timer', () => {
     void router.navigate({ to: '/home' });
     await waitFor(() => expect(router.state.location.pathname).toBe('/home'));
     expect(readSavedState().activeTimer?.status).toBe('running');
+    expect(document.title).toBe('1000 Pomodoros');
   });
 
   it('shows and operates the fullscreen control only when the API is available', async () => {
@@ -425,6 +473,7 @@ describe('Running Focus Timer', () => {
   });
 
   it('finalizes an elapsed timer once and routes to completion', async () => {
+    const playSound = vi.spyOn(focusSound, 'playFocusCompletionSound').mockResolvedValue();
     const complete = vi.spyOn(appRepository, 'completeRunningFocusSession');
     const router = await renderFocus(
       createRunningState({ targetEndAt: new Date(Date.now() - 1_000).toISOString() })
@@ -439,9 +488,44 @@ describe('Running Focus Timer', () => {
       status: 'completed',
       focusedMinutes: 25,
     });
+    expect(playSound).toHaveBeenCalledTimes(1);
+    expect(document.title).toBe('1000 Pomodoros');
+  });
+
+  it('does not play a muted completion sound', async () => {
+    const baseTime = Date.now();
+    const now = vi.spyOn(Date, 'now').mockReturnValue(baseTime);
+    const playSound = vi.spyOn(focusSound, 'playFocusCompletionSound').mockResolvedValue();
+    const router = await renderFocus(
+      createRunningState({
+        remainingSeconds: 1,
+        targetEndAt: new Date(baseTime + 1_000).toISOString(),
+      })
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Mute completion sound' }));
+    now.mockReturnValue(baseTime + 2_000);
+    fireEvent(document, new Event('visibilitychange'));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/focus/complete'));
+    expect(playSound).not.toHaveBeenCalled();
+  });
+
+  it('keeps completion working when browser playback is rejected', async () => {
+    const playSound = vi
+      .spyOn(focusSound, 'playFocusCompletionSound')
+      .mockRejectedValue(new Error('audio blocked'));
+    const router = await renderFocus(
+      createRunningState({ targetEndAt: new Date(Date.now() - 1_000).toISOString() })
+    );
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/focus/complete'));
+    expect(playSound).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('stays on the running screen when elapsed-session completion cannot be persisted', async () => {
+    const playSound = vi.spyOn(focusSound, 'playFocusCompletionSound').mockResolvedValue();
     vi.spyOn(appRepository, 'completeRunningFocusSession').mockReturnValue({
       status: 'unavailable',
       state: null,
@@ -456,6 +540,7 @@ describe('Running Focus Timer', () => {
     );
     expect(router.state.location.pathname).toBe('/focus');
     expect(readSavedState().activeTimer?.status).toBe('running');
+    expect(playSound).not.toHaveBeenCalled();
   });
 });
 
@@ -494,6 +579,7 @@ describe('Paused Focus Timer', () => {
   });
 
   it('finishes an eligible partial session once and routes to completion', async () => {
+    const playSound = vi.spyOn(focusSound, 'playFocusCompletionSound').mockResolvedValue();
     const finish = vi.spyOn(appRepository, 'finishPausedFocusSession');
     const router = await renderFocus(createPausedState());
 
@@ -509,9 +595,11 @@ describe('Paused Focus Timer', () => {
       status: 'completed',
       focusedMinutes: 6.25,
     });
+    expect(playSound).not.toHaveBeenCalled();
   });
 
   it('dismisses cancellation unchanged, then confirms once without progress', async () => {
+    const playSound = vi.spyOn(focusSound, 'playFocusCompletionSound').mockResolvedValue();
     const cancel = vi.spyOn(appRepository, 'cancelFocusSession');
     const confirm = vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
     const state = createPausedState();
@@ -545,6 +633,7 @@ describe('Paused Focus Timer', () => {
       status: 'cancelled',
       focusedMinutes: 0,
     });
+    expect(playSound).not.toHaveBeenCalled();
   });
 
   it.each([

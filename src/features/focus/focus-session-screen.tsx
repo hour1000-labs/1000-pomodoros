@@ -1,5 +1,5 @@
-import { Navigate, useBlocker, useNavigate } from '@tanstack/react-router';
-import { Check, Clock3, Maximize2, Minimize2, Pause, Play } from 'lucide-react';
+import { Navigate, useBlocker, useNavigate, useRouterState } from '@tanstack/react-router';
+import { Check, Clock3, Maximize2, Minimize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { type FormEvent, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { BrandMark } from '@/components/shared/brand-mark';
 import { FocusLayout } from '@/components/shared/focus-layout';
@@ -18,7 +18,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useAppState } from '@/hooks/use-app-state';
-import { canFinishPausedFocusSession, getRemainingSeconds } from '@/lib/focus-timer';
+import { playFocusCompletionSound } from '@/lib/focus-sound';
+import {
+  canFinishPausedFocusSession,
+  DEFAULT_DOCUMENT_TITLE,
+  formatFocusDocumentTitle,
+  formatRemainingTime,
+  getRemainingSeconds,
+} from '@/lib/focus-timer';
 import type { ActiveTimer, AppState, FocusSession, Journey, NextStep } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
 import { cn } from '@/lib/utils';
@@ -133,12 +140,33 @@ export function createFocusSessionRecords({
   };
 }
 
-export function formatRemainingTime(seconds: number) {
-  const safeSeconds = Math.max(0, Math.floor(seconds));
-  const minutes = Math.floor(safeSeconds / 60);
-  const remainingSeconds = safeSeconds % 60;
+interface CompletionSoundToggleProps {
+  className?: string;
+  soundEnabled: boolean;
+  onSoundEnabledChange: (enabled: boolean) => void;
+}
 
-  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+function CompletionSoundToggle({
+  className,
+  onSoundEnabledChange,
+  soundEnabled,
+}: CompletionSoundToggleProps) {
+  const label = soundEnabled ? 'Mute completion sound' : 'Unmute completion sound';
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className={className}
+      aria-label={label}
+      aria-pressed={!soundEnabled}
+      title={label}
+      onClick={() => onSoundEnabledChange(!soundEnabled)}
+    >
+      {soundEnabled ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
+    </Button>
+  );
 }
 
 function PausedSessionState({
@@ -146,13 +174,17 @@ function PausedSessionState({
   journey,
   nextStep,
   onCancelled,
+  onSoundEnabledChange,
   session,
+  soundEnabled,
 }: {
   activeTimer: ActiveTimer;
   journey: Journey;
   nextStep: NextStep | undefined;
   onCancelled: () => void;
+  onSoundEnabledChange: (enabled: boolean) => void;
   session: FocusSession;
+  soundEnabled: boolean;
 }) {
   const navigate = useNavigate({ from: '/focus/' });
   const [actionError, setActionError] = useState<string | null>(null);
@@ -166,6 +198,16 @@ function PausedSessionState({
   const ringStyle = {
     background: `conic-gradient(var(--pomodoro-red) ${elapsedFraction * 100}%, color-mix(in srgb, var(--ink) 12%, var(--paper)) 0)`,
   };
+
+  useEffect(() => {
+    document.title = formatFocusDocumentTitle(activeTimer.remainingSeconds);
+  }, [activeTimer.remainingSeconds]);
+
+  useEffect(() => {
+    return () => {
+      document.title = DEFAULT_DOCUMENT_TITLE;
+    };
+  }, []);
 
   function resumeSession() {
     if (actionInFlight.current) return;
@@ -244,6 +286,11 @@ function PausedSessionState({
   return (
     <FocusLayout className="relative overflow-hidden py-5 sm:py-8 [@media(max-height:640px)]:py-4">
       <BrandMark className="absolute top-3 left-4 sm:top-6 sm:left-8 [@media(max-height:640px)]:hidden" />
+      <CompletionSoundToggle
+        className="absolute top-3 right-3 text-ink/60 hover:text-ink sm:top-6 sm:right-6"
+        soundEnabled={soundEnabled}
+        onSoundEnabledChange={onSoundEnabledChange}
+      />
 
       <section
         className="grid w-full max-w-xl justify-items-center gap-4 pt-12 text-center sm:gap-5 [@media(max-height:640px)]:gap-3 [@media(max-height:640px)]:pt-0"
@@ -330,11 +377,15 @@ function RunningSessionState({
   journey,
   nextStep,
   session,
+  onSoundEnabledChange,
+  soundEnabled,
 }: {
   activeTimer: ActiveTimer;
   journey: Journey;
   nextStep: NextStep | undefined;
   session: FocusSession;
+  onSoundEnabledChange: (enabled: boolean) => void;
+  soundEnabled: boolean;
 }) {
   const navigate = useNavigate({ from: '/focus/' });
   const initialRemaining = getRemainingSeconds(activeTimer.targetEndAt);
@@ -349,8 +400,19 @@ function RunningSessionState({
     new Set([...(initialRemaining <= 300 ? [300] : []), ...(initialRemaining <= 60 ? [60] : [])])
   );
   const completionInFlight = useRef(false);
+  const completionSoundPlayed = useRef(false);
   const pauseInFlight = useRef(false);
   const allowNavigation = useRef(false);
+
+  useEffect(() => {
+    document.title = formatFocusDocumentTitle(remainingSeconds);
+  }, [remainingSeconds]);
+
+  useEffect(() => {
+    return () => {
+      document.title = DEFAULT_DOCUMENT_TITLE;
+    };
+  }, []);
 
   useBlocker({
     enableBeforeUnload: true,
@@ -383,6 +445,11 @@ function RunningSessionState({
         return;
       }
 
+      if (soundEnabled && !completionSoundPlayed.current) {
+        completionSoundPlayed.current = true;
+        void playFocusCompletionSound().catch(() => undefined);
+      }
+
       allowNavigation.current = true;
       setAnnouncement('Focus session complete.');
       void navigate({
@@ -391,7 +458,7 @@ function RunningSessionState({
         replace: true,
       });
     },
-    [navigate, session.id]
+    [navigate, session.id, soundEnabled]
   );
 
   const refreshTimer = useCallback(() => {
@@ -499,20 +566,27 @@ function RunningSessionState({
 
   return (
     <FocusLayout className="relative overflow-hidden py-5 sm:py-8 [@media(max-height:500px)]:py-4">
-      {fullscreenSupported ? (
-        <Button
-          type="button"
-          variant="ghost"
-          className="absolute top-3 right-3 h-11 px-3 text-ink/60 hover:text-ink sm:top-6 sm:right-6"
-          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          onClick={() => void toggleFullscreen()}
-        >
-          {isFullscreen ? <Minimize2 aria-hidden="true" /> : <Maximize2 aria-hidden="true" />}
-          <span className="hidden sm:inline [@media(max-height:500px)]:hidden">
-            {isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-          </span>
-        </Button>
-      ) : null}
+      <div className="absolute top-3 right-3 flex items-center gap-1 sm:top-6 sm:right-6">
+        <CompletionSoundToggle
+          className="text-ink/60 hover:text-ink"
+          soundEnabled={soundEnabled}
+          onSoundEnabledChange={onSoundEnabledChange}
+        />
+        {fullscreenSupported ? (
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-11 px-3 text-ink/60 hover:text-ink"
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            onClick={() => void toggleFullscreen()}
+          >
+            {isFullscreen ? <Minimize2 aria-hidden="true" /> : <Maximize2 aria-hidden="true" />}
+            <span className="hidden sm:inline [@media(max-height:500px)]:hidden">
+              {isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            </span>
+          </Button>
+        ) : null}
+      </div>
 
       <section
         className="grid w-full max-w-3xl justify-items-center gap-4 text-center sm:gap-6 [@media(max-height:500px)]:gap-3"
@@ -560,6 +634,7 @@ function RunningSessionState({
 }
 
 function ActiveSessionState({ state, onCancelled }: { state: AppState; onCancelled: () => void }) {
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const activeTimer = state.activeTimer;
   const session = activeTimer
     ? state.focusSessions.find(({ id }) => id === activeTimer.sessionId)
@@ -578,7 +653,9 @@ function ActiveSessionState({ state, onCancelled }: { state: AppState; onCancell
         journey={journey}
         nextStep={nextStep}
         onCancelled={onCancelled}
+        onSoundEnabledChange={setSoundEnabled}
         session={session}
+        soundEnabled={soundEnabled}
       />
     );
   }
@@ -589,6 +666,8 @@ function ActiveSessionState({ state, onCancelled }: { state: AppState; onCancell
       journey={journey}
       nextStep={nextStep}
       session={session}
+      onSoundEnabledChange={setSoundEnabled}
+      soundEnabled={soundEnabled}
     />
   );
 }
@@ -968,6 +1047,11 @@ function TimerSetup({
 export function FocusSessionScreen({ search }: { search: FocusSearch }) {
   const hydration = useAppState();
   const [setupAnnouncement, setSetupAnnouncement] = useState<string | null>(null);
+  const pathname = useRouterState({ select: (routerState) => routerState.location.pathname });
+
+  useEffect(() => {
+    if (pathname !== '/focus') document.title = DEFAULT_DOCUMENT_TITLE;
+  }, [pathname]);
 
   if (hydration.status === 'loading') {
     return (
