@@ -1,93 +1,42 @@
-# Current Feature: Product Logo and Search Identity
+# Current Feature: <feature name>
 
 <!-- One-sentence description of the feature or fix -->
-
-Use the supplied `public/logo.png` as the product's canonical artwork across the shared wordmark, browser and install icons, and accurate search and social metadata while removing the scaffold placeholders.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Ready to Commit
+Not Started
 
 ## Goal
 
 <!-- User-visible outcome of the feature -->
 
-People consistently recognize 1000 Pomodoros in the app, browser and installed-app surfaces, and link or search previews, while crawlers receive an accurate, useful representation of the public landing page.
 
 ## Acceptance Criteria
 
 <!-- Checklist of testable outcomes -->
 
-- [x] `public/logo.png` remains the canonical supplied artwork, and any smaller icon, wordmark, or social-preview files are optimized derivatives of it rather than redrawn or unrelated branding.
-- [x] Every existing `BrandMark` surface displays the tomato logo immediately to the left of `1000 Pomodoros`, with restrained sizing, alignment, and spacing that remain clear without crowding or overflow from 320px through desktop layouts.
-- [x] The wordmark logo has explicit rendered dimensions and is decorative, so it does not cause layout shift or duplicate announcements and linked brand marks retain the accessible name `1000 Pomodoros`.
-- [x] Branded favicon and Apple touch icon links are emitted from the TanStack root head, load successfully in local development and beneath the `/1000-pomodoros/` deployment base path, and use stable, square, recognizable logo-derived assets.
-- [x] The web app manifest is linked from the document head and identifies `1000 Pomodoros` with accurate description, start URL, scope, display mode, theme/background colors, and install icons whose URLs and purposes work under the configured base path.
-- [x] The React/TanStack starter images `public/favicon.ico`, `public/logo192.png`, and `public/logo512.png` are removed, and no tracked source, public manifest, or production artifact retains their references or the placeholder names `TanStack App` and `Create TanStack App Sample`.
-- [x] The public landing page uses the exact title `1000 Pomodoros — Visual Progress Tracker` and description `Track focused work, one pomodoro at a time.`, plus application name, canonical URL, theme color, and complete Open Graph and Twitter summary metadata.
-- [x] Search and social metadata use absolute canonical/share URLs for the current public Pages site, declare the social image's dimensions and descriptive alt text, and render deployment-base-aware favicon, manifest, and local asset links without host-root 404 requests.
-- [x] A 1200 × 630 social preview uses the supplied logo and the existing Ink, Paper, and Pomodoro Red visual language to communicate the truthful `1,000 pomodoros` product goal at thumbnail size, without gradients, fabricated user progress, or more than 12 words beyond the numeric label.
-- [x] The prerendered landing-page HTML contains its meaningful headline and product explanation rather than only a loading skeleton, while hydration remains stable and people with saved Journeys still redirect from `/` to `/home` as before.
-- [x] `/` is the canonical indexable route and is the only URL listed in the sitemap; local-state, onboarding, focus, settings, sample, Journey, and milestone routes emit `noindex, follow` and do not compete with the public landing page in search results.
-- [x] `robots.txt` continues to allow the public site to be crawled and advertises the absolute sitemap URL; the generated Pages-style output confirms that the sitemap and landing URL resolve under the configured deployment base path before publication.
-- [x] Existing focus-timer document titles, saved-data names and compatibility identifiers, wordmark destinations, and intentional rules about where application branding is visible remain unchanged.
+- [ ] Criterion 1
 
 ## Plan
 
 <!-- Implementation steps -->
 
-1. Establish shared, base-path-safe site and asset URL values for TanStack head metadata, using the live GitHub Pages project URL as the current canonical origin and path.
-2. Preserve `public/logo.png`, create only the optimized logo-derived sizes and 1200 × 630 social preview required by the documented surfaces, remove the three React placeholder images, and replace the manifest's scaffold content.
-3. Add the decorative logo to the shared `BrandMark` component with explicit dimensions and responsive spacing so every existing wordmark consumer receives the same identity without semantic or navigation changes.
-4. Extend the root and index route head definitions with favicon, Apple touch icon, manifest, canonical, robots, Open Graph, Twitter, title, description, and theme metadata while keeping all asset URLs correct for both `/` and the GitHub Pages base path.
-5. Add the sitemap and crawl directives, make the prerendered landing page expose meaningful marketing content, and retain the post-hydration redirect for existing saved users.
-6. Add focused tests for wordmark semantics, metadata contents, indexability policy, prerendered landing behavior, manifest values, placeholder removal, and base-path-safe production output.
-7. Run the full repository checks and inspect the built HTML, assets, accessibility tree, browser network requests, and representative mobile and desktop brand surfaces.
+1. Step 1
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm exec tsc --noEmit` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] `VITE_BASE_PATH=/1000-pomodoros/ pnpm build` passes and built HTML/assets use the deployment base path
-- [x] `git diff --check` passes
-- [x] Focused tests cover `BrandMark` semantics, route-head metadata, and public install/crawl asset contracts; prerender/redirect behavior is covered by built HTML and browser evidence
-- [x] Built output contains the expected title, description, canonical, robots, favicon, manifest, Open Graph, Twitter, and sitemap values
-- [x] Built output and tracked sources contain no removed placeholder files, names, or references
-- [x] Landing, sample, desktop app navigation, focus, completion, onboarding, and milestone wordmarks are spot-checked in a real browser where their existing state makes them applicable
-- [x] The logo is verified at 320px and desktop widths for alignment, overflow, layout stability, and unchanged wordmark/link accessibility names
-- [x] Favicon, touch icon, manifest icons, social preview, and sitemap return successful responses under the Pages-style base path with no unintended host-root asset requests
-- [x] Prerendered `/` contains meaningful landing copy, local-state routes expose `noindex, follow`, and an existing saved user still redirects from `/` to `/home`
-- [x] No relevant browser console errors or warnings occur
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
 <!-- Decisions, blockers, and scope changes -->
-
-- The user supplied the untracked 1024 × 1024 RGBA `public/logo.png`; it remains the source artwork, now tightly cropped and resampled at 1024 × 1024 so the tomato fills the square canvas. Optimized derivatives use that same edge-to-edge artwork.
-- The current canonical URL is `https://hour1000-labs.github.io/1000-pomodoros/`, which is documented in the repository and returned HTTP 200 during loading on 2026-08-09. If a custom production domain is chosen later, canonical, Open Graph, sitemap, and robots URLs must be updated together.
-- The shared `BrandMark` already owns all sensible visible wordmark locations: landing, onboarding, desktop app navigation, sample navigation, focus, completion, and milestone screens. This feature does not add branding to intentionally hidden mobile navigation or unrelated body content.
-- The logo beside `1000 Pomodoros` is decorative (`alt=""`) because the adjacent text already supplies the accessible name. Existing link destinations and the exact accessible name remain unchanged.
-- Replace the manifest rather than deleting install metadata. `public/robots.txt` is generic but valid infrastructure, not a visual placeholder; update it only for the sitemap directive.
-- The default social preview will use the truthful 1,000-pomodoro product target rather than simulated personal achievements. It must follow `context/DESIGN.md`'s 1200 × 630, three-color, no-gradient share-card contract while incorporating the supplied logo.
-- `WebSite` site-name rich-result markup is excluded because Google does not support site names for a project deployed below a hostname subdirectory. `SoftwareApplication` rich-result markup is excluded because its rating/review requirements cannot be met without fabricating evidence. These exclusions do not prevent ordinary title, description, canonical, favicon, Open Graph, Twitter, or sitemap support.
-- This feature does not rename `1000 Pomodoros`, change focus-timer title behavior, alter persistence/export identifiers, add analytics or Search Console integration, introduce dependencies, or redesign the surrounding layouts.
-- No pending decision in `context/decisions.md` blocks the loaded scope. The current product name and live Pages URL are treated as the active public identity for this feature.
-- Preserve unrelated untracked `.playwright-cli/` and `.playwright-mcp/` artifacts.
-- Initial `pnpm check` found only formatter/import-order issues in the new head and test files; localized formatter-equivalent fixes were applied and `pnpm check` passed on rerun. No runtime behavior changed in that remediation.
-- Verification evidence: `pnpm check`, `pnpm exec tsc --noEmit`, focused logo/site tests (2 files, 5 tests), `pnpm test` (30 files, 328 tests), default `pnpm build` (12 prerendered pages), Pages-base `VITE_BASE_PATH=/1000-pomodoros/ pnpm build` (17 prerendered paths), and `git diff --check` passed. Vitest emitted its existing jsdom `window.scrollTo()` not-implemented notices but no test failed.
-- Browser evidence: landing at 1280×800 and 320×568, sample and onboarding/app-navigation states, exact `1000 Pomodoros` linked accessible name, decorative logo attributes, no horizontal overflow, correct title/head metadata, saved-user `/` → `/home` redirect, and zero browser console errors or warnings passed. A Pages-style static fixture returned HTTP 200 for every branded icon, logo, social image, manifest, robots, and sitemap asset under `/1000-pomodoros/`.
-- Feature test rerun on 2026-08-09: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (30 files, 328 tests), default `pnpm build` (12 prerendered pages), `VITE_BASE_PATH=/1000-pomodoros/ pnpm build` (17 prerendered paths), and `git diff --check` passed. Direct browser spot-checks for focus setup, completion, onboarding, and milestone fallback confirmed the shared `/brand-mark.png` image, decorative semantics, explicit 32×32 dimensions, no horizontal overflow, and zero console errors or warnings.
-- Review evidence correction: the focused tests now directly cover `BrandMark` semantics, route-head metadata, and install/crawl asset contracts; prerender/redirect behavior and base-path output remain verified through built HTML, asset audits, and browser checks.
-- User-requested asset remediation on 2026-08-09: the supplied logo was tightly cropped to a square tomato mark, preserved at 1024 × 1024, and regenerated into the 96, 64, 180, 192, and 512 pixel square assets. An alpha-bound audit confirmed every square asset reaches all four canvas edges; the 1200 × 630 social card remains intentionally rectangular.
-- Follow-up asset correction: the first edge-to-edge crop clipped the tomato outline horizontally, so the square source was regenerated from the complete tomato bounds with a non-clipping fit; all square assets now retain the full left and right outline while still touching the canvas edges.
-- Remediation classification: localized visual asset change with shared BrandMark impact. Focused tests, `pnpm check`, the production build, base-path build, and browser logo/overflow checks were rerun after regeneration; prior unaffected persistence and full-suite evidence remains valid.
-- The first post-remediation base-path build hit a temporary prerender fetch timeout against its local server; an immediate rerun completed successfully with 17 prerendered paths.
-- The post-remediation Pages-style fixture audit returned HTTP 200 for the regenerated square assets, social image, manifest, robots, and sitemap beneath `/1000-pomodoros/`.
-- The generated Pages-style output and static fixture provide the pre-publication robots/sitemap evidence required by criterion 12. The live GitHub Pages URL remains an explicit post-publication smoke check because the deployment workflow runs from `main`, which this completion action publishes.
 
 ## History
 
@@ -310,3 +259,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/timer-tab-countdown-and-completion-sound`
 - Summary: Added timestamp-synced `/focus` tab countdown titles, accessible running and paused mute controls, and a brief guarded Web Audio completion chime for successful natural timer completion.
 - Verification: `pnpm check`, `pnpm test` (28 files, 323 tests), `pnpm build` (client, SSR, and 12 prerendered pages), `git diff --check`, and browser checks for title lifecycle, responsive layouts, keyboard focus, 44-by-44 control sizing, muted and unmuted completion paths, and zero browser console errors/warnings passed. Real Chromium created one audio context for unmuted completion and none for same-visit muted completion; the user accepted this browser audio-graph evidence as sufficient.
+
+### 2026-08-09 — Product Logo and Search Identity
+
+- Branch: `codex/feature/product-logo-and-search-identity`
+- Summary: Added the supplied tomato logo across shared wordmarks, browser/install assets, manifest, social metadata, crawl directives, and the public landing-page identity while removing scaffold placeholders.
+- Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (30 files, 328 tests), focused logo/site tests (2 files, 5 tests), default and Pages-base `pnpm build`, `git diff --check`, asset alpha-bound and dimensions audits, Pages-style fixture HTTP 200 checks, and desktop/mobile browser checks with no overflow or console errors passed. Live Pages smoke verification remains post-publication follow-up.
