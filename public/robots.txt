@@ -1,3 +1,5 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
+Allow: /
 Disallow:
+
+Sitemap: https://hour1000-labs.github.io/1000-pomodoros/sitemap.xml
