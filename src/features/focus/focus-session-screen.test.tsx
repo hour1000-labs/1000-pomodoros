@@ -13,6 +13,7 @@ import {
   createFocusSessionRecords,
   getCustomDurationError,
   resolveFocusSelection,
+  resolveRememberedDuration,
   SelectionDialog,
 } from './focus-session-screen';
 
@@ -85,6 +86,22 @@ function createSecondJourney() {
   return { journey, currentNextStep, upcomingNextStep };
 }
 
+function createTimerSession(overrides: Partial<FocusSession> = {}): FocusSession {
+  return {
+    id: 'session-remembered-duration',
+    journeyId: 'journey-learn-guitar',
+    nextStepId: 'next-step-f-chord',
+    plannedMinutes: 25,
+    focusedMinutes: 25,
+    status: 'completed',
+    source: 'timer',
+    startedAt: '2026-07-15T18:00:00.000Z',
+    endedAt: '2026-07-15T18:25:00.000Z',
+    reflection: '',
+    ...overrides,
+  };
+}
+
 function createRunningState({
   accumulatedFocusedSeconds = 0,
   remainingSeconds = 1_500,
@@ -143,6 +160,58 @@ function createPausedState({
 }
 
 describe('Timer Setup', () => {
+  it('resolves the latest valid timer duration per Journey and defaults to 25 minutes', () => {
+    const state = createSeedAppState();
+    state.focusSessions = [
+      createTimerSession({
+        id: 'session-older',
+        plannedMinutes: 50,
+        startedAt: '2026-07-15T18:00:00.000Z',
+      }),
+      createTimerSession({
+        id: 'session-custom',
+        plannedMinutes: 37,
+        startedAt: '2026-07-15T19:00:00.000Z',
+      }),
+      createTimerSession({
+        id: 'session-invalid',
+        plannedMinutes: 241,
+        startedAt: '2026-07-15T20:00:00.000Z',
+      }),
+      createTimerSession({
+        id: 'session-manual',
+        plannedMinutes: 90,
+        source: 'manual',
+        startedAt: '2026-07-15T21:00:00.000Z',
+      }),
+    ];
+
+    expect(resolveRememberedDuration(state, 'journey-learn-guitar')).toEqual({
+      choice: 'custom',
+      customMinutes: '37',
+    });
+    expect(resolveRememberedDuration(state, 'journey-without-history')).toEqual({
+      choice: '25',
+      customMinutes: '',
+    });
+  });
+
+  it.each([
+    'running',
+    'paused',
+    'completed',
+    'cancelled',
+  ] as const)('keeps a valid timer duration remembered while the session is %s', (status) => {
+    const state = createSeedAppState();
+
+    state.focusSessions = [createTimerSession({ plannedMinutes: 37, status })];
+
+    expect(resolveRememberedDuration(state, 'journey-learn-guitar')).toEqual({
+      choice: 'custom',
+      customMinutes: '37',
+    });
+  });
+
   it('renders the distraction-free ready state with the latest Journey and 25 minutes selected', async () => {
     await renderFocus(createSeedAppState());
 
@@ -162,6 +231,186 @@ describe('Timer Setup', () => {
       screen.getByRole('button', { name: 'Change Next step' }).getAttribute('aria-haspopup')
     ).toBe('dialog');
     expect(screen.queryByRole('navigation')).toBeNull();
+  });
+
+  it.each([
+    { plannedMinutes: 25, choice: /25/, customMinutes: null },
+    { plannedMinutes: 50, choice: /50/, customMinutes: null },
+    { plannedMinutes: 37, choice: /Custom/, customMinutes: '37' },
+  ])('restores a prior $plannedMinutes-minute timer choice for the selected Journey', async ({
+    plannedMinutes,
+    choice,
+    customMinutes,
+  }) => {
+    const state = createSeedAppState(new Date('2026-07-01T00:00:00.000Z'));
+    state.focusSessions.push(
+      createTimerSession({
+        plannedMinutes,
+        startedAt: '2026-07-16T18:00:00.000Z',
+      })
+    );
+
+    await renderFocus(state);
+
+    expect((await screen.findByRole('radio', { name: choice })) as HTMLInputElement).toHaveProperty(
+      'checked',
+      true
+    );
+    if (customMinutes === null) {
+      expect(screen.queryByRole('spinbutton', { name: 'Minutes' })).toBeNull();
+    } else {
+      expect(screen.getByRole('spinbutton', { name: 'Minutes' })).toHaveProperty(
+        'value',
+        customMinutes
+      );
+    }
+    expect(
+      screen.getByText(new RegExp(`This session adds ${plannedMinutes} focused minutes`))
+    ).toBeTruthy();
+  });
+
+  it('keeps each Journey duration independent and preserves a choice when only the Next step changes', async () => {
+    const state = createSeedAppState(new Date('2026-07-01T00:00:00.000Z'));
+    const second = createSecondJourney();
+    const firstUpcomingNextStep = state.nextSteps.find(
+      ({ journeyId, status }) => journeyId === 'journey-learn-guitar' && status === 'upcoming'
+    );
+    if (!firstUpcomingNextStep) throw new Error('Expected an upcoming Learn guitar Next step');
+
+    state.journeys.push(second.journey);
+    state.nextSteps.push(second.currentNextStep, second.upcomingNextStep);
+    state.focusSessions.push(
+      createTimerSession({
+        plannedMinutes: 50,
+        startedAt: '2026-07-16T18:00:00.000Z',
+      }),
+      createTimerSession({
+        id: 'session-second-custom',
+        journeyId: second.journey.id,
+        nextStepId: second.currentNextStep.id,
+        plannedMinutes: 35,
+        startedAt: '2026-07-16T18:00:00.000Z',
+      })
+    );
+
+    const router = await renderFocus(state);
+    fireEvent.click(await screen.findByRole('radio', { name: /Custom/ }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Minutes' }), {
+      target: { value: '40' },
+    });
+
+    await router.navigate({
+      replace: true,
+      to: '/focus',
+      search: {
+        journeyId: 'journey-learn-guitar',
+        nextStepId: firstUpcomingNextStep.id,
+      },
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('spinbutton', { name: 'Minutes' })).toHaveProperty('value', '40');
+    });
+
+    await router.navigate({
+      replace: true,
+      to: '/focus',
+      search: {
+        journeyId: second.journey.id,
+        nextStepId: second.currentNextStep.id,
+      },
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('spinbutton', { name: 'Minutes' })).toHaveProperty('value', '35');
+    });
+
+    await router.navigate({
+      replace: true,
+      to: '/focus',
+      search: {
+        journeyId: 'journey-learn-guitar',
+        nextStepId: firstUpcomingNextStep.id,
+      },
+    });
+    await waitFor(() => {
+      expect((screen.getByRole('radio', { name: /50/ }) as HTMLInputElement).checked).toBe(true);
+    });
+  });
+
+  it('uses the restored Custom duration for the next persisted timer session', async () => {
+    const state = createSeedAppState(new Date('2026-07-01T00:00:00.000Z'));
+    state.focusSessions.push(
+      createTimerSession({
+        plannedMinutes: 37,
+        startedAt: '2026-07-16T18:00:00.000Z',
+      })
+    );
+
+    await renderFocus(state);
+    fireEvent.click(await screen.findByRole('button', { name: 'Start focus session' }));
+
+    expect(await screen.findByRole('heading', { name: '37:00' })).toBeTruthy();
+    const saved = readSavedState();
+    const activeSession = saved.focusSessions.find(({ id }) => id === saved.activeTimer?.sessionId);
+    expect(activeSession).toMatchObject({
+      plannedMinutes: 37,
+      journeyId: 'journey-learn-guitar',
+      source: 'timer',
+      status: 'running',
+    });
+  });
+
+  it('restores the remembered duration when focus setup is revisited', async () => {
+    const state = createSeedAppState(new Date('2026-07-01T00:00:00.000Z'));
+    state.focusSessions.push(
+      createTimerSession({
+        plannedMinutes: 50,
+        startedAt: '2026-07-16T18:00:00.000Z',
+      })
+    );
+
+    await renderFocus(state);
+    expect((await screen.findByRole('radio', { name: /50/ })) as HTMLInputElement).toHaveProperty(
+      'checked',
+      true
+    );
+
+    cleanup();
+    await renderFocus(readSavedState());
+    expect((await screen.findByRole('radio', { name: /50/ })) as HTMLInputElement).toHaveProperty(
+      'checked',
+      true
+    );
+  });
+
+  it('does not replace the remembered duration when a new start fails to persist', async () => {
+    const state = createSeedAppState(new Date('2026-07-01T00:00:00.000Z'));
+    state.focusSessions.push(
+      createTimerSession({
+        id: 'session-remembered-50',
+        plannedMinutes: 50,
+        startedAt: '2026-07-16T18:00:00.000Z',
+      })
+    );
+    vi.spyOn(appRepository, 'startFocusSession').mockReturnValue({
+      status: 'unavailable',
+      state: null,
+    });
+
+    await renderFocus(state);
+    fireEvent.click(await screen.findByRole('radio', { name: /Custom/ }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Minutes' }), {
+      target: { value: '40' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Start focus session' }));
+
+    expect(await screen.findByRole('alert')).toHaveProperty(
+      'textContent',
+      "We couldn't start your focus session. Nothing was recorded. Try again."
+    );
+    expect(resolveRememberedDuration(readSavedState(), 'journey-learn-guitar')).toEqual({
+      choice: '50',
+      customMinutes: '',
+    });
   });
 
   it('prefers valid route search selections and falls back from invalid IDs', async () => {

@@ -101,6 +101,39 @@ export function getCustomDurationError(value: string) {
   return null;
 }
 
+export interface RememberedDuration {
+  choice: DurationChoice;
+  customMinutes: string;
+}
+
+function isValidRememberedDuration(minutes: number) {
+  return (
+    Number.isInteger(minutes) && minutes >= MIN_CUSTOM_MINUTES && minutes <= MAX_CUSTOM_MINUTES
+  );
+}
+
+export function resolveRememberedDuration(state: AppState, journeyId: string): RememberedDuration {
+  const latestTimerSession = [...state.focusSessions]
+    .filter(
+      (session) =>
+        session.journeyId === journeyId &&
+        session.source === 'timer' &&
+        isValidRememberedDuration(session.plannedMinutes)
+    )
+    .sort((left, right) => right.startedAt.localeCompare(left.startedAt))[0];
+  const minutes = latestTimerSession?.plannedMinutes ?? MINUTES_PER_POMODORO;
+
+  if (minutes === 25) {
+    return { choice: '25', customMinutes: '' };
+  }
+
+  if (minutes === 50) {
+    return { choice: '50', customMinutes: '' };
+  }
+
+  return { choice: 'custom', customMinutes: String(minutes) };
+}
+
 export function createFocusSessionRecords({
   journeyId,
   nextStepId,
@@ -776,16 +809,32 @@ function TimerSetup({
   const navigate = useNavigate({ from: '/focus/' });
   const startInFlight = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const [durationChoice, setDurationChoice] = useState<DurationChoice>('25');
-  const [customMinutes, setCustomMinutes] = useState('');
+  const selection = resolveFocusSelection(state, search);
+  const initialDuration: RememberedDuration = selection
+    ? resolveRememberedDuration(state, selection.journey.id)
+    : { choice: '25', customMinutes: '' };
+  const [durationChoice, setDurationChoice] = useState<DurationChoice>(initialDuration.choice);
+  const [customMinutes, setCustomMinutes] = useState(initialDuration.customMinutes);
   const [customTouched, setCustomTouched] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const selection = resolveFocusSelection(state, search);
+  const selectedJourneyId = selection?.journey.id ?? null;
+  const previousJourneyId = useRef(selectedJourneyId);
 
   useEffect(() => {
     if (announcement) headingRef.current?.focus();
   }, [announcement]);
+
+  useEffect(() => {
+    if (selectedJourneyId === null || previousJourneyId.current === selectedJourneyId) return;
+
+    previousJourneyId.current = selectedJourneyId;
+    const rememberedDuration = resolveRememberedDuration(state, selectedJourneyId);
+    setDurationChoice(rememberedDuration.choice);
+    setCustomMinutes(rememberedDuration.customMinutes);
+    setCustomTouched(false);
+    setSaveError(null);
+  }, [selectedJourneyId, state]);
 
   if (!selection) return <Navigate to="/onboarding/journey" replace />;
 
