@@ -1,4 +1,13 @@
-import { ArrowDown, ArrowUp, Check, Ellipsis, GripVertical, ListStart, Trash2 } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  Ellipsis,
+  GripVertical,
+  ListStart,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import { type KeyboardEvent, type PointerEvent, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -32,6 +41,7 @@ export function JourneyDetailUpcomingStepRow({
   onMove,
   onMakeCurrent,
   onComplete,
+  onRequestEdit,
   onRequestDelete,
   onMenuCloseAutoFocus,
   registerHandle,
@@ -56,6 +66,7 @@ export function JourneyDetailUpcomingStepRow({
   onMove: (direction: -1 | 1) => void;
   onMakeCurrent: () => void;
   onComplete: () => void;
+  onRequestEdit: (returnFocus: HTMLButtonElement | null) => void;
   onRequestDelete: (returnFocus: HTMLButtonElement | null) => void;
   onMenuCloseAutoFocus: (event: Event) => void;
   registerHandle: (element: HTMLButtonElement | null) => void;
@@ -131,6 +142,10 @@ export function JourneyDetailUpcomingStepRow({
           <DropdownMenuItem onSelect={onComplete}>
             <Check aria-hidden="true" />
             Mark complete
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onRequestEdit(menuTriggerRef.current)}>
+            <Pencil aria-hidden="true" />
+            Edit name
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem disabled={index === 0} onSelect={() => onMove(-1)}>

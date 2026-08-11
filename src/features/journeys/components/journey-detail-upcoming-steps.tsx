@@ -21,6 +21,7 @@ import {
 import type { NextStep } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
 
+import { JourneyDetailEditNameDialog } from './journey-detail-edit-name-dialog';
 import { JourneyDetailUpcomingStepRow } from './journey-detail-upcoming-step-row';
 
 type Feedback = { kind: 'error' | 'success'; message: string };
@@ -46,6 +47,7 @@ type BlockingState = {
   step: NextStep;
 };
 type DeleteState = { step: NextStep };
+type EditState = { step: NextStep; returnFocus: HTMLButtonElement | null };
 type SettlingState = {
   offsets: ReadonlyMap<string, number>;
   phase: 'inverted' | 'settling';
@@ -260,6 +262,7 @@ export function JourneyDetailUpcomingSteps({
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [busyStepId, setBusyStepId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [editState, setEditState] = useState<EditState | null>(null);
   const [feedbackVersion, setFeedbackVersion] = useState(0);
   const [announcement, setAnnouncement] = useState('');
   const [announcementVersion, setAnnouncementVersion] = useState(0);
@@ -895,6 +898,10 @@ export function JourneyDetailUpcomingSteps({
     setDeleteState({ step });
   }
 
+  function requestEdit(step: NextStep, returnFocus: HTMLButtonElement | null) {
+    setEditState({ step, returnFocus });
+  }
+
   function handleDelete() {
     if (deleteState === null || actionInFlight.current) return;
     const { step } = deleteState;
@@ -997,6 +1004,7 @@ export function JourneyDetailUpcomingSteps({
                 onComplete={() =>
                   handleComplete(step, menuTriggerRefs.current.get(step.id) ?? null)
                 }
+                onRequestEdit={(returnFocus) => requestEdit(step, returnFocus)}
                 onRequestDelete={(returnFocus) => requestDelete(step, returnFocus)}
                 onMenuCloseAutoFocus={handleMenuCloseAutoFocus}
                 registerHandle={(element) => setHandleRef(step.id, element)}
@@ -1081,6 +1089,21 @@ export function JourneyDetailUpcomingSteps({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <JourneyDetailEditNameDialog
+        kind="next-step"
+        value={
+          editState === null
+            ? ''
+            : (stepsById.get(editState.step.id)?.title ?? editState.step.title)
+        }
+        open={editState !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditState(null);
+        }}
+        onSave={(title) => appRepository.renameNextStep(journeyId, editState?.step.id ?? '', title)}
+        getReturnFocus={() => editState?.returnFocus ?? null}
+      />
     </>
   );
 }

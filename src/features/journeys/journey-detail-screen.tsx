@@ -1,15 +1,24 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowLeft, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Ellipsis, Pencil, Plus } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 import { EmptyState } from '@/components/shared/empty-state';
 import { PrimaryButton } from '@/components/shared/primary-button';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { deriveJourneyDetailData } from '@/features/journeys/journey-detail-data';
 import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import type { AppState, NextStep } from '@/lib/models';
+import { appRepository } from '@/lib/repository';
 
 import { ApplicationLayout } from './components/application-layout';
 import { ApplicationStateBoundary } from './components/application-state-boundary';
+import { JourneyDetailEditNameDialog } from './components/journey-detail-edit-name-dialog';
 import {
   JourneyDetailCurrentStep,
   JourneyDetailNextSteps,
@@ -64,6 +73,8 @@ function JourneyContent({
   showNavigationItems?: boolean;
 }) {
   const [addOpen, setAddOpen] = useState(false);
+  const [journeyNameEditOpen, setJourneyNameEditOpen] = useState(false);
+  const journeyNameMenuTriggerRef = useRef<HTMLButtonElement>(null);
   const detail = deriveJourneyDetailData(state, journeyId);
 
   if (!detail) return <JourneyNotFoundState />;
@@ -105,9 +116,33 @@ function JourneyContent({
       <header className="border-ink/15 border-b pb-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
-            <h1 className="mb-3 max-w-[18ch] font-bold text-5xl leading-[1.02] tracking-[-0.045em] [overflow-wrap:anywhere] sm:text-6xl">
-              {journey.name}
-            </h1>
+            <div className="flex min-w-0 items-start gap-2">
+              <h1 className="mb-0 min-w-0 max-w-[18ch] flex-1 font-bold text-5xl leading-[1.02] tracking-[-0.045em] [overflow-wrap:anywhere] sm:text-6xl">
+                {journey.name}
+              </h1>
+              {!readOnly ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      ref={journeyNameMenuTriggerRef}
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="mt-1 shrink-0"
+                      aria-label={`Journey actions for ${journey.name}`}
+                    >
+                      <Ellipsis aria-hidden="true" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setJourneyNameEditOpen(true)}>
+                      <Pencil aria-hidden="true" />
+                      Edit name
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
+            </div>
             {journey.reason ? (
               <p className="mb-0 max-w-[60ch] text-ink/60 leading-relaxed">{journey.reason}</p>
             ) : null}
@@ -182,6 +217,17 @@ function JourneyContent({
         />
         <JourneyDetailRecentSessions sessions={detail.recentSessions} />
       </section>
+
+      {!readOnly ? (
+        <JourneyDetailEditNameDialog
+          kind="journey"
+          value={journey.name}
+          open={journeyNameEditOpen}
+          onOpenChange={setJourneyNameEditOpen}
+          onSave={(name) => appRepository.renameJourney(journey.id, name)}
+          getReturnFocus={() => journeyNameMenuTriggerRef.current}
+        />
+      ) : null}
     </ApplicationLayout>
   );
 }

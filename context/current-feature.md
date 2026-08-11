@@ -1,42 +1,68 @@
-# Current Feature: <feature name>
+# Current Feature: Edit Journey and Next Step Names
 
-<!-- One-sentence description of the feature or fix -->
+Allow users to rename a saved Journey and its current or upcoming Next steps from the Journey Detail experience.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Not Started
+Ready to Commit
 
 ## Goal
 
-<!-- User-visible outcome of the feature -->
+Users can keep their Journey and Next step labels accurate as their work evolves without recreating saved data or losing progress.
 
 
 ## Acceptance Criteria
 
-<!-- Checklist of testable outcomes -->
-
-- [ ] Criterion 1
+- [x] A saved, writable Journey Detail view offers an accessible edit action for the Journey name, with the existing name prefilled.
+- [x] Saving a valid Journey name trims surrounding whitespace, persists the renamed Journey, and updates the visible Journey name without changing its ID, progress, target, status, timestamps, or related records.
+- [x] Journey-name editing rejects an empty trimmed value and values longer than the existing 80-character Journey-name limit, keeps the edit recoverable, and communicates the validation error accessibly.
+- [x] The current Next step and each upcoming Next step in a writable Journey Detail view offer an accessible edit action, with the existing title prefilled.
+- [x] Saving a valid Next step name trims surrounding whitespace, persists the renamed step, and preserves its ID, Journey ownership, status, position, completion metadata, and focus-session references.
+- [x] Next-step-name editing uses the existing one-to-120-character validation contract, keeps invalid edits unsaved, and communicates validation errors accessibly.
+- [x] Canceling either edit leaves the saved value unchanged; persistence failure leaves the prior value intact, keeps the entered value recoverable, and reports an actionable error.
+- [x] Renamed values are reflected by other existing state-driven Journey and focus surfaces after persistence, and editing does not alter ordering, completion behavior, timer state, or progress.
+- [x] Read-only sample Journey content has no rename controls and remains unchanged.
 
 ## Plan
 
-<!-- Implementation steps -->
-
-1. Step 1
+1. Inspect the existing Journey Detail edit/dialog and repository patterns, then centralize or reuse the Journey-name validation contract alongside the existing Next-step validation.
+2. Add persistence operations for renaming a Journey and a Next step while preserving all unrelated fields and repository notification/error behavior.
+3. Add accessible rename controls and prefilled forms to the Journey Detail header, current-step surface, and upcoming-step rows, including validation, cancel, save, and recoverable failure states while preserving read-only behavior.
+4. Add repository and Journey Detail coverage for successful saves, trimming, validation boundaries, cancellation, persistence failures, field preservation, and read-only content.
+5. Verify state-driven updates and responsive behavior in the existing Journey, Home/collection, and focus flows at desktop and narrow mobile widths.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm exec tsc --noEmit` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] `git diff --check` passes
+- [x] Affected UI verified in the browser, if applicable
+- [x] Mobile and desktop verified, if responsive UI changed
+- [x] No relevant console errors
+- [x] Journey and Next step rename success, cancel, validation, persistence failure, and read-only cases are verified
 
 ## Notes
 
 <!-- Decisions, blockers, and scope changes -->
+
+- Scope is limited to the existing Journey Detail surfaces: the saved Journey name, the current Next step, and upcoming Next steps.
+- Completed and skipped Next-step history is not currently exposed as an editable surface and is excluded from this feature.
+- The read-only `/sample` Journey remains intentionally unchanged.
+- Reuse the current Journey-name limit of 80 characters and the existing Next-step limit of 120 characters; do not change either contract as part of this feature.
+- No pending decision materially affects this feature.
+- `pnpm check`, `pnpm test` (30 files, 335 tests), `pnpm build`, and browser checks for desktop, 320x568 mobile, persistence after reload, Home, Journeys, and read-only `/sample` passed; browser checks reported no console errors.
+- The existing `src/lib/site.test.ts` metadata assertions now await TanStack's `Awaitable` head results; this is a test-only, proven non-semantic gate remediation with no product-scope change.
+- Follow-up UX refinement moved Journey and current Next-step rename actions into accessible icon-only overflow menus, matching the existing upcoming-step menus; the mobile browser pass confirmed the compact layout and menu actions.
+- Feature test reran the baseline scripts: `pnpm check` passed for 135 files, `pnpm test` passed with 30 files and 335 tests, `pnpm build` passed with 12 prerendered pages, and `git diff --check` passed. A concurrent build attempt had a transient local prerender fetch collision; the sequential rerun passed.
+- The state-driven cross-surface criterion was initially left unchecked pending direct Focus-surface evidence; that evidence is now recorded below.
+- Review found no concrete code, accessibility, regression, scope, or dependency findings in the complete tracked and untracked feature diff.
+- Criterion 8 was verified in the browser after persisted renames: Journey Detail reload, Home, Journeys, and Focus setup reflected the renamed Journey/current Next step; the Journey retained 43 Pomodoros, the upcoming order remained positions 1 and 2, the timer remained ready to start before and after, and no browser console errors or warnings were recorded.
+- The TypeScript remediation passed `pnpm exec tsc --noEmit`, the focused `src/lib/site.test.ts` suite (4 tests), and `git diff --check`; prior full test, build, and browser evidence remains applicable because only test async handling changed.
+- Final review: every acceptance criterion and verification item is checked, the test-only remediation is classified as proven non-semantic with required revalidation, and no blocking findings remain. The feature is `Ready to Commit`.
 
 ## History
 

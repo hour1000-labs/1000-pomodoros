@@ -1,4 +1,4 @@
-import { Check, Plus } from 'lucide-react';
+import { Check, Ellipsis, Pencil, Plus } from 'lucide-react';
 import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { PrimaryButton } from '@/components/shared/primary-button';
@@ -12,12 +12,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import type { NextStep } from '@/lib/models';
 import { getNextStepError, NEXT_STEP_MAX_LENGTH } from '@/lib/next-step';
 import { appRepository } from '@/lib/repository';
 
 import { JourneyDetailDialog } from './journey-detail-dialog';
+import { JourneyDetailEditNameDialog } from './journey-detail-edit-name-dialog';
 import { JourneyDetailUpcomingSteps } from './journey-detail-upcoming-steps';
 
 function createNextStepIdentity() {
@@ -230,9 +237,11 @@ export function JourneyDetailCurrentStep({
   const [isCompleting, setIsCompleting] = useState(false);
   const [completeError, setCompleteError] = useState<string | null>(null);
   const [sessionBlockerOpen, setSessionBlockerOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const completionInFlight = useRef(false);
   const activeStepId = useRef(currentStep?.id);
   const completeButtonRef = useRef<HTMLButtonElement>(null);
+  const editMenuTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (activeStepId.current === currentStep?.id) return;
@@ -276,9 +285,33 @@ export function JourneyDetailCurrentStep({
       <p className="mb-3 font-bold text-ink/60 text-sm">Next step</p>
       {currentStep ? (
         <>
-          <h2 className="mb-3 font-bold text-2xl leading-tight tracking-[-0.025em] [overflow-wrap:anywhere]">
-            {currentStep.title}
-          </h2>
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <h2 className="mb-0 min-w-0 font-bold text-2xl leading-tight tracking-[-0.025em] [overflow-wrap:anywhere]">
+              {currentStep.title}
+            </h2>
+            {!readOnly ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    ref={editMenuTriggerRef}
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="shrink-0"
+                    aria-label={`Next step actions for ${currentStep.title}`}
+                  >
+                    <Ellipsis aria-hidden="true" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onSelect={() => setEditOpen(true)}>
+                    <Pencil aria-hidden="true" />
+                    Edit name
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+          </div>
           <p className="mb-5 text-ink/60 text-sm">
             {readOnly
               ? 'This is a sample Journey. Create your own Journey to start focusing.'
@@ -351,6 +384,17 @@ export function JourneyDetailCurrentStep({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {!readOnly ? (
+        <JourneyDetailEditNameDialog
+          kind="next-step"
+          value={currentStep?.title ?? ''}
+          open={editOpen && currentStep !== null}
+          onOpenChange={setEditOpen}
+          onSave={(title) => appRepository.renameNextStep(journeyId, currentStep?.id ?? '', title)}
+          getReturnFocus={() => editMenuTriggerRef.current}
+        />
+      ) : null}
     </aside>
   );
 }

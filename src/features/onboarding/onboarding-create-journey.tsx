@@ -9,27 +9,14 @@ import { RecoverableErrorState } from '@/components/shared/recoverable-error-sta
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppState } from '@/hooks/use-app-state';
+import { getJourneyNameError } from '@/lib/journey-name';
 import type { AppState, OnboardingDraft } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
 
 import { OnboardingLayout } from './components/onboarding-layout';
 
-const JOURNEY_NAME_MAX_LENGTH = 80;
 const DEFAULT_TARGET_MINUTES = 1_000 * 60;
 const journeyExamples = ['Learn Spanish', 'Build my portfolio', 'Improve at chess'];
-function getJourneyNameError(value: string) {
-  const trimmedValue = value.trim();
-
-  if (trimmedValue.length === 0) {
-    return 'Enter a Journey name to continue.';
-  }
-
-  if (trimmedValue.length > JOURNEY_NAME_MAX_LENGTH) {
-    return `Journey name must be ${JOURNEY_NAME_MAX_LENGTH} characters or fewer.`;
-  }
-
-  return null;
-}
 
 function JourneyForm({ state, startFresh }: { state: AppState; startFresh: boolean }) {
   const savedDraft = startFresh ? null : state.onboardingDraft;

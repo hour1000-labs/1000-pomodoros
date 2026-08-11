@@ -28,9 +28,9 @@ describe('site identity', () => {
     expect(getPublicAssetPath('manifest.json')).toBe('/manifest.json');
   });
 
-  it('keeps landing metadata indexable and app routes private by default', () => {
-    const landingHead = IndexRoute.options.head?.({} as never);
-    const rootHead = RootRoute.options.head?.({} as never);
+  it('keeps landing metadata indexable and app routes private by default', async () => {
+    const landingHead = await IndexRoute.options.head?.({} as never);
+    const rootHead = await RootRoute.options.head?.({} as never);
 
     expect(landingHead?.meta).toEqual(
       expect.arrayContaining([

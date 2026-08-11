@@ -42,6 +42,8 @@ describe('SampleJourneyScreen', () => {
     expect(screen.getByRole('link', { name: '1000 Pomodoros' })).toBeTruthy();
     expect(screen.queryByRole('link', { name: /Start 25:00/ })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Mark complete' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Journey actions for / })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Next step actions for / })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Add Next step' })).toBeNull();
     expect(screen.queryByRole('button', { name: /^Reorder / })).toBeNull();
     expect(screen.queryByRole('button', { name: /^More actions for / })).toBeNull();

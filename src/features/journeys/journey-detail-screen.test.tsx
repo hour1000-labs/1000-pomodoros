@@ -94,15 +94,16 @@ function mockUpcomingListGeometry(list: HTMLElement, rowHeight = 80) {
   }
 }
 
-function openNextStepMenu(title: string) {
-  const trigger = Array.from(
-    document.querySelectorAll<HTMLButtonElement>('button[aria-label^="More actions for"]')
-  ).find((button) => button.getAttribute('aria-label') === `More actions for ${title}`);
-  if (trigger === undefined) throw new Error(`Expected an action menu trigger for ${title}`);
+function openDropdownMenu(label: string) {
+  const trigger = screen.getByRole('button', { name: label });
   fireEvent.keyDown(trigger, { key: 'Enter' });
   const menu = document.querySelector<HTMLElement>('[role="menu"]');
-  if (menu === null) throw new Error('Expected the Next step action menu to open');
-  return menu;
+  if (menu === null) throw new Error(`Expected the ${label} menu to open`);
+  return { menu, trigger };
+}
+
+function openNextStepMenu(title: string) {
+  return openDropdownMenu(`More actions for ${title}`).menu;
 }
 
 function getUpcomingAnnouncement() {
@@ -383,6 +384,125 @@ describe('JourneyDetailScreen', () => {
     ).toBeTruthy();
     expect(within(dialog).getAllByText('Added manually').length).toBeGreaterThan(0);
     expect(block.getAttribute('data-fill-percent')).toBe('100');
+  });
+
+  it('renames a Journey and its current Next step with trimmed values', async () => {
+    await renderJourney(createSeedAppState());
+
+    let menu = openDropdownMenu('Journey actions for Learn guitar').menu;
+    fireEvent.click(within(menu).getByRole('menuitem', { name: 'Edit name' }));
+    let dialog = screen.getByRole('dialog', { name: 'Edit Journey name' });
+    const journeyInput = within(dialog).getByLabelText<HTMLInputElement>('Journey name');
+    expect(journeyInput.value).toBe('Learn guitar');
+    fireEvent.change(journeyInput, { target: { value: '  Practice guitar  ' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save name' }));
+
+    await waitFor(() => {
+      expect(readSavedState().journeys[0]?.name).toBe('Practice guitar');
+    });
+    expect(screen.getByRole('heading', { level: 1, name: 'Practice guitar' })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Journey actions for Practice guitar' })
+    ).toBeTruthy();
+
+    menu = openDropdownMenu('Next step actions for Practice the F chord transition').menu;
+    fireEvent.click(within(menu).getByRole('menuitem', { name: 'Edit name' }));
+    dialog = screen.getByRole('dialog', { name: 'Edit Next step name' });
+    const nextStepInput = within(dialog).getByLabelText<HTMLInputElement>('Next step');
+    expect(nextStepInput.value).toBe('Practice the F chord transition');
+    fireEvent.change(nextStepInput, { target: { value: '  Practice the F shape  ' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save name' }));
+
+    await waitFor(() => {
+      expect(
+        readSavedState().nextSteps.find(({ id }) => id === LEARN_GUITAR_CURRENT_STEP_ID)
+      ).toMatchObject({
+        title: 'Practice the F shape',
+        status: 'current',
+        position: 5,
+      });
+    });
+    expect(screen.getByRole('heading', { name: 'Practice the F shape' })).toBeTruthy();
+  });
+
+  it('renames an upcoming Next step from its action menu and restores menu focus', async () => {
+    await renderJourney(createSeedAppState());
+    const originalTitle = 'Practice the verse strumming pattern';
+    const trigger = screen.getByRole('button', { name: `More actions for ${originalTitle}` });
+    const menu = openNextStepMenu(originalTitle);
+
+    fireEvent.click(within(menu).getByRole('menuitem', { name: 'Edit name' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Edit Next step name' });
+    fireEvent.change(within(dialog).getByLabelText('Next step'), {
+      target: { value: 'Review the verse rhythm' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save name' }));
+
+    await waitFor(() => {
+      expect(
+        readSavedState().nextSteps.find(({ title }) => title === 'Review the verse rhythm')
+      ).toMatchObject({
+        id: 'next-step-strumming-pattern',
+        status: 'upcoming',
+        position: 6,
+      });
+    });
+    expect(screen.getByText('Review the verse rhythm')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'More actions for Review the verse rhythm' })).toBe(
+      trigger
+    );
+  });
+
+  it('keeps invalid rename values unsaved and reports the existing boundaries', async () => {
+    await renderJourney(createSeedAppState());
+
+    let menu = openDropdownMenu('Journey actions for Learn guitar').menu;
+    fireEvent.click(within(menu).getByRole('menuitem', { name: 'Edit name' }));
+    let dialog = screen.getByRole('dialog', { name: 'Edit Journey name' });
+    fireEvent.change(within(dialog).getByLabelText('Journey name'), {
+      target: { value: 'x'.repeat(81) },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save name' }));
+    expect(within(dialog).getByText('Journey name must be 80 characters or fewer.')).toBeTruthy();
+    expect(readSavedState().journeys[0]?.name).toBe('Learn guitar');
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    const title = 'Practice the verse strumming pattern';
+    menu = openNextStepMenu(title);
+    fireEvent.click(within(menu).getByRole('menuitem', { name: 'Edit name' }));
+    dialog = await screen.findByRole('dialog', { name: 'Edit Next step name' });
+    fireEvent.change(within(dialog).getByLabelText('Next step'), {
+      target: { value: 'x'.repeat(121) },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save name' }));
+    expect(
+      within(dialog).getByText('Keep your Next step to 120 characters or fewer.')
+    ).toBeTruthy();
+    expect(
+      readSavedState().nextSteps.find(({ id }) => id === 'next-step-strumming-pattern')?.title
+    ).toBe(title);
+  });
+
+  it('keeps a Journey rename open and recoverable when persistence fails', async () => {
+    vi.spyOn(appRepository, 'renameJourney').mockReturnValue({
+      status: 'error',
+      state: null,
+      error: new RepositoryError('storage-write-failed', 'Simulated write failure'),
+    });
+    await renderJourney(createSeedAppState());
+
+    const menu = openDropdownMenu('Journey actions for Learn guitar').menu;
+    fireEvent.click(within(menu).getByRole('menuitem', { name: 'Edit name' }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit Journey name' });
+    const input = within(dialog).getByLabelText<HTMLInputElement>('Journey name');
+    fireEvent.change(input, { target: { value: 'Retry this Journey name' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save name' }));
+
+    expect(
+      within(dialog).getByText('Your Journey name could not be saved. Nothing changed. Try again.')
+    ).toBeTruthy();
+    expect(input.value).toBe('Retry this Journey name');
+    expect(readSavedState().journeys[0]?.name).toBe('Learn guitar');
   });
 
   it('adds an upcoming Next step and persists it once', async () => {

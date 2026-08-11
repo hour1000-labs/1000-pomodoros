@@ -606,6 +606,97 @@ describe('localStorage repository', () => {
     expect(result.state.lastActiveJourneyId).toBe(journey.id);
   });
 
+  it('renames a Journey without changing its related records', () => {
+    const storage = new MemoryStorage();
+    const state = createSeedAppState();
+    const repository = createLocalStorageRepository({
+      getStorage: () => storage,
+      createSeedState: () => state,
+    });
+    const initial = repository.load();
+    if (initial.status !== 'ready') throw new Error('Expected persisted state to load');
+    const listener = vi.fn();
+    repository.subscribe(listener);
+
+    const result = repository.renameJourney('journey-learn-guitar', '  Practice guitar  ');
+    const saved = repository.load();
+
+    expect(result.status).toBe('saved');
+    if (saved.status !== 'ready') throw new Error('Expected persisted state to load');
+    expect(saved.state).toEqual({
+      ...initial.state,
+      journeys: initial.state.journeys.map((journey) =>
+        journey.id === 'journey-learn-guitar' ? { ...journey, name: 'Practice guitar' } : journey
+      ),
+    });
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('renames an active Next step without changing its identity or references', () => {
+    const storage = new MemoryStorage();
+    const state = createSeedAppState();
+    const repository = createLocalStorageRepository({
+      getStorage: () => storage,
+      createSeedState: () => state,
+    });
+    const initial = repository.load();
+    if (initial.status !== 'ready') throw new Error('Expected persisted state to load');
+    const listener = vi.fn();
+    repository.subscribe(listener);
+
+    const result = repository.renameNextStep(
+      'journey-learn-guitar',
+      'next-step-f-chord',
+      '  Practice the F shape  '
+    );
+    const saved = repository.load();
+
+    expect(result.status).toBe('saved');
+    if (saved.status !== 'ready') throw new Error('Expected persisted state to load');
+    expect(saved.state).toEqual({
+      ...initial.state,
+      nextSteps: initial.state.nextSteps.map((nextStep) =>
+        nextStep.id === 'next-step-f-chord'
+          ? { ...nextStep, title: 'Practice the F shape' }
+          : nextStep
+      ),
+    });
+    expect(
+      saved.state.focusSessions.filter(({ nextStepId }) => nextStepId === 'next-step-f-chord')
+    ).toEqual(
+      initial.state.focusSessions.filter(({ nextStepId }) => nextStepId === 'next-step-f-chord')
+    );
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects invalid, unknown, and completed rename targets without notifying', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    const initial = repository.load();
+    if (initial.status !== 'ready') throw new Error('Expected persisted state to load');
+    const listener = vi.fn();
+    repository.subscribe(listener);
+
+    repository.renameJourney('journey-learn-guitar', ' ');
+    repository.renameJourney('journey-learn-guitar', 'x'.repeat(81));
+    repository.renameJourney('missing-journey', 'A valid Journey');
+    repository.renameNextStep('journey-learn-guitar', 'next-step-f-chord', ' ');
+    repository.renameNextStep('journey-learn-guitar', 'next-step-f-chord', 'x'.repeat(121));
+    repository.renameNextStep('journey-learn-guitar', 'missing-step', 'A valid title');
+    repository.renameNextStep(
+      'journey-learn-guitar',
+      'next-step-posture-tuning',
+      'A completed step'
+    );
+    const saved = repository.load();
+
+    expect(saved.status).toBe('ready');
+    if (saved.status === 'ready' && initial.status === 'ready') {
+      expect(saved.state).toEqual(initial.state);
+    }
+    expect(listener).not.toHaveBeenCalled();
+  });
+
   it('adds a trimmed Next step at the normalized end without duplicating an id', () => {
     const storage = new MemoryStorage();
     const state = createSeedAppState();

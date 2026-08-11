@@ -7,6 +7,7 @@ import {
   getRemainingSeconds,
   pauseRunningFocusSession,
 } from './focus-timer';
+import { getJourneyNameError } from './journey-name';
 import { createEmptyAppState } from './mock-data';
 import {
   type ActiveTimer,
@@ -99,8 +100,10 @@ export interface AppRepository {
   subscribe(listener: () => void): () => void;
   saveOnboardingDraft(draft: OnboardingDraft | null): RepositorySaveResult;
   upsertJourney(journey: Journey): RepositorySaveResult;
+  renameJourney(journeyId: string, name: string): RepositorySaveResult;
   deleteJourney(journeyId: string): RepositorySaveResult;
   upsertNextStep(nextStep: NextStep): RepositorySaveResult;
+  renameNextStep(journeyId: string, nextStepId: string, title: string): RepositorySaveResult;
   addNextStep(
     journeyId: string,
     title: string,
@@ -652,6 +655,25 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     }));
   }
 
+  function renameJourney(journeyId: string, name: string) {
+    return update((state) => {
+      if (getJourneyNameError(name) !== null) return state;
+
+      const journey = state.journeys.find(({ id }) => id === journeyId);
+      const trimmedName = name.trim();
+      if (journey === undefined || journey.name === trimmedName) return state;
+
+      return {
+        ...state,
+        journeys: state.journeys.map((currentJourney) =>
+          currentJourney.id === journeyId
+            ? { ...currentJourney, name: trimmedName }
+            : currentJourney
+        ),
+      };
+    });
+  }
+
   function deleteJourney(journeyId: string) {
     return update((state) => {
       const journeyToDelete = state.journeys.find((journey) => journey.id === journeyId);
@@ -716,6 +738,28 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
       ...state,
       nextSteps: upsertById(state.nextSteps, nextStep),
     }));
+  }
+
+  function renameNextStep(journeyId: string, nextStepId: string, title: string) {
+    return update((state) => {
+      if (getNextStepError(title) !== null) return state;
+
+      const nextStep = state.nextSteps.find(
+        ({ id, journeyId: ownerId, status }) =>
+          id === nextStepId &&
+          ownerId === journeyId &&
+          (status === 'current' || status === 'upcoming')
+      );
+      const trimmedTitle = title.trim();
+      if (nextStep === undefined || nextStep.title === trimmedTitle) return state;
+
+      return {
+        ...state,
+        nextSteps: state.nextSteps.map((currentStep) =>
+          currentStep.id === nextStepId ? { ...currentStep, title: trimmedTitle } : currentStep
+        ),
+      };
+    });
   }
 
   function addNextStep(journeyId: string, title: string, createdAt: string, id: string) {
@@ -1155,8 +1199,10 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     subscribe,
     saveOnboardingDraft,
     upsertJourney,
+    renameJourney,
     deleteJourney,
     upsertNextStep,
+    renameNextStep,
     addNextStep,
     reorderUpcomingNextSteps,
     makeNextStepCurrent,
