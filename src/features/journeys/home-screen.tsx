@@ -11,6 +11,7 @@ import { ApplicationLayout } from './components/application-layout';
 import { ApplicationStateBoundary } from './components/application-state-boundary';
 import { ContinueCard } from './components/continue-card';
 import { HomeRecentSessions } from './components/home-recent-sessions';
+import { HomeStreakLink } from './components/home-streak-link';
 import { HomeWeeklyProgress } from './components/home-weekly-progress';
 import { JourneyCard } from './components/journey-card';
 import { StatItem } from './components/stat-item';
@@ -75,6 +76,7 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
               className="[&_dd]:text-lg [&_dd]:leading-snug [&_dd]:tracking-normal [&_dd]:[overflow-wrap:normal] sm:[&_dd]:text-2xl"
             />
           </dl>
+          <HomeStreakLink streak={home.streak} />
         </section>
 
         <HomeWeeklyProgress weekly={home.weekly} />

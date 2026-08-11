@@ -13,9 +13,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppState } from '@/hooks/use-app-state';
 import { formatFocusedDuration } from '@/lib/format-focused-duration';
+import { getLocalDateKeyFromTimestamp } from '@/lib/local-date';
 import type { AppState, FocusSession, Journey, Milestone, NextStep } from '@/lib/models';
 import { deriveJourneyProgress, getFocusedMinutes, POMODORO_MINUTES } from '@/lib/progress';
 import { appRepository, SESSION_REFLECTION_MAX_LENGTH } from '@/lib/repository';
+import { deriveStreakSessionImpact, type StreakSessionImpact } from '@/lib/streaks';
 import { cn } from '@/lib/utils';
 
 const GRID_SECTION_SIZE = 100;
@@ -37,6 +39,7 @@ export interface SessionCompletionContext {
   gridRenderLimit: number;
   milestoneIndexes: number[];
   highlightedIndexes: number[];
+  streakImpact: StreakSessionImpact | null;
 }
 
 function findCompletedSession(state: AppState, sessionId: string | null | undefined) {
@@ -67,6 +70,32 @@ function getSessionsCompletedBefore(state: AppState, session: FocusSession) {
   });
 }
 
+function getSessionsAvailableForStreakImpact(
+  state: AppState,
+  session: FocusSession,
+  sessionsCompletedBefore: readonly FocusSession[]
+) {
+  const sessionDateKey = getLocalDateKeyFromTimestamp(session.endedAt ?? session.startedAt);
+
+  if (sessionDateKey === null) return sessionsCompletedBefore;
+
+  const availableSessions = new Set(sessionsCompletedBefore);
+
+  // Timer rows are created when focus starts, so a manual row saved while a timer runs can
+  // appear on either side of it. Without a separate creation timestamp, every same-date manual
+  // row must be offered to streak derivation, which still rejects ineligible records itself.
+  for (const candidate of state.focusSessions) {
+    if (candidate.source !== 'manual' || availableSessions.has(candidate)) {
+      continue;
+    }
+
+    const candidateDateKey = getLocalDateKeyFromTimestamp(candidate.endedAt ?? candidate.startedAt);
+    if (candidateDateKey === sessionDateKey) availableSessions.add(candidate);
+  }
+
+  return [...availableSessions];
+}
+
 export function resolveSessionCompletion(
   state: AppState,
   requestedSessionId?: string
@@ -88,6 +117,21 @@ export function resolveSessionCompletion(
 
   const progress = deriveJourneyProgress(journey, state.focusSessions);
   const sessionsCompletedBefore = getSessionsCompletedBefore(state, session);
+  const sessionsAvailableForStreakImpact = getSessionsAvailableForStreakImpact(
+    state,
+    session,
+    sessionsCompletedBefore
+  );
+  const hasUniqueSessionId = state.focusSessions.filter(({ id }) => id === session.id).length === 1;
+  const streakImpact =
+    session.source === 'timer' && hasUniqueSessionId
+      ? deriveStreakSessionImpact(
+          sessionsAvailableForStreakImpact,
+          session,
+          state.journeys.map(({ id }) => id),
+          new Date(session.endedAt ?? session.startedAt)
+        )
+      : null;
   const previousFocusedMinutes = getFocusedMinutes(sessionsCompletedBefore, journey.id);
   const focusedMinutesAfterSession = getFocusedMinutes(
     [...sessionsCompletedBefore, session],
@@ -157,6 +201,7 @@ export function resolveSessionCompletion(
       { length: Math.max(0, highlightedEnd - highlightedStart) },
       (_, index) => highlightedStart + index
     ),
+    streakImpact,
   };
 }
 
@@ -168,6 +213,24 @@ export function formatPomodoroCount(value: number) {
   return numberFormatter.format(value);
 }
 
+function formatSessionStreakFeedback(impact: StreakSessionImpact | null) {
+  if (impact === null || !impact.counted) return null;
+
+  const parts = [`${impact.currentStreakAfter}-day streak`, 'Focus day counted'];
+
+  if (impact.freezesEarnedDelta > 0) {
+    parts.push(
+      `${impact.freezesEarnedDelta} streak ${impact.freezesEarnedDelta === 1 ? 'freeze' : 'freezes'} earned`
+    );
+  }
+
+  if (impact.newPersonalBest) {
+    parts.push('New personal best');
+  }
+
+  return `${parts.join(' · ')}.`;
+}
+
 function CompletionExperience({ context }: { context: SessionCompletionContext }) {
   const [reflectionOpen, setReflectionOpen] = useState(false);
   const [reflection, setReflection] = useState(context.session.reflection);
@@ -176,6 +239,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
   const earnedPomodoros = formatPomodoroCount(context.earnedPomodoros);
   const pomodoroLabel = context.earnedPomodoros === 1 ? 'pomodoro' : 'pomodoros';
   const remainingMinutes = Math.max(0, context.milestoneTargetMinutes - context.focusedMinutes);
+  const streakFeedback = formatSessionStreakFeedback(context.streakImpact);
 
   function saveReflection(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -221,6 +285,10 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
               </strong>{' '}
               of focused time to {context.journey.name}.
             </p>
+
+            {streakFeedback ? (
+              <p className="-mt-4 mb-8 font-bold text-ink/65 text-sm">{streakFeedback}</p>
+            ) : null}
 
             <div className="mb-8 border-ink/15 border-y py-5">
               <p className="mb-1 font-bold text-ink/60 text-sm">Next step</p>

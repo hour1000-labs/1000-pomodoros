@@ -562,6 +562,52 @@ describe('deriveHomeData', () => {
     expect(noActiveJourneys.hasCompletedActivity).toBe(false);
   });
 
+  it('derives the global streak from timer and manual sessions and leaves a new local day open', () => {
+    const state = createSeedAppState(LOCAL_SEED_NOW);
+    const july11End = new Date(2026, 6, 11, 12).toISOString();
+    const july12End = new Date(2026, 6, 12, 12).toISOString();
+    state.focusSessions = [
+      createSession({
+        id: 'streak-timer-july-11',
+        endedAt: july11End,
+        startedAt: new Date(2026, 6, 11, 11, 35).toISOString(),
+        focusedMinutes: 25,
+      }),
+      {
+        ...createSession({
+          id: 'streak-manual-july-12',
+          endedAt: july12End,
+          startedAt: new Date(2026, 6, 12, 11, 55).toISOString(),
+          focusedMinutes: 5,
+        }),
+        source: 'manual',
+      },
+    ];
+
+    const completedToday = deriveHomeData(state, new Date(2026, 6, 12, 23, 59));
+    expect(completedToday.streak).toMatchObject({
+      currentStreak: 2,
+      freezesAvailable: 0,
+      todayState: 'practiced',
+      totalPracticedDays: 2,
+    });
+
+    const afterLocalMidnight = deriveHomeData(state, new Date(2026, 6, 13, 0, 1));
+    expect(afterLocalMidnight.streak).toMatchObject({
+      currentStreak: 2,
+      freezesAvailable: 0,
+      todayState: 'open',
+      totalPracticedDays: 2,
+    });
+
+    state.focusSessions = [];
+    expect(deriveHomeData(state, LOCAL_SEED_NOW).streak).toMatchObject({
+      currentStreak: 0,
+      todayState: 'not-started',
+      totalPracticedDays: 0,
+    });
+  });
+
   it.each([
     {
       name: 'no saved Journeys',

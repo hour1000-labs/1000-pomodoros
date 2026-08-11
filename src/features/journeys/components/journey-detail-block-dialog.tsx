@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import type { FocusSession, NextStep } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
+import { deriveStreakSessionImpact, type StreakSessionImpact } from '@/lib/streaks';
 
 import {
   createManualFocusSession,
@@ -56,10 +57,14 @@ function getInitialManualValues(nextSteps: readonly NextStep[]): ManualSessionFo
 function SavedManualSession({
   session,
   nextStepTitle,
+  streakImpact,
 }: {
   session: FocusSession;
   nextStepTitle: string;
+  streakImpact: StreakSessionImpact;
 }) {
+  const streakImpactLabel = formatManualStreakImpact(streakImpact);
+
   return (
     <div className="rounded-lg border border-pomodoro-red/30 bg-pomodoro-red/10 p-3" role="status">
       <p className="mb-2 font-bold">Manual session saved</p>
@@ -80,9 +85,70 @@ function SavedManualSession({
             {formatFocusedDuration(session.focusedMinutes)} · Added manually
           </dd>
         </div>
+        <div className="flex flex-wrap justify-between gap-3">
+          <dt className="text-ink/65">Streak impact</dt>
+          <dd className="m-0 max-w-[70%] text-right font-bold [overflow-wrap:anywhere]">
+            {streakImpactLabel}
+          </dd>
+        </div>
       </dl>
     </div>
   );
+}
+
+function formatCount(value: number, singular: string, plural = `${singular}s`) {
+  return `${value} ${value === 1 ? singular : plural}`;
+}
+
+function formatManualStreakImpact(impact: StreakSessionImpact) {
+  if (impact.state === 'already-counted') {
+    return 'This date was already covered. Streak unchanged.';
+  }
+
+  if (impact.state === 'not-eligible') {
+    return 'No streak change.';
+  }
+
+  const parts = impact.restored
+    ? [`History restored`, `${impact.currentStreakAfter}-day current streak`]
+    : [
+        'This date now counts',
+        impact.currentStreakAfter > 0
+          ? `${impact.currentStreakAfter}-day current streak`
+          : 'History recalculated',
+      ];
+
+  if (impact.freezesEarnedDelta > 0) {
+    parts.push(`${formatCount(impact.freezesEarnedDelta, 'streak freeze')} earned`);
+  }
+
+  if (impact.freezesUsedDelta < 0) {
+    parts.push(`${formatCount(-impact.freezesUsedDelta, 'streak freeze')} returned`);
+  }
+
+  if (impact.freezesUsedDelta > 0) {
+    parts.push(`${formatCount(impact.freezesUsedDelta, 'streak freeze')} used after recalculation`);
+  }
+
+  if (
+    impact.freezesEarnedDelta === 0 &&
+    impact.freezesUsedDelta === 0 &&
+    impact.freezesAvailableDelta !== 0
+  ) {
+    parts.push(
+      `${formatCount(Math.abs(impact.freezesAvailableDelta), 'streak freeze')} ${impact.freezesAvailableDelta > 0 ? 'added' : 'deducted'}`
+    );
+  }
+
+  if (
+    impact.freezesEarnedDelta !== 0 ||
+    impact.freezesUsedDelta !== 0 ||
+    impact.freezesAvailableDelta !== 0
+  ) {
+    parts.push(`${formatCount(impact.freezesAvailableAfter, 'freeze')} available`);
+  }
+
+  return `${parts.join(' · ')}.`;
 }
 
 export function JourneyDetailBlockDialog({
@@ -107,6 +173,7 @@ export function JourneyDetailBlockDialog({
   const [savedManualSession, setSavedManualSession] = useState<{
     session: FocusSession;
     nextStepTitle: string;
+    streakImpact: StreakSessionImpact;
   } | null>(null);
   const manualFormError = getManualSessionFormError(manualValues);
 
@@ -161,6 +228,7 @@ export function JourneyDetailBlockDialog({
       completedDate: manualValues.completedDate,
       focusedMinutes,
     });
+    const beforeSave = appRepository.load();
     const result = appRepository.addManualFocusSession(session);
 
     if (
@@ -173,7 +241,20 @@ export function JourneyDetailBlockDialog({
 
     setManualEntryOpen(false);
     setManualTouched(false);
-    setSavedManualSession({ session, nextStepTitle: nextStep.title });
+    const beforeSessions =
+      beforeSave.status === 'ready'
+        ? beforeSave.state.focusSessions
+        : result.state.focusSessions.filter(({ id }) => id !== session.id);
+    setSavedManualSession({
+      session,
+      nextStepTitle: nextStep.title,
+      streakImpact: deriveStreakSessionImpact(
+        beforeSessions,
+        session,
+        result.state.journeys.map(({ id }) => id),
+        new Date()
+      ),
+    });
   }
 
   return (
@@ -235,6 +316,7 @@ export function JourneyDetailBlockDialog({
         <SavedManualSession
           session={savedManualSession.session}
           nextStepTitle={savedManualSession.nextStepTitle}
+          streakImpact={savedManualSession.streakImpact}
         />
       ) : null}
 

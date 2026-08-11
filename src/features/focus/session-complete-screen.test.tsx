@@ -24,13 +24,18 @@ afterEach(() => {
 function addCompletedSession(
   state: AppState,
   {
+    endedAt,
     focusedMinutes = 25,
     id = 'session-just-completed',
-  }: { focusedMinutes?: number; id?: string } = {}
+  }: { endedAt?: Date; focusedMinutes?: number; id?: string } = {}
 ) {
   const lastEndedAt = state.focusSessions.at(-1)?.endedAt ?? '2026-07-16T18:00:00.000Z';
-  const startedAtTime = new Date(lastEndedAt).getTime() + 5 * 60 * 1_000;
-  const endedAtTime = startedAtTime + focusedMinutes * 60 * 1_000;
+  const priorEndTime = new Date(lastEndedAt).getTime();
+  const startedAtTime =
+    endedAt !== undefined
+      ? endedAt.getTime() - focusedMinutes * 60 * 1_000
+      : priorEndTime + 5 * 60 * 1_000;
+  const endedAtTime = endedAt?.getTime() ?? startedAtTime + focusedMinutes * 60 * 1_000;
 
   const session: FocusSession = {
     id,
@@ -47,6 +52,39 @@ function addCompletedSession(
 
   state.focusSessions.push(session);
   state.lastCompletedSessionId = session.id;
+  return session;
+}
+
+function localNoon(year: number, monthIndex: number, day: number) {
+  return new Date(year, monthIndex, day, 12);
+}
+
+function addManualSession(
+  state: AppState,
+  {
+    endedAt,
+    id,
+    journeyId,
+  }: {
+    endedAt: Date;
+    id: string;
+    journeyId: string;
+  }
+) {
+  const session: FocusSession = {
+    id,
+    journeyId,
+    nextStepId: null,
+    plannedMinutes: 25,
+    focusedMinutes: 25,
+    status: 'completed',
+    source: 'manual',
+    startedAt: new Date(endedAt.getTime() - 25 * 60 * 1_000).toISOString(),
+    endedAt: endedAt.toISOString(),
+    reflection: '',
+  };
+
+  state.focusSessions.push(session);
   return session;
 }
 
@@ -170,6 +208,196 @@ describe('Session Complete', () => {
       screen.getByRole('img', {
         name: 'Pomodoro 44: partial, 30% filled, newly earned',
       })
+    ).toBeTruthy();
+  });
+
+  it('shows one quiet streak line for the first qualifying timer session on a date', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [];
+    state.lastCompletedSessionId = null;
+    const session = addCompletedSession(state, {
+      endedAt: localNoon(2026, 7, 1),
+      id: 'session-first-streak-day',
+    });
+
+    await renderComplete(state, `/focus/complete?sessionId=${session.id}`);
+
+    expect(
+      await screen.findByText('1-day streak · Focus day counted · New personal best.')
+    ).toBeTruthy();
+  });
+
+  it('does not repeat streak feedback when a manual session on another Journey was saved first', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [];
+    state.lastCompletedSessionId = null;
+    const existingJourney = state.journeys[0];
+    if (existingJourney === undefined) throw new Error('Expected a seeded Journey');
+
+    state.journeys.push({
+      ...existingJourney,
+      id: 'journey-write-novel',
+      name: 'Write a novel',
+    });
+
+    addManualSession(state, {
+      endedAt: localNoon(2026, 7, 1),
+      id: 'manual-session-saved-first',
+      journeyId: 'journey-write-novel',
+    });
+    const morningTimer = addCompletedSession(state, {
+      endedAt: new Date(2026, 7, 1, 9),
+      id: 'morning-timer-after-manual-save',
+    });
+
+    const context = resolveSessionCompletion(state, morningTimer.id);
+    expect(context?.streakImpact).toMatchObject({
+      alreadyCounted: true,
+      counted: false,
+      state: 'already-counted',
+    });
+
+    await renderComplete(state, `/focus/complete?sessionId=${morningTimer.id}`);
+
+    expect(await screen.findByRole('heading', { name: '1 pomodoro complete.' })).toBeTruthy();
+    expect(screen.queryByText(/Focus day counted/)).toBeNull();
+  });
+
+  it('does not repeat streak feedback when a manual session is appended after a running timer row', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [];
+    state.lastCompletedSessionId = null;
+    const existingJourney = state.journeys[0];
+    if (existingJourney === undefined) throw new Error('Expected a seeded Journey');
+
+    state.journeys.push({
+      ...existingJourney,
+      id: 'journey-write-novel',
+      name: 'Write a novel',
+    });
+
+    const morningTimer = addCompletedSession(state, {
+      endedAt: new Date(2026, 7, 1, 9),
+      id: 'timer-row-created-before-manual-save',
+    });
+    addManualSession(state, {
+      endedAt: localNoon(2026, 7, 1),
+      id: 'manual-session-appended-while-timer-ran',
+      journeyId: 'journey-write-novel',
+    });
+
+    const context = resolveSessionCompletion(state, morningTimer.id);
+    expect(context).toMatchObject({
+      previousFocusedMinutes: 0,
+      streakImpact: {
+        alreadyCounted: true,
+        counted: false,
+        state: 'already-counted',
+      },
+    });
+
+    await renderComplete(state, `/focus/complete?sessionId=${morningTimer.id}`);
+
+    expect(await screen.findByRole('heading', { name: '1 pomodoro complete.' })).toBeTruthy();
+    expect(screen.queryByText(/Focus day counted/)).toBeNull();
+  });
+
+  it('uses date-neutral streak feedback when a historical completion is revisited', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [];
+    state.lastCompletedSessionId = null;
+    const historicalSession = addCompletedSession(state, {
+      endedAt: localNoon(2026, 0, 5),
+      id: 'historical-streak-completion',
+    });
+    addCompletedSession(state, {
+      endedAt: localNoon(2026, 0, 6),
+      id: 'later-streak-completion',
+    });
+
+    await renderComplete(state, `/focus/complete?sessionId=${historicalSession.id}`);
+
+    expect(
+      await screen.findByText('1-day streak · Focus day counted · New personal best.')
+    ).toBeTruthy();
+    expect(screen.queryByText(/Today counts/)).toBeNull();
+  });
+
+  it('does not repeat streak feedback for a later same-day timer session', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [];
+    state.lastCompletedSessionId = null;
+    addCompletedSession(state, {
+      endedAt: localNoon(2026, 7, 1),
+      id: 'session-first-on-date',
+    });
+    const laterSession = addCompletedSession(state, {
+      endedAt: new Date(2026, 7, 1, 13),
+      id: 'session-later-on-date',
+    });
+
+    await renderComplete(state, `/focus/complete?sessionId=${laterSession.id}`);
+
+    expect(await screen.findByRole('heading', { name: '1 pomodoro complete.' })).toBeTruthy();
+    expect(screen.queryByText(/Focus day counted/)).toBeNull();
+  });
+
+  it('does not show streak feedback below the five-minute threshold', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [];
+    state.lastCompletedSessionId = null;
+    const session = addCompletedSession(state, {
+      endedAt: localNoon(2026, 7, 1),
+      focusedMinutes: 4,
+      id: 'session-too-short-for-streak',
+    });
+
+    await renderComplete(state, `/focus/complete?sessionId=${session.id}`);
+
+    expect(await screen.findByText('4 minutes')).toBeTruthy();
+    expect(screen.queryByText(/Focus day counted/)).toBeNull();
+  });
+
+  it('does not celebrate a malformed history with a duplicated session ID', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [];
+    state.lastCompletedSessionId = null;
+    const session = addCompletedSession(state, {
+      endedAt: localNoon(2026, 7, 1),
+      id: 'duplicated-completion',
+    });
+    state.focusSessions.push({
+      ...session,
+      endedAt: localNoon(2026, 7, 2).toISOString(),
+    });
+
+    await renderComplete(state, `/focus/complete?sessionId=${session.id}`);
+
+    expect(await screen.findByRole('heading', { name: '1 pomodoro complete.' })).toBeTruthy();
+    expect(screen.queryByText(/Focus day counted/)).toBeNull();
+  });
+
+  it('includes a newly earned freeze in the seventh qualifying-day streak line', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [];
+    state.lastCompletedSessionId = null;
+    for (let day = 1; day <= 6; day += 1) {
+      addCompletedSession(state, {
+        endedAt: localNoon(2026, 7, day),
+        id: `session-streak-day-${day}`,
+      });
+    }
+    const rewardSession = addCompletedSession(state, {
+      endedAt: localNoon(2026, 7, 7),
+      id: 'session-streak-day-7',
+    });
+
+    await renderComplete(state, `/focus/complete?sessionId=${rewardSession.id}`);
+
+    expect(
+      await screen.findByText(
+        '7-day streak · Focus day counted · 1 streak freeze earned · New personal best.'
+      )
     ).toBeTruthy();
   });
 

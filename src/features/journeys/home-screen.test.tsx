@@ -112,6 +112,15 @@ describe('HomeScreen', () => {
 
     expect(within(todaySection).getByText('2')).toBeTruthy();
     expect(within(todaySection).getByText('50 minutes')).toBeTruthy();
+    const streakLink = within(todaySection).getByRole('link', {
+      name: /View streak calendar:.*Today complete/,
+    });
+    expect(streakLink.getAttribute('href')).toBe('/streaks');
+    expect(streakLink.className).toContain('min-h-14');
+    expect(streakLink.className).toContain('focus-visible:ring-2');
+    expect(within(streakLink).getByText(/\d+-day streak/)).toBeTruthy();
+    expect(within(streakLink).getByText('Today complete')).toBeTruthy();
+    expect(within(streakLink).getByText(/\d+ freezes?/)).toBeTruthy();
 
     const weeklyText = weeklySection.textContent?.replace(/\s+/g, ' ').trim() ?? '';
     expect(weeklyText).toContain('7 / 10');
@@ -197,6 +206,12 @@ describe('HomeScreen', () => {
     const todaySection = screen.getByRole('region', { name: 'Today' });
     expect(within(todaySection).getByText('0')).toBeTruthy();
     expect(within(todaySection).getByText('0 minutes')).toBeTruthy();
+    const emptyStreakLink = within(todaySection).getByRole('link', {
+      name: 'View streak calendar: 0-day streak. Focus 5 minutes to start. 0 freezes available.',
+    });
+    expect(within(emptyStreakLink).getByText('0-day streak')).toBeTruthy();
+    expect(within(emptyStreakLink).getByText('Focus 5 minutes to start')).toBeTruthy();
+    expect(within(emptyStreakLink).getByText('0 freezes')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'No sessions yet' })).toBeTruthy();
   });
 
@@ -210,11 +225,49 @@ describe('HomeScreen', () => {
     const todaySection = screen.getByRole('region', { name: 'Today' });
     expect(within(todaySection).getByText('2')).toBeTruthy();
     expect(within(todaySection).getByText('50 minutes')).toBeTruthy();
+    expect(
+      within(todaySection).getByRole('link', {
+        name: /View streak calendar:.*Today complete/,
+      })
+    ).toBeTruthy();
 
     act(() => vi.advanceTimersByTime(200));
 
     expect(within(todaySection).getByText('0')).toBeTruthy();
     expect(within(todaySection).getByText('0 minutes')).toBeTruthy();
+    expect(
+      within(todaySection).getByRole('link', {
+        name: /View streak calendar:.*Focus 5 minutes today/,
+      })
+    ).toBeTruthy();
+  });
+
+  it('makes the latest automatic protection explicit in the Home streak link', async () => {
+    const state = createSeedAppState();
+    const templateSession = state.focusSessions[0];
+    if (templateSession === undefined) throw new Error('Expected a seeded session');
+
+    state.focusSessions = Array.from({ length: 7 }, (_, index) => {
+      const endedAt = new Date(2026, 6, 4 + index, 12);
+      const startedAt = new Date(endedAt);
+      startedAt.setMinutes(startedAt.getMinutes() - 25);
+
+      return {
+        ...templateSession,
+        id: `protected-streak-session-${index}`,
+        startedAt: startedAt.toISOString(),
+        endedAt: endedAt.toISOString(),
+      };
+    });
+
+    await renderHome(state);
+
+    const todaySection = await screen.findByRole('region', { name: 'Today' });
+    expect(
+      within(todaySection).getByRole('link', {
+        name: /View streak calendar: 7-day streak\. Protected yesterday · Focus 5 minutes today\. 0 freezes available\./,
+      })
+    ).toBeTruthy();
   });
 
   it('presents a calm empty state without a progressbar when no weekly goal exists', async () => {

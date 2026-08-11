@@ -69,6 +69,32 @@ function createDomRect({
   } as DOMRect;
 }
 
+function getLocalDateOffset(daysFromToday: number) {
+  const today = new Date();
+  return new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysFromToday, 12);
+}
+
+function formatDateInput(date: Date) {
+  return [date.getFullYear(), date.getMonth() + 1, date.getDate()]
+    .map((value, index) => (index === 0 ? String(value) : String(value).padStart(2, '0')))
+    .join('-');
+}
+
+function createStreakTimerSession(id: string, endedAt: Date): FocusSession {
+  return {
+    id,
+    journeyId: LEARN_GUITAR_JOURNEY_ID,
+    nextStepId: LEARN_GUITAR_CURRENT_STEP_ID,
+    plannedMinutes: 25,
+    focusedMinutes: 25,
+    status: 'completed',
+    source: 'timer',
+    startedAt: new Date(endedAt.getTime() - 25 * 60 * 1_000).toISOString(),
+    endedAt: endedAt.toISOString(),
+    reflection: '',
+  };
+}
+
 function mockUpcomingListGeometry(list: HTMLElement, rowHeight = 80) {
   vi.spyOn(list, 'getBoundingClientRect').mockReturnValue(
     createDomRect({
@@ -383,7 +409,89 @@ describe('JourneyDetailScreen', () => {
       await within(dialog).findByText('2 Focus sessions added time to this Pomodoro.')
     ).toBeTruthy();
     expect(within(dialog).getAllByText('Added manually').length).toBeGreaterThan(0);
+    expect(within(dialog).getByText('Streak impact')).toBeTruthy();
+    expect(
+      within(dialog).getByText('This date was already covered. Streak unchanged.')
+    ).toBeTruthy();
     expect(block.getAttribute('data-fill-percent')).toBe('100');
+  });
+
+  it('reports a newly counted current day in the manual-session confirmation', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [createStreakTimerSession('session-yesterday', getLocalDateOffset(-1))];
+
+    await renderJourney(state);
+
+    const block = document.querySelector<HTMLButtonElement>('[data-pomodoro-index="0"]');
+    if (!block) throw new Error('Expected the first pomodoro to be inspectable');
+    fireEvent.click(block);
+    const dialog = await screen.findByRole('dialog', { name: 'Pomodoro 1' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Forgot to start a session?' }));
+    fireEvent.change(within(dialog).getByLabelText('Focused minutes'), {
+      target: { value: '5' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add session' }));
+
+    const status = await within(dialog).findByRole('status');
+    expect(within(status).getByText('Streak impact')).toBeTruthy();
+    expect(within(status).getByText('This date now counts · 2-day current streak.')).toBeTruthy();
+  });
+
+  it('describes an older counted date without claiming a zero-day current streak', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = [
+      createStreakTimerSession('session-old-history', getLocalDateOffset(-10)),
+    ];
+
+    await renderJourney(state);
+
+    const block = document.querySelector<HTMLButtonElement>('[data-pomodoro-index="0"]');
+    if (!block) throw new Error('Expected the first pomodoro to be inspectable');
+    fireEvent.click(block);
+    const dialog = await screen.findByRole('dialog', { name: 'Pomodoro 1' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Forgot to start a session?' }));
+    fireEvent.change(within(dialog).getByLabelText('Completed date'), {
+      target: { value: formatDateInput(getLocalDateOffset(-8)) },
+    });
+    fireEvent.change(within(dialog).getByLabelText('Focused minutes'), {
+      target: { value: '5' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add session' }));
+
+    const status = await within(dialog).findByRole('status');
+    expect(within(status).getByText('This date now counts · History recalculated.')).toBeTruthy();
+    expect(within(status).queryByText(/0-day current streak/)).toBeNull();
+  });
+
+  it('explains restored history and a returned freeze after a manual backfill', async () => {
+    const state = createSeedAppState();
+    const missedDate = getLocalDateOffset(-3);
+    const practicedOffsets = [-10, -9, -8, -7, -6, -5, -4, -2, -1, 0];
+    state.focusSessions = practicedOffsets.map((offset) =>
+      createStreakTimerSession(`session-day-${offset}`, getLocalDateOffset(offset))
+    );
+
+    await renderJourney(state);
+
+    const block = document.querySelector<HTMLButtonElement>('[data-pomodoro-index="0"]');
+    if (!block) throw new Error('Expected the first pomodoro to be inspectable');
+    fireEvent.click(block);
+    const dialog = await screen.findByRole('dialog', { name: 'Pomodoro 1' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Forgot to start a session?' }));
+    fireEvent.change(within(dialog).getByLabelText('Completed date'), {
+      target: { value: formatDateInput(missedDate) },
+    });
+    fireEvent.change(within(dialog).getByLabelText('Focused minutes'), {
+      target: { value: '5' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add session' }));
+
+    const status = await within(dialog).findByRole('status');
+    expect(
+      within(status).getByText(
+        'History restored · 11-day current streak · 1 streak freeze returned · 1 freeze available.'
+      )
+    ).toBeTruthy();
   });
 
   it('renames a Journey and its current Next step with trimmed values', async () => {

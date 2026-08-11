@@ -1,9 +1,11 @@
+import { getLocalDateKey } from '@/lib/local-date';
 import type { AppState, FocusSession, WeeklyGoal } from '@/lib/models';
 import {
   deriveProgressFromSessions,
   getCountableFocusSessions,
   getSessionsForLocalDate,
 } from '@/lib/progress';
+import { deriveStreakSummary, type StreakSummary } from '@/lib/streaks';
 
 import {
   deriveJourneySummary,
@@ -39,6 +41,7 @@ export interface HomeData {
   hasJourneyOutsidePreview: boolean;
   today: HomeTodayData;
   weekly: HomeWeeklyData | null;
+  streak: StreakSummary;
   recentSessions: HomeRecentSession[];
   hasCompletedActivity: boolean;
 }
@@ -46,10 +49,6 @@ export interface HomeData {
 function getTimestamp(value: string) {
   const timestamp = Date.parse(value);
   return Number.isNaN(timestamp) ? null : timestamp;
-}
-
-function getLocalDateKey(date: Date) {
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
 
 function getCurrentWeekRange(now: Date, weekStartsOn: WeeklyGoal['weekStartsOn']) {
@@ -93,7 +92,8 @@ function deriveWeeklyData(
       return false;
     }
 
-    activeDateKeys.add(getLocalDateKey(endedAt));
+    const activeDateKey = getLocalDateKey(endedAt);
+    if (activeDateKey !== null) activeDateKeys.add(activeDateKey);
     return true;
   });
   const progress = deriveProgressFromSessions(weeklySessions);
@@ -166,6 +166,11 @@ export function deriveHomeData(state: AppState, now: Date): HomeData {
       focusedMinutes: todayProgress.focusedMinutes,
     },
     weekly: deriveWeeklyData(countableSessions, state.weeklyGoal, now),
+    streak: deriveStreakSummary(
+      state.focusSessions,
+      state.journeys.map(({ id }) => id),
+      now
+    ),
     recentSessions: deriveRecentSessions(state, countableSessions),
     hasCompletedActivity: (activeJourneys[0]?.progress.focusedMinutes ?? 0) > 0,
   };
