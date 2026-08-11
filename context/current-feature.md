@@ -1,74 +1,42 @@
-# Current Feature: Remember Journey Session Duration
+# Current Feature: <feature name>
 
 <!-- One-sentence description of the feature or fix -->
-
-Restore each Journey's last successfully started 25-minute, 50-minute, or custom timer duration when the user returns to focus setup.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Ready to Commit
+Not Started
 
 ## Goal
 
 <!-- User-visible outcome of the feature -->
 
-Returning users can start another session for a Journey without repeatedly reselecting or re-entering the duration they normally use for that Journey.
-
 ## Acceptance Criteria
 
 <!-- Checklist of testable outcomes -->
 
-- [x] Focus setup selects 25 minutes for a Journey that has no prior valid timer-session duration.
-- [x] When a Journey has prior timer sessions, focus setup restores the most recently started valid duration for that Journey: the 25- or 50-minute preset is selected when applicable, and any other whole-minute value from 5 through 240 selects Custom and fills the exact value into the Minutes input.
-- [x] Remembered durations are independent per Journey; changing the selected Journey immediately shows that Journey's remembered duration or its 25-minute fallback, and switching back restores the first Journey's value.
-- [x] Changing only the selected Next step does not reset the duration currently chosen in the focus form.
-- [x] A duration becomes the remembered value only after that timer session starts and is persisted successfully; form-only edits, invalid Custom input, and failed starts do not replace the previous remembered value.
-- [x] Once a timer session starts successfully, its valid planned duration remains eligible as the Journey's remembered value regardless of whether that session later runs, pauses, completes, or is cancelled; manually entered sessions never affect the remembered timer duration.
-- [x] If newer persisted timer-session records contain unusable duration data, focus setup ignores them and uses the next most recent valid timer duration for that Journey, or 25 minutes when none is valid.
-- [x] The restored duration drives the existing progress preview and the `plannedMinutes` of the next successfully started timer session while retaining the current 5-to-240 whole-minute validation and save-error behavior.
-- [x] Existing route-based Journey and Next-step selection, active-timer restoration, read-only sample behavior, and focus-session controls continue to work unchanged.
+- [ ] Criterion 1
 
 ## Plan
 
 <!-- Implementation steps -->
 
-1. Add a pure focus-duration resolver that finds the most recently started valid persisted timer session for one Journey and maps its planned minutes to the existing 25, 50, or Custom form state with a 25-minute fallback.
-2. Initialize the ready-state duration controls from the resolved Journey preference and synchronize them only when the selected Journey changes, preserving an in-progress duration choice when only the Next step changes.
-3. Continue using the successfully persisted timer-session record as the source of the remembered value so no separate preference store, schema field, or save path is required.
-4. Extend focused unit and component tests for presets, exact Custom restoration, multiple Journeys, Journey and Next-step switching, reloads, ignored manual or invalid records, failed starts, previews, and newly started session data.
-5. Run the required quality gates and verify the affected focus setup and start flow in a real browser with desktop and narrow mobile viewports.
+1. Step 1
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] `git diff --check` passes
-- [x] Focus setup tests cover the 25-minute fallback and restored 25-minute, 50-minute, and exact Custom choices
-- [x] Focus setup tests cover independent Journey preferences, Journey and Next-step switching, reload restoration, ignored manual or invalid records, and unsuccessful starts
-- [x] Tests confirm the restored value drives the progress preview and the next session's persisted `plannedMinutes` without regressing active-timer restoration
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] No relevant console errors
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
 <!-- Decisions, blockers, and scope changes -->
 
-- Scope is limited to the ready state of `/focus` for ordinary persisted Journeys and to the duration used for timer-recorded sessions.
-- The source of truth will be the most recent valid `FocusSession` for the selected Journey with `source: 'timer'`, ordered by `startedAt`. A valid remembered duration is a whole number from 5 through 240 minutes.
-- "Remembered" means the session was successfully started and saved. Its later status does not erase the choice, but changing controls without starting a session does not create a saved preference.
-- A Journey without a valid prior timer duration keeps the existing 25-minute default. Manual sessions are excluded because they do not represent a timer selection.
-- This feature does not remember or change Next-step selection, add preference controls or explanatory copy, change duration options or limits, alter the persistence/export schema, or modify the read-only sample Journey.
-- The pending paid-tier decision for custom timer lengths does not block this feature because custom durations already exist and this scope changes neither their availability nor their limits.
-- The initial `feature load` step was documentation-only; this `feature start` step began implementation on the feature branch.
-- Verification passed on this branch: `pnpm check`; focused focus-session tests (41 tests); full `pnpm test` (30 files, 347 tests); `pnpm build` for client, SSR, and 12 prerendered pages; and `git diff --check`.
-- The only post-verification change was additional Vitest coverage, classified as proven non-semantic: `pnpm check`, the focused suite, and the full suite were rerun; the earlier build evidence remains applicable because production source files did not change.
-- Desktop browser checks verified the 25-minute fallback, Custom 37-minute entry and persistence, 37:00 running state, paused restoration, and empty browser error/warning logs. A 320x568 mobile check verified Custom 37, the Start control, 320px body width without horizontal overflow, and empty browser error/warning logs.
-- Vitest continues to print the existing jsdom `Window.scrollTo()` notice; all tests pass. A temporary paused session from the isolated 127.0.0.1 smoke test could not be dismissed when its browser confirmation dialog timed out; its tabs were released, and the mobile check used a clean `localhost` origin.
-- Review completed on 2026-08-10: all nine acceptance criteria are satisfied by the focus implementation and focused tests; the complete feature diff contains no blocking findings, unrelated refactors, dependency changes, or scope expansion.
 
 ## History
 
@@ -304,3 +272,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/edit-journey-and-next-step-names`
 - Summary: Added persisted Journey, current Next step, and upcoming Next step renaming with accessible overflow-menu actions, validation, recoverable saves, and state-driven updates across Journey and Focus surfaces.
 - Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (30 files, 335 tests), `pnpm build` (client, SSR, and 12 prerendered pages), `git diff --check`, and desktop/320×568 browser checks for rename flows, persistence, Home/Journeys/Focus updates, unchanged progress/order/timer state, read-only `/sample`, and zero console errors or warnings passed.
+
+### 2026-08-11 — Remember Journey Session Duration
+
+- Branch: `codex/feature/remember-journey-session-duration`
+- Summary: Restored each Journey's last successfully started timer duration, including 25-minute and 50-minute presets or exact Custom values, while preserving Journey-specific choices, Next-step changes, validation, and active-session behavior.
+- Verification: `pnpm check`, focused focus-session tests (41 tests), full `pnpm test` (30 files, 347 tests), `pnpm build` (client, SSR, and 12 prerendered pages), `git diff --check`, and desktop/320×568 browser checks with no relevant console errors or horizontal overflow passed.
