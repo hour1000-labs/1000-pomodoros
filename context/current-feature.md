@@ -1,72 +1,42 @@
-# Current Feature: Manual activity entry for missed sessions
+# Current Feature: <feature name>
 
 <!-- One-sentence description of the feature or fix -->
-
-Replace the missed-session Next-step picker with a plain activity input that records what the user actually worked on without creating task-list clutter.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Ready to Commit
+Not Started
 
 ## Goal
 
 <!-- User-visible outcome of the feature -->
 
-Users can add a missed Focus session by typing the work they completed, without choosing from or adding to the Journey's Next steps.
-
 ## Acceptance Criteria
 
 <!-- Checklist of testable outcomes -->
 
-- [x] Opening the missed-session form shows exactly three fields: Completed date, What did you work on?, and Focused minutes; it does not show a Next-step select, datalist, autocomplete, or other task list.
-- [x] What did you work on? is a required plain-text input that trims surrounding whitespace, accepts meaningful activity text up to 120 characters, and gives specific inline feedback for an empty or overlong value.
-- [x] Saving a valid missed session persists the typed activity on that manual Focus session with `nextStepId: null`; it does not create, rename, complete, reorder, or otherwise change any Next step.
-- [x] The saved activity appears consistently in the manual-session confirmation, the contributing-session detail for the selected tomato, Journey recent sessions, and Home recent sessions, alongside the existing Added manually label.
-- [x] Existing timer sessions and previously saved manual sessions that reference a Next step continue to display that linked Next-step title, and older saved data without a session activity remains loadable.
-- [x] Existing missed-session behavior remains intact: date defaults to today and cannot be in the future, at least five focused minutes are required, progress and streak effects are derived normally, duplicate or failed saves add nothing, the read-only sample offers no entry action, and focus returns to the selected tomato when the dialog closes.
-- [x] The revised form and all validation, success, and failure states remain keyboard and screen-reader accessible and fit without clipping or horizontal overflow at supported mobile, desktop, and 200%-zoom-equivalent viewports.
+- [ ] Criterion 1
 
 ## Plan
 
 <!-- Implementation steps -->
 
-1. Extend Focus sessions with a backward-compatible, session-owned activity value and update repository validation so a valid manual session can be saved without a Next-step reference.
-2. Replace the missed-session Next-step selector with the single What did you work on? text input, including trimming, length validation, focus behavior, and concise error copy.
-3. Resolve each session's display label from its own activity first and its linked Next step second so new manual entries and existing history render correctly across Journey and Home surfaces.
-4. Add focused unit and interaction coverage for validation boundaries, persistence without Next-step mutation, backward compatibility, display fallbacks, save failure, progress and streak effects, sample read-only behavior, and focus restoration.
-5. Run the required quality gates and verify the complete interaction in a real browser at mobile, desktop, and 200%-zoom-equivalent sizes.
+1. Step 1
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm exec tsc --noEmit` passes
-- [x] `pnpm test` passes (36 files, 405 tests)
-- [x] `pnpm build` passes (client, SSR, and 13 prerendered pages)
-- [x] `git diff --check` passes
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] No relevant console errors
-- [x] Browser checks confirm there is no task picker or task-list mutation and that the typed activity appears on every required session-history surface
-- [x] Browser checks cover empty, whitespace-only, 120-character, 121-character, future-date, under-five-minute, persistence-failure, and successful-save scenarios
-- [x] Browser checks confirm focus restoration, keyboard operation, accessible error/status announcements, and no clipping or horizontal overflow at 320px, desktop, and a 200%-zoom equivalent
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
 <!-- Decisions, blockers, and scope changes -->
 
-- UX decision: historical work is captured as a direct answer to “What did you work on?” rather than forcing the user to classify past work against a planning list. This keeps the missed-session flow about recording effort, not managing tasks.
-- Data decision: store the typed value on the Focus session itself and leave `nextStepId` null for new manual entries. Do not create hidden, completed, or otherwise synthetic Next steps to preserve the label.
-- Compatibility: keep linked Next-step titles as the fallback for existing sessions, and make the new session field backward-compatible with saved version-one data and backups.
-- The existing date and focused-minute defaults remain because they make the common recovery path quick; only the task-selection interaction changes.
-- Scope excludes changes to the normal timer setup, Journey Next-step management, reflections, session editing/deletion, and the read-only sample Journey.
-- No pending decision in `context/decisions.md` materially blocks this feature.
-- Implementation evidence: `FocusSession.activity` is optional for backward-compatible saved-state loading; new manual sessions trim and persist activity while keeping `nextStepId: null`, and shared label resolution preserves legacy Next-step titles.
-- Verification evidence on 2026-08-13: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (36 files, 405 tests), elevated `pnpm build` (client, SSR, and 13 prerendered pages), `git diff --check`, and Playwright browser checks passed. The browser covered empty validation, successful save, Journey and Home history, unchanged Next-step count, `nextStepId: null`, focus restoration, 1200px, 375px, and 640x400 viewports with no horizontal overflow or console errors. Unit tests cover whitespace, 120/121-character boundaries, date, five-minute minimum, duplicate/invalid saves, and legacy display fallback; the later test pass covered persistence failure and the exact 120/121/date/minute boundary interactions.
-- Test-pass evidence on 2026-08-13: reran `pnpm check` (148 files, no warnings), `pnpm test` (36 files, 405 tests), `pnpm build` (client, SSR, and 13 prerendered pages), and `git diff --check`. A fresh browser run exercised empty and whitespace-only activity, exactly 120 characters, a forced 121-character value, future date, four-minute value, forced storage failure with no persisted session, and a successful save. At 375px the dialog remained inside the viewport (`x=16`, `width=343`, `right=359`), document and body scroll widths stayed at 375px, and browser errors remained at zero. Closing the dialog restored focus to Pomodoro 1. The browser-only test state was local and was not written to the repository.
-- Post-verification remediation: documentation-only update to record the fresh test evidence and boundary checkbox; reran `pnpm check` and `git diff --check`, and reused the passing test, build, and browser evidence because the documentation change cannot affect executable behavior.
-- Review evidence on 2026-08-13: `pnpm check` passed before the review. A real-browser keyboard pass confirmed initial focus on the activity field, Tab traversal through minutes, Cancel, Add session, and Close, Shift+Tab wrapping, Escape dismissal, and focus return to Pomodoro 1. Submitting the empty form with Enter surfaced the required message as a `role="alert"`; the dialog exposes `role="dialog"`, `aria-modal`, labelled title/description, and labelled inputs. No review findings, regressions, unrelated changes, or scope expansion remain.
 
 ## History
 
@@ -314,3 +284,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/daily-streaks-and-streak-freezes`
 - Summary: Added a global 5-minute daily focus streak across persisted Journeys with automatic weekly freezes, deterministic manual-history reconciliation, restrained Home and completion feedback, and an accessible responsive monthly calendar.
 - Verification: `pnpm check` (146 files), `pnpm exec tsc --noEmit`, `pnpm test` (35 files, 401 tests), `pnpm build` (client, SSR, and 13 prerendered pages), `git diff --check`, persistence/import/deletion/sample-isolation tests, and real-browser checks for keyboard and pointer navigation, completion and manual feedback, reduced motion, WCAG contrast, 320px/desktop/200%-zoom layouts, full/empty/protected/broken/10,000-day histories, and zero console warnings or errors passed.
+
+### 2026-08-13 — Manual Activity Entry for Missed Sessions
+
+- Branch: `codex/feature/manual-activity-entry-for-missed-sessions`
+- Summary: Replaced the missed-session Next-step picker with a required plain activity field, persisted activity on manual sessions without mutating Next steps, and surfaced the activity across Journey and Home history while preserving legacy labels.
+- Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (36 files, 405 tests), `pnpm build` (client, SSR, and 13 prerendered pages), `git diff --check`, and real-browser checks for all validation and persistence boundaries, responsive layouts, keyboard traversal, accessibility semantics, focus restoration, and zero browser errors passed.
