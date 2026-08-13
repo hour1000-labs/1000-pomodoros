@@ -302,3 +302,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/journey-target-editing-and-presets`
 - Summary: Added Journey-scoped focus-target editing with shared onboarding presets, a distinct 1,000-Pomodoro default, and exact 10,000-hour support while preserving focused history.
 - Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (37 files, 421 tests), `pnpm build` (client, SSR, and 13 prerendered pages), `git diff --check`, and browser checks for persistence, validation, accessibility, 44px targets, long names, 320px, desktop, and 640×400 200%-equivalent layouts passed.
+
+### 2026-08-13 — Monthly Pomodoro Activity Views
+
+- Branch: `codex/feature/monthly-pomodoro-activity-views`
+- Summary: Added an oldest-first monthly activity ledger to Journey Detail and Home with Journey-scoped/all-Journey totals, month navigation, earned-only tomato marks, focused-duration totals, one-decimal Pomodoro display, and per-Journey persisted view selection.
+- Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (40 files, 439 tests), `pnpm build` (client, SSR, and 13 prerendered pages), `git diff --check`, focused persistence/data/component tests, targeted Journey/manual-entry/streak regressions (8 files, 209 tests), and browser checks at 320px, desktop, and 640×400 zoom-equivalent sizes for current/historical/empty/partial/dense states, keyboard controls, no overflow, and no console errors passed.
