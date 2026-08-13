@@ -4,6 +4,7 @@ import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DEFAULT_DOCUMENT_TITLE } from '@/lib/focus-timer';
 import {
   createMilestoneReachedAppState,
   createSeedAppState,
@@ -22,6 +23,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   cleanup();
   window.localStorage.clear();
+  document.title = DEFAULT_DOCUMENT_TITLE;
 });
 
 async function renderMilestone(state: AppState, milestoneId = LEARN_GUITAR_25_HOUR_MILESTONE_ID) {
@@ -38,6 +40,15 @@ async function renderMilestone(state: AppState, milestoneId = LEARN_GUITAR_25_HO
 }
 
 describe('MilestoneDetailScreen', () => {
+  it('restores the default browser title when arriving from a focus countdown', async () => {
+    document.title = '00:33 — 1000 Pomodoros';
+
+    await renderMilestone(createMilestoneReachedAppState());
+
+    expect(await screen.findByRole('heading', { level: 1, name: '25 hours' })).toBeTruthy();
+    expect(document.title).toBe(DEFAULT_DOCUMENT_TITLE);
+  });
+
   it('shows the persisted-state loading shell while milestone data is unavailable', async () => {
     vi.spyOn(appRepository, 'load').mockReturnValue({
       status: 'unavailable',

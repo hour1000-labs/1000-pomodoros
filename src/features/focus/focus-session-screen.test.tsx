@@ -4,6 +4,7 @@ import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as focusSound from '@/lib/focus-sound';
+import { DEFAULT_DOCUMENT_TITLE } from '@/lib/focus-timer';
 import { createSeedAppState } from '@/lib/mock-data';
 import type { AppState, FocusSession, Journey, NextStep } from '@/lib/models';
 import { APP_STORAGE_KEY, appRepository } from '@/lib/repository';
@@ -131,6 +132,43 @@ function createRunningState({
     remainingSeconds,
     accumulatedFocusedSeconds,
     targetEndAt,
+    pausedAt: null,
+  };
+
+  return state;
+}
+
+function createMilestoneBoundaryState(baseTime: number) {
+  const state = createSeedAppState();
+  state.focusSessions = state.focusSessions.slice(0, 8);
+  state.lastCompletedSessionId = state.focusSessions.at(-1)?.id ?? null;
+
+  const milestone = state.milestones.find(
+    ({ targetFocusedMinutes }) => targetFocusedMinutes === 250
+  );
+  if (!milestone) throw new Error('Expected 10-pomodoro milestone');
+  milestone.earnedAt = null;
+
+  const session: FocusSession = {
+    id: 'session-running-milestone-boundary',
+    journeyId: 'journey-learn-guitar',
+    nextStepId: 'next-step-f-chord',
+    plannedMinutes: 50,
+    focusedMinutes: 0,
+    status: 'running',
+    source: 'timer',
+    startedAt: new Date(baseTime - (50 * 60 - 33) * 1_000).toISOString(),
+    endedAt: null,
+    reflection: '',
+  };
+
+  state.focusSessions.push(session);
+  state.activeTimer = {
+    sessionId: session.id,
+    status: 'running',
+    remainingSeconds: 50 * 60,
+    accumulatedFocusedSeconds: 0,
+    targetEndAt: new Date(baseTime + 33 * 1_000).toISOString(),
     pausedAt: null,
   };
 
@@ -739,6 +777,47 @@ describe('Running Focus Timer', () => {
     });
     expect(playSound).toHaveBeenCalledTimes(1);
     expect(document.title).toBe('1000 Pomodoros');
+  });
+
+  it('catches up from 00:33 through a 50-minute milestone completion and repairs titles', async () => {
+    const baseTime = Date.now();
+    const now = vi.spyOn(Date, 'now').mockReturnValue(baseTime);
+    const complete = vi.spyOn(appRepository, 'completeRunningFocusSession');
+    const router = await renderFocus(createMilestoneBoundaryState(baseTime));
+
+    expect(await screen.findByRole('heading', { name: '00:33' })).toBeTruthy();
+    expect(document.title).toBe('00:33 — 1000 Pomodoros');
+
+    now.mockReturnValue(baseTime + 34_000);
+    fireEvent(document, new Event('visibilitychange'));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/focus/complete'));
+    expect(complete).toHaveBeenCalledTimes(1);
+    expect(document.title).toBe(DEFAULT_DOCUMENT_TITLE);
+
+    const saved = readSavedState();
+    expect(saved.activeTimer).toBeNull();
+    expect(saved.lastCompletedSessionId).toBe('session-running-milestone-boundary');
+    expect(
+      saved.focusSessions.find(({ id }) => id === 'session-running-milestone-boundary')
+    ).toMatchObject({
+      status: 'completed',
+      focusedMinutes: 50,
+    });
+    expect(
+      saved.milestones.find(({ targetFocusedMinutes }) => targetFocusedMinutes === 250)
+    ).toMatchObject({
+      earnedAt: expect.any(String),
+    });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: '2 pomodoros complete.' })
+    ).toBeTruthy();
+
+    const viewMilestone = screen.getByRole('link', { name: /View milestone/ });
+    expect(viewMilestone.getAttribute('href')).toContain('/milestones/');
+    await viewMilestone.click();
+    await waitFor(() => expect(router.state.location.pathname).toContain('/milestones/'));
+    expect(document.title).toBe(DEFAULT_DOCUMENT_TITLE);
   });
 
   it('does not play a muted completion sound', async () => {

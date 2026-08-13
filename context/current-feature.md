@@ -1,42 +1,70 @@
-# Current Feature: <feature name>
+# Current Feature: Fix Stale Timer Tab Title After Completion
 
-<!-- One-sentence description of the feature or fix -->
+Ensure a completed focus session cannot leave the browser tab showing a frozen countdown after the app has saved progress and moved to completion or milestone views.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Not Started
+Ready to Commit
 
 ## Goal
 
 <!-- User-visible outcome of the feature -->
 
+After a focus session ends, including a backgrounded 50-minute session that reaches a milestone, the user's progress is credited once and the browser tab reliably returns to `1000 Pomodoros` instead of remaining stuck on an old countdown.
+
 ## Acceptance Criteria
 
 <!-- Checklist of testable outcomes -->
 
-- [ ] Criterion 1
+- [x] While a running or paused session is active on `/focus`, the browser tab title continues to match the timestamp-derived visible timer in the exact `MM:SS — 1000 Pomodoros` format.
+- [x] When a 50-minute running session last observed at `00:33` catches up past its target time, successful natural completion occurs exactly once, credits exactly 50 focused minutes, clears that session's active timer, records it as the last completed session, and navigates to `/focus/complete` with its `sessionId`.
+- [x] If that 50-minute completion crosses a Journey's 250-minute / 10-pomodoro boundary, the existing 10-pomodoro milestone is awarded exactly once in the same persisted completion and Session Complete shows `2 pomodoros complete.` with the correct `View milestone` destination.
+- [x] Every non-active-Focus route deterministically owns the default `1000 Pomodoros` title, so successful natural completion, Finish early, confirmed navigation away, Session Complete, View milestone, and later Journey navigation cannot retain a stale countdown even if Focus effect cleanup is delayed.
+- [x] A failed completion save remains recoverable on `/focus`: it does not navigate, clear the active timer, award a milestone, or play the completion sound, and it keeps the existing error guidance.
+- [x] Existing pause/resume behavior, visibility catch-up, navigation protection, mute state, completion sound rules, and completion idempotence remain unchanged.
 
 ## Plan
 
 <!-- Implementation steps -->
 
-1. Step 1
+1. Add a router-level regression fixture with prior progress below 250 minutes, an unearned 10-pomodoro milestone, and a running 50-minute session initially showing `00:33`; advance time past expiry through visibility catch-up and assert the complete persisted and routed outcome.
+2. Move default document-title ownership to a route-aware level that remains mounted across sibling route transitions, while keeping the running and paused Focus states responsible for the live countdown only.
+3. Reset the title synchronously at successful completion/leave boundaries before programmatic navigation, retaining cleanup as a fallback and removing any ineffective route-local title repair made redundant by the durable owner.
+4. Preserve the repository's existing atomic completion and milestone-award logic; add only the integration assertions needed to prove full 50-minute credit, one award, one navigation, and no false side effects on persistence failure.
+5. Extend route tests through Session Complete and `View milestone` to prove both destinations show the default title after starting from a nonzero countdown, and retain focused coverage for pause/resume, confirmed navigation, sound, and idempotence.
+6. Reproduce the boundary in Chromium with a production-style base path by backgrounding a `00:33` timer past expiry, returning to the tab, and confirming the completion, milestone link, default title, persisted progress, and absence of relevant console errors.
+7. Run the full quality gates and review the complete diff against every acceptance criterion before advancing the feature status.
 
 ## Verification
 
-- [ ] `pnpm check` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
-- [ ] Affected UI verified in the browser, if applicable
-- [ ] Mobile and desktop verified, if responsive UI changed
-- [ ] No relevant console errors
+- [x] `pnpm check` passes
+- [x] `pnpm exec tsc --noEmit` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
+- [x] `git diff --check` passes
+- [x] Focused timer, repository, Session Complete, and Milestone regression tests pass
+- [x] Chromium verifies `00:33` background/visibility catch-up through 50-minute completion and the 10-pomodoro milestone
+- [x] Chromium verifies `1000 Pomodoros` on Session Complete, Milestone Detail, and subsequent non-Focus navigation
+- [x] No relevant browser console errors or warnings occur during the completion flow
 
 ## Notes
 
 <!-- Decisions, blockers, and scope changes -->
 
+- Investigation diagnosis: this was a stale browser-title failure, not a stuck or lost focus session. The current live UI shows the reported 50-minute session in recent activity, 11.7 total pomodoros / 4h53m, Pomodoro 10 marked as a milestone, a normal start action, and the default `1000 Pomodoros` title.
+- The exact browser scheduling trigger cannot be reproduced after the fact. The strongest explanation is a background-throttling/title-cleanup race: `00:33` was the last rendered countdown, completion later saved and navigated, and the destination had no title owner to repair a delayed or missed Focus cleanup.
+- The 10-pomodoro milestone is correlated, not causal. Completion, milestone awarding, active-timer clearing, and last-completed pointer repair occur in one synchronous repository state write; milestone rendering and navigation do not write `document.title`.
+- The concrete ownership gap is that running and paused Focus components imperatively set the countdown and reset it only during effect cleanup. The existing route-aware fallback also lives inside the departing `/focus` screen, while sibling Session Complete, Milestone Detail, and Journey routes do not reassert the default title.
+- Existing tests cover title synchronization, visibility catch-up, an already-expired timer, 50-minute setup, 50-minute completion display, and milestone awarding separately. They do not cover a nonzero `00:33` title crossing expiry, awarding the 250-minute milestone, navigating twice, and remaining repaired end to end.
+- A stale second tab is a secondary unproven possibility because repository subscriptions are in-memory and there is no cross-tab storage-event reconciliation. Only one app tab is currently open, so cross-tab synchronization is excluded unless the bug is reproduced with multiple app tabs.
+- No pending decision in `context/decisions.md` changes this fix. This scope does not change timer arithmetic, persisted schemas, milestone calculations, audio design, completion copy/layout, or other UI.
+- `feature load` is documentation-only: no branch or application-code change is part of this action, and all acceptance and verification checkboxes remain unchecked until current implementation evidence exists.
+- Implementation: `DocumentTitleManager` now owns the default title from the root shell for every route except active `/focus`, while running and paused Focus states retain countdown-title ownership and cleanup. Successful natural completion, Finish early, and cancellation reset the title synchronously before navigation or leave callbacks.
+- Regression coverage: the Focus suite now drives a timestamp-derived `00:33` countdown through a delayed 50-minute completion, asserts one repository completion, full credit, active-timer clearing, last-completed identity, one 250-minute milestone award, Session Complete copy/link, and default title after milestone navigation. Milestone Detail also has a direct stale-title recovery test.
+- Verification evidence: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (36 files / 407 tests), `pnpm build`, and `git diff --check` all passed. The first sandboxed build attempt could not bind TanStack's prerender preview server (`listen EPERM ::1`); the same build passed with approved elevated local binding.
+- Chromium production-preview check: observed `00:33 — 1000 Pomodoros`, switched to a second tab past expiry, returned to `/focus/complete`, and confirmed title `1000 Pomodoros`, `2 pomodoros complete.`, `50 minutes`, the earned milestone link, persisted `activeTimer: null`, `lastCompletedSessionId`, `focusedMinutes: 50`, and one earned 250-minute milestone. Milestone Detail and Journey routes retained the default title; console reported 0 errors and 0 warnings. The browser fixture was disposable and the preview/browser sessions were closed afterward.
 
 ## History
 

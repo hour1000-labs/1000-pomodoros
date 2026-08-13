@@ -1,4 +1,4 @@
-import { Navigate, useBlocker, useNavigate, useRouterState } from '@tanstack/react-router';
+import { Navigate, useBlocker, useNavigate } from '@tanstack/react-router';
 import { Check, Clock3, Maximize2, Minimize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { type FormEvent, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { BrandMark } from '@/components/shared/brand-mark';
@@ -275,6 +275,7 @@ function PausedSessionState({
       result.state.lastCompletedSessionId === session.id;
 
     if (completed) {
+      document.title = DEFAULT_DOCUMENT_TITLE;
       setAnnouncement('Focus session finished early.');
       void navigate({
         to: '/focus/complete',
@@ -300,6 +301,7 @@ function PausedSessionState({
       result.state.focusSessions.find(({ id }) => id === session.id)?.status === 'cancelled';
 
     if (cancelled) {
+      document.title = DEFAULT_DOCUMENT_TITLE;
       onCancelled();
       return;
     }
@@ -477,6 +479,8 @@ function RunningSessionState({
         );
         return;
       }
+
+      document.title = DEFAULT_DOCUMENT_TITLE;
 
       if (soundEnabled && !completionSoundPlayed.current) {
         completionSoundPlayed.current = true;
@@ -1096,11 +1100,6 @@ function TimerSetup({
 export function FocusSessionScreen({ search }: { search: FocusSearch }) {
   const hydration = useAppState();
   const [setupAnnouncement, setSetupAnnouncement] = useState<string | null>(null);
-  const pathname = useRouterState({ select: (routerState) => routerState.location.pathname });
-
-  useEffect(() => {
-    if (pathname !== '/focus') document.title = DEFAULT_DOCUMENT_TITLE;
-  }, [pathname]);
 
   if (hydration.status === 'loading') {
     return (

@@ -1,6 +1,8 @@
-import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
+import { createRootRoute, HeadContent, Scripts, useRouterState } from '@tanstack/react-router';
+import { useEffect } from 'react';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { DEFAULT_DOCUMENT_TITLE } from '@/lib/focus-timer';
 import { getPublicAssetPath, SITE_DESCRIPTION, SITE_NAME } from '@/lib/site';
 
 import appCss from '../styles.css?url';
@@ -60,9 +62,22 @@ function RootDocument({ children }: Readonly<{ children: React.ReactNode }>) {
         <HeadContent />
       </head>
       <body>
-        <TooltipProvider>{children}</TooltipProvider>
+        <TooltipProvider>
+          <DocumentTitleManager />
+          {children}
+        </TooltipProvider>
         <Scripts />
       </body>
     </html>
   );
+}
+
+function DocumentTitleManager() {
+  const pathname = useRouterState({ select: (routerState) => routerState.location.pathname });
+
+  useEffect(() => {
+    if (pathname !== '/focus') document.title = DEFAULT_DOCUMENT_TITLE;
+  }, [pathname]);
+
+  return null;
 }
