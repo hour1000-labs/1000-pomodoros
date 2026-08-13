@@ -14,6 +14,7 @@ import { APP_STORAGE_KEY, appRepository, RepositoryError } from '@/lib/repositor
 import { getRouter } from '@/router';
 
 import { resolveFocusSelection } from '../focus/focus-session-screen';
+import { JOURNEY_DETAIL_VIEW_STORAGE_KEY } from './components/journey-detail-progress';
 import { deriveHomeData } from './home-data';
 
 beforeEach(() => {
@@ -37,6 +38,15 @@ async function renderJourney(state: AppState, journeyId = LEARN_GUITAR_JOURNEY_I
   render(<RouterProvider router={router} />, { container: document });
 
   return router;
+}
+
+async function renderSampleJourney(savedState: AppState) {
+  window.localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(savedState));
+
+  const router = getRouter();
+  router.update({ history: createMemoryHistory({ initialEntries: ['/sample'] }) });
+  await router.load();
+  render(<RouterProvider router={router} />, { container: document });
 }
 
 function readSavedState() {
@@ -233,6 +243,13 @@ describe('JourneyDetailScreen', () => {
     expect(screen.queryByRole('link', { name: 'Journey' })).toBeNull();
     expect(screen.getByText('17 hours 55 minutes')).toBeTruthy();
     expect(screen.getByRole('heading', { name: '43 Pomodoros' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Journey progress view' })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Journey progress' }).getAttribute('aria-pressed')
+    ).toBe('true');
+    expect(
+      screen.getByRole('button', { name: 'Monthly activity' }).getAttribute('aria-pressed')
+    ).toBe('false');
     expect(screen.getByText('72% · 17 pomodoros remaining')).toBeTruthy();
     expect(screen.getByText('25 focused hours')).toBeTruthy();
     const legend = screen.getByRole('list', { name: 'Pomodoro grid legend' });
@@ -251,6 +268,108 @@ describe('JourneyDetailScreen', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Show 3 more sections' }));
     expect(document.querySelectorAll('[data-pomodoro-index]')).toHaveLength(600);
+  });
+
+  it('preserves the full-Journey choice while Monthly activity is selected', async () => {
+    await renderJourney(createSeedAppState());
+
+    fireEvent.click(screen.getByRole('button', { name: 'View full Journey' }));
+    expect(screen.getByText('3 of 24 sections')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Monthly activity' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Monthly activity' }).getAttribute('aria-pressed')
+    ).toBe('true');
+    expect(
+      screen.getByRole('button', { name: 'Journey progress' }).getAttribute('aria-pressed')
+    ).toBe('false');
+    expect(screen.queryByRole('button', { name: 'View current section' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'View full Journey' })).toBeNull();
+    expect(screen.queryByRole('list', { name: 'Pomodoro grid legend' })).toBeNull();
+    expect(document.querySelectorAll('[data-pomodoro-index]')).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Journey progress' }));
+
+    expect(screen.getByRole('button', { name: 'View current section' })).toBeTruthy();
+    expect(screen.getByText('3 of 24 sections')).toBeTruthy();
+    expect(screen.getByRole('list', { name: 'Pomodoro grid legend' })).toBeTruthy();
+    expect(document.querySelectorAll('[data-pomodoro-index]')).toHaveLength(300);
+  });
+
+  it('persists the selected Journey view until the user toggles it back', async () => {
+    await renderJourney(createSeedAppState());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Monthly activity' }));
+    expect(
+      JSON.parse(window.localStorage.getItem(JOURNEY_DETAIL_VIEW_STORAGE_KEY) ?? '{}')[
+        LEARN_GUITAR_JOURNEY_ID
+      ]
+    ).toBe('activity');
+
+    cleanup();
+    await renderJourney(createSeedAppState());
+    expect(
+      screen.getByRole('button', { name: 'Monthly activity' }).getAttribute('aria-pressed')
+    ).toBe('true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Journey progress' }));
+    expect(
+      JSON.parse(window.localStorage.getItem(JOURNEY_DETAIL_VIEW_STORAGE_KEY) ?? '{}')[
+        LEARN_GUITAR_JOURNEY_ID
+      ]
+    ).toBe('progress');
+  });
+
+  it('scopes Monthly activity rows and totals to the current Journey', async () => {
+    const { state, journey, nextStep } = createSecondJourneyState();
+    const endedAt = getLocalDateOffset(0);
+    const journeySession = createStreakTimerSession('session-current-journey', endedAt);
+    const otherJourneySession: FocusSession = {
+      ...journeySession,
+      id: 'session-other-journey',
+      journeyId: journey.id,
+      nextStepId: nextStep.id,
+      plannedMinutes: 50,
+      focusedMinutes: 50,
+    };
+    state.focusSessions = [otherJourneySession, journeySession];
+
+    await renderJourney(state);
+    fireEvent.click(screen.getByRole('button', { name: 'Monthly activity' }));
+
+    const fullDate = new Intl.DateTimeFormat(undefined, {
+      day: 'numeric',
+      month: 'long',
+      weekday: 'long',
+      year: 'numeric',
+    }).format(endedAt);
+    expect(screen.getByRole('heading', { level: 3, name: 'Monthly activity' })).toBeTruthy();
+    expect(screen.queryByText('Scope · This Journey')).toBeNull();
+    expect(
+      screen.getByRole('row', {
+        name: `${fullDate}; 25 focused minutes; 1 Pomodoro.`,
+      })
+    ).toBeTruthy();
+    expect(screen.getAllByRole('row')).toHaveLength(2);
+    expect(
+      screen.getByLabelText('Month total: 1 Pomodoro, 25 focused minutes (25 minutes).')
+    ).toBeTruthy();
+  });
+
+  it('shows the same Monthly activity summary in the read-only sample without saving it', async () => {
+    const savedState = createSecondJourneyState().state;
+    const serializedBefore = JSON.stringify(savedState);
+
+    await renderSampleJourney(savedState);
+    fireEvent.click(screen.getByRole('button', { name: 'Monthly activity' }));
+
+    expect(screen.getByRole('heading', { level: 3, name: 'Monthly activity' })).toBeTruthy();
+    expect(screen.queryByText('Scope · This Journey')).toBeNull();
+    expect(screen.getByLabelText(/^Month total:/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'View full Journey' })).toBeNull();
+    expect(window.localStorage.getItem(APP_STORAGE_KEY)).toBe(serializedBefore);
+    expect(window.localStorage.getItem(JOURNEY_DETAIL_VIEW_STORAGE_KEY)).toBeNull();
   });
 
   it('keeps a later current-progress section visible when full Journey opens', async () => {

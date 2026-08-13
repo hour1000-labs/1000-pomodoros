@@ -10,7 +10,6 @@ export type LoadingSkeletonVariant =
   | 'landing'
   | 'default';
 
-const SKELETON_KEYS_7 = ['sk-7-1', 'sk-7-2', 'sk-7-3', 'sk-7-4', 'sk-7-5', 'sk-7-6', 'sk-7-7'];
 const SKELETON_KEYS_2 = ['sk-2-1', 'sk-2-2'];
 const SKELETON_KEYS_3 = ['sk-3-1', 'sk-3-2', 'sk-3-3'];
 const SKELETON_KEYS_10 = [
@@ -175,9 +174,9 @@ function HomeSkeleton() {
         <div className="mt-6 h-12 w-44 animate-pulse rounded-lg bg-ink/12" />
       </div>
 
-      {/* Today & Weekly Progress Grid */}
+      {/* Today & Monthly Activity Grid */}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <div className="rounded-xl border border-ink/15 p-6">
+        <div className="self-start rounded-xl border border-ink/15 p-6">
           <div className="mb-7 h-7 w-20 animate-pulse rounded bg-ink/8" />
           <div className="grid grid-cols-2 gap-6">
             <div>
@@ -192,17 +191,45 @@ function HomeSkeleton() {
         </div>
 
         <div className="rounded-xl border border-ink/15 p-6">
-          <div className="mb-7 flex items-center justify-between">
-            <div className="h-7 w-36 animate-pulse rounded bg-ink/8" />
-            <div className="h-5 w-24 animate-pulse rounded bg-ink/8" />
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <div className="h-7 w-40 animate-pulse rounded bg-ink/8" />
+              <div className="mt-2 h-4 w-24 animate-pulse rounded bg-ink/8" />
+            </div>
+            <div className="flex gap-2">
+              <div className="size-11 animate-pulse rounded-lg bg-ink/8" />
+              <div className="size-11 animate-pulse rounded-lg bg-ink/8" />
+            </div>
           </div>
-          <div className="grid grid-cols-7 gap-2">
-            {SKELETON_KEYS_7.map((key) => (
-              <div key={key} className="flex flex-col items-center gap-2">
-                <div className="h-4 w-8 animate-pulse rounded bg-ink/8" />
-                <div className="h-8 w-8 animate-pulse rounded-full bg-ink/8" />
+
+          <div className="mb-4 h-5 w-28 animate-pulse rounded bg-ink/8" />
+          <div className="border-ink/15 border-y">
+            <div className="grid grid-cols-[5rem_minmax(0,1fr)_3rem] gap-3 border-ink/15 border-b py-3">
+              <div className="h-4 w-10 animate-pulse rounded bg-ink/8" />
+              <div className="h-4 w-24 animate-pulse rounded bg-ink/8" />
+              <div className="h-4 w-10 animate-pulse rounded bg-ink/8" />
+            </div>
+            {SKELETON_KEYS_3.map((key) => (
+              <div
+                key={key}
+                className="grid grid-cols-[5rem_minmax(0,1fr)_3rem] items-center gap-3 border-ink/10 border-b py-4 last:border-b-0"
+              >
+                <div className="space-y-2">
+                  <div className="h-4 w-14 animate-pulse rounded bg-ink/8" />
+                  <div className="h-3 w-8 animate-pulse rounded bg-ink/8" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="size-6 animate-pulse rounded-full bg-ink/8" />
+                  <div className="size-6 animate-pulse rounded-full bg-ink/8" />
+                  <div className="size-6 animate-pulse rounded-full bg-ink/8" />
+                </div>
+                <div className="h-5 w-8 animate-pulse rounded bg-ink/8" />
               </div>
             ))}
+          </div>
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <div className="h-4 w-24 animate-pulse rounded bg-ink/8" />
+            <div className="h-6 w-20 animate-pulse rounded bg-ink/8" />
           </div>
         </div>
       </div>

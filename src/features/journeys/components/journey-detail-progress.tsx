@@ -1,19 +1,52 @@
 import { ChevronDown } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { MilestoneProgress } from '@/components/shared/milestone-progress';
 import { PomodoroBlock } from '@/components/shared/pomodoro-block';
 import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
 import { Button } from '@/components/ui/button';
-import type { Milestone } from '@/lib/models';
+import type { AppState, Milestone } from '@/lib/models';
 
 import {
   type JourneyBlockContributionView,
   JourneyDetailBlockDialog,
 } from './journey-detail-block-dialog';
+import { MonthlyPomodoroActivity } from './monthly-pomodoro-activity';
 
 const FULL_VIEW_BATCH_SIZE = 3;
 const SECTION_SIZE = 100;
+export const JOURNEY_DETAIL_VIEW_STORAGE_KEY = '1000-pomodoros:journey-detail-view:v1';
+
+type JourneyDetailView = 'progress' | 'activity';
+
+function readPersistedJourneyView(journeyId: string, readOnly: boolean): JourneyDetailView {
+  if (readOnly || typeof window === 'undefined') return 'progress';
+
+  try {
+    const stored = window.localStorage.getItem(JOURNEY_DETAIL_VIEW_STORAGE_KEY);
+    if (stored === null) return 'progress';
+
+    const views = JSON.parse(stored) as Record<string, unknown>;
+    return views[journeyId] === 'activity' ? 'activity' : 'progress';
+  } catch {
+    return 'progress';
+  }
+}
+
+function persistJourneyView(journeyId: string, view: JourneyDetailView, readOnly: boolean) {
+  if (readOnly || typeof window === 'undefined') return;
+
+  try {
+    const stored = window.localStorage.getItem(JOURNEY_DETAIL_VIEW_STORAGE_KEY);
+    const views = stored === null ? {} : (JSON.parse(stored) as Record<string, unknown>);
+    const nextViews =
+      views !== null && typeof views === 'object' && !Array.isArray(views) ? views : {};
+    nextViews[journeyId] = view;
+    window.localStorage.setItem(JOURNEY_DETAIL_VIEW_STORAGE_KEY, JSON.stringify(nextViews));
+  } catch {
+    // A view preference is optional; storage failures should not block the Journey view.
+  }
+}
 
 function formatPomodoroCount(value: number) {
   return value.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -106,6 +139,8 @@ function GridLegend() {
 }
 
 export function JourneyDetailProgress({
+  state,
+  now,
   journeyId,
   focusedMinutes,
   totalPomodoros,
@@ -124,6 +159,8 @@ export function JourneyDetailProgress({
   getBlockContributions,
   readOnly = false,
 }: {
+  state: AppState;
+  now: Date;
   journeyId: string;
   focusedMinutes: number;
   totalPomodoros: number;
@@ -142,6 +179,9 @@ export function JourneyDetailProgress({
   getBlockContributions: (index: number) => readonly JourneyBlockContributionView[];
   readOnly?: boolean;
 }) {
+  const [view, setView] = useState<JourneyDetailView>(() =>
+    readPersistedJourneyView(journeyId, readOnly)
+  );
   const [fullView, setFullView] = useState(false);
   const [visibleSectionCount, setVisibleSectionCount] = useState(() =>
     Math.min(FULL_VIEW_BATCH_SIZE, totalSections)
@@ -162,9 +202,18 @@ export function JourneyDetailProgress({
   const currentSectionEnd = currentSectionStart + currentSectionCount;
   const activeMilestoneTarget = currentMilestone?.targetFocusedMinutes ?? null;
 
+  useEffect(() => {
+    setView(readPersistedJourneyView(journeyId, readOnly));
+  }, [journeyId, readOnly]);
+
   function changeView(showFull: boolean) {
     setFullView(showFull);
     if (showFull) setVisibleSectionCount(Math.min(FULL_VIEW_BATCH_SIZE, totalSections));
+  }
+
+  function selectView(nextView: JourneyDetailView) {
+    setView(nextView);
+    persistJourneyView(journeyId, nextView, readOnly);
   }
 
   return (
@@ -173,131 +222,166 @@ export function JourneyDetailProgress({
         <h2 id="journey-progress-heading" className="mb-0 font-bold text-3xl tracking-[-0.035em]">
           {formatPomodoroCount(totalPomodoros)} Pomodoros
         </h2>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full sm:w-auto"
-          aria-pressed={fullView}
-          onClick={() => changeView(!fullView)}
-        >
-          {fullView ? 'View current section' : 'View full Journey'}
-        </Button>
-      </div>
-
-      <div className="overflow-hidden rounded-xl border border-ink/15 bg-paper">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-ink/15 border-b px-4 py-3 sm:px-5">
-          <p className="mb-0 text-ink/65 text-sm">
-            {fullView
-              ? `${visibleSectionIndexes.length} of ${totalSections} sections`
-              : `Section ${currentSectionIndex + 1} · Pomodoros ${currentSectionStart + 1}–${currentSectionEnd}`}
-          </p>
-          <p className="mb-0 font-bold text-sm tabular-nums">
-            {formatPomodoroCount(totalPomodoros)} / {targetBlocks.toLocaleString()}
-          </p>
-        </div>
-
-        {fullView ? (
-          <div className="grid gap-8 p-4 sm:p-6">
-            {visibleSectionIndexes.map((sectionIndex) => {
-              const startIndex = sectionIndex * SECTION_SIZE;
-              const count = Math.min(SECTION_SIZE, totalBlocks - startIndex);
-
-              return (
-                <section key={startIndex} aria-labelledby={`journey-section-${sectionIndex + 1}`}>
-                  <div className="mb-3 flex items-baseline justify-between gap-3">
-                    <h3
-                      id={`journey-section-${sectionIndex + 1}`}
-                      className="mb-0 font-bold text-lg"
-                    >
-                      Section {sectionIndex + 1}
-                    </h3>
-                    <span className="text-ink/65 text-xs tabular-nums">
-                      {startIndex + 1}–{startIndex + count}
-                    </span>
-                  </div>
-                  <SectionGrid
-                    startIndex={startIndex}
-                    count={count}
-                    focusedMinutes={focusedMinutes}
-                    totalBlocks={totalBlocks}
-                    latestIndex={latestIndex}
-                    milestoneIndexes={milestoneIndexes}
-                    getBlockContributions={getBlockContributions}
-                    readOnly={readOnly}
-                    onSelect={setSelectedBlockIndex}
-                    selectedIndex={selectedBlockIndex}
-                  />
-                </section>
-              );
-            })}
-
-            {visibleSections < totalSections ? (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() =>
-                  setVisibleSectionCount((count) =>
-                    Math.min(totalSections, count + FULL_VIEW_BATCH_SIZE)
-                  )
-                }
-              >
-                <ChevronDown aria-hidden="true" />
-                Show {Math.min(FULL_VIEW_BATCH_SIZE, totalSections - visibleSections)} more sections
-              </Button>
-            ) : null}
-          </div>
-        ) : (
-          <div className="p-4 sm:p-6">
-            <SectionGrid
-              startIndex={currentSectionStart}
-              count={currentSectionCount}
-              focusedMinutes={focusedMinutes}
-              totalBlocks={totalBlocks}
-              latestIndex={latestIndex}
-              milestoneIndexes={milestoneIndexes}
-              getBlockContributions={getBlockContributions}
-              readOnly={readOnly}
-              onSelect={setSelectedBlockIndex}
-              selectedIndex={selectedBlockIndex}
-            />
-            {totalPomodoros === 0 ? (
-              <p className="mt-4 mb-0 text-ink/60 text-sm">
-                Finish a Focus session to add your first Pomodoro.
-              </p>
-            ) : null}
-          </div>
-        )}
-
-        <div className="grid gap-5 border-ink/15 border-t px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:px-5">
-          <MilestoneProgress
-            value={nextMilestonePercentage}
-            label={currentMilestone?.name ?? 'Journey target'}
-            detail={`${Math.round(nextMilestonePercentage)}% · ${remainingPomodoros} pomodoros remaining`}
-          />
-          {nextMilestone ? (
-            <p className="mb-0 text-ink/65 text-sm sm:text-right">
-              Next after this: <span className="font-bold text-ink">{nextMilestone.name}</span>
-            </p>
-          ) : activeMilestoneTarget !== null ? (
-            <p className="mb-0 text-ink/65 text-sm sm:text-right">Final Journey milestone</p>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          {view === 'progress' ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              aria-pressed={fullView}
+              onClick={() => changeView(!fullView)}
+            >
+              {fullView ? 'View current section' : 'View full Journey'}
+            </Button>
           ) : null}
+          <fieldset className="grid w-full grid-cols-2 gap-1 rounded-lg bg-ink/5 p-1 sm:w-auto">
+            <legend className="sr-only">Journey progress view</legend>
+            <Button
+              type="button"
+              size="sm"
+              variant={view === 'progress' ? 'secondary' : 'ghost'}
+              aria-pressed={view === 'progress'}
+              onClick={() => selectView('progress')}
+            >
+              Journey progress
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={view === 'activity' ? 'secondary' : 'ghost'}
+              aria-pressed={view === 'activity'}
+              onClick={() => selectView('activity')}
+            >
+              Monthly activity
+            </Button>
+          </fieldset>
         </div>
       </div>
 
-      <div className="mt-5">
-        <GridLegend />
-      </div>
+      {view === 'activity' ? (
+        <MonthlyPomodoroActivity state={state} now={now} journeyId={journeyId} headingLevel={3} />
+      ) : (
+        <>
+          <div className="overflow-hidden rounded-xl border border-ink/15 bg-paper">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-ink/15 border-b px-4 py-3 sm:px-5">
+              <p className="mb-0 text-ink/65 text-sm">
+                {fullView
+                  ? `${visibleSectionIndexes.length} of ${totalSections} sections`
+                  : `Section ${currentSectionIndex + 1} · Pomodoros ${currentSectionStart + 1}–${currentSectionEnd}`}
+              </p>
+              <p className="mb-0 font-bold text-sm tabular-nums">
+                {formatPomodoroCount(totalPomodoros)} / {targetBlocks.toLocaleString()}
+              </p>
+            </div>
 
-      <JourneyDetailBlockDialog
-        journeyId={journeyId}
-        blockIndex={selectedBlockIndex}
-        contributions={selectedContributions}
-        readOnly={readOnly}
-        onOpenChange={(open) => {
-          if (!open) setSelectedBlockIndex(null);
-        }}
-      />
+            {fullView ? (
+              <div className="grid gap-8 p-4 sm:p-6">
+                {visibleSectionIndexes.map((sectionIndex) => {
+                  const startIndex = sectionIndex * SECTION_SIZE;
+                  const count = Math.min(SECTION_SIZE, totalBlocks - startIndex);
+
+                  return (
+                    <section
+                      key={startIndex}
+                      aria-labelledby={`journey-section-${sectionIndex + 1}`}
+                    >
+                      <div className="mb-3 flex items-baseline justify-between gap-3">
+                        <h3
+                          id={`journey-section-${sectionIndex + 1}`}
+                          className="mb-0 font-bold text-lg"
+                        >
+                          Section {sectionIndex + 1}
+                        </h3>
+                        <span className="text-ink/65 text-xs tabular-nums">
+                          {startIndex + 1}–{startIndex + count}
+                        </span>
+                      </div>
+                      <SectionGrid
+                        startIndex={startIndex}
+                        count={count}
+                        focusedMinutes={focusedMinutes}
+                        totalBlocks={totalBlocks}
+                        latestIndex={latestIndex}
+                        milestoneIndexes={milestoneIndexes}
+                        getBlockContributions={getBlockContributions}
+                        readOnly={readOnly}
+                        onSelect={setSelectedBlockIndex}
+                        selectedIndex={selectedBlockIndex}
+                      />
+                    </section>
+                  );
+                })}
+
+                {visibleSections < totalSections ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() =>
+                      setVisibleSectionCount((count) =>
+                        Math.min(totalSections, count + FULL_VIEW_BATCH_SIZE)
+                      )
+                    }
+                  >
+                    <ChevronDown aria-hidden="true" />
+                    Show {Math.min(FULL_VIEW_BATCH_SIZE, totalSections - visibleSections)} more
+                    sections
+                  </Button>
+                ) : null}
+              </div>
+            ) : (
+              <div className="p-4 sm:p-6">
+                <SectionGrid
+                  startIndex={currentSectionStart}
+                  count={currentSectionCount}
+                  focusedMinutes={focusedMinutes}
+                  totalBlocks={totalBlocks}
+                  latestIndex={latestIndex}
+                  milestoneIndexes={milestoneIndexes}
+                  getBlockContributions={getBlockContributions}
+                  readOnly={readOnly}
+                  onSelect={setSelectedBlockIndex}
+                  selectedIndex={selectedBlockIndex}
+                />
+                {totalPomodoros === 0 ? (
+                  <p className="mt-4 mb-0 text-ink/60 text-sm">
+                    Finish a Focus session to add your first Pomodoro.
+                  </p>
+                ) : null}
+              </div>
+            )}
+
+            <div className="grid gap-5 border-ink/15 border-t px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:px-5">
+              <MilestoneProgress
+                value={nextMilestonePercentage}
+                label={currentMilestone?.name ?? 'Journey target'}
+                detail={`${Math.round(nextMilestonePercentage)}% · ${remainingPomodoros} pomodoros remaining`}
+              />
+              {nextMilestone ? (
+                <p className="mb-0 text-ink/65 text-sm sm:text-right">
+                  Next after this: <span className="font-bold text-ink">{nextMilestone.name}</span>
+                </p>
+              ) : activeMilestoneTarget !== null ? (
+                <p className="mb-0 text-ink/65 text-sm sm:text-right">Final Journey milestone</p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <GridLegend />
+          </div>
+
+          <JourneyDetailBlockDialog
+            journeyId={journeyId}
+            blockIndex={selectedBlockIndex}
+            contributions={selectedContributions}
+            readOnly={readOnly}
+            onOpenChange={(open) => {
+              if (!open) setSelectedBlockIndex(null);
+            }}
+          />
+        </>
+      )}
     </section>
   );
 }

@@ -106,7 +106,7 @@ describe('HomeScreen', () => {
       name: 'Practice the F chord transition',
     });
     const todaySection = screen.getByRole('region', { name: 'Today' });
-    const weeklySection = screen.getByRole('region', { name: 'This week' });
+    const activitySection = screen.getByRole('region', { name: 'Monthly activity' });
     const activeJourneysSection = screen.getByRole('region', { name: 'Active Journeys' });
     const recentSessionsSection = screen.getByRole('region', { name: 'Recent sessions' });
 
@@ -121,18 +121,17 @@ describe('HomeScreen', () => {
     expect(within(streakLink).getByText(/\d+-day streak/)).toBeTruthy();
     expect(within(streakLink).getByText('Today complete')).toBeTruthy();
     expect(within(streakLink).getByText(/\d+ freezes?/)).toBeTruthy();
+    expect(todaySection.className).toContain('self-start');
 
-    const weeklyText = weeklySection.textContent?.replace(/\s+/g, ' ').trim() ?? '';
-    expect(weeklyText).toContain('7 / 10');
-    expect(within(weeklySection).getByText('Remaining').nextElementSibling?.textContent).toBe('3');
-    expect(within(weeklySection).getByText('Active days').nextElementSibling?.textContent).toBe(
-      '3'
-    );
+    expect(within(activitySection).getByText('Scope · All Journeys')).toBeTruthy();
+    expect(within(activitySection).getByRole('heading', { name: 'July 2026' })).toBeTruthy();
+    expect(within(activitySection).getByRole('columnheader', { name: 'Date' })).toBeTruthy();
     expect(
-      within(weeklySection)
-        .getByRole('progressbar', { name: 'Weekly goal: 7 of 10 pomodoros' })
-        .getAttribute('aria-valuenow')
-    ).toBe('70');
+      within(activitySection).getByRole('columnheader', { name: 'Focused work' })
+    ).toBeTruthy();
+    expect(within(activitySection).getByRole('columnheader', { name: 'Total' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'This week' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'No weekly goal' })).toBeNull();
 
     expect(
       within(activeJourneysSection).getAllByRole('link', { name: /^View .* Journey$/ })
@@ -143,8 +142,8 @@ describe('HomeScreen', () => {
     expect(within(recentSessionsSection).getAllByRole('listitem')).toHaveLength(3);
 
     expectBefore(continueSection, todaySection);
-    expectBefore(todaySection, weeklySection);
-    expectBefore(weeklySection, activeJourneysSection);
+    expectBefore(todaySection, activitySection);
+    expectBefore(activitySection, activeJourneysSection);
     expectBefore(activeJourneysSection, recentSessionsSection);
   });
 
@@ -218,11 +217,12 @@ describe('HomeScreen', () => {
   it('rolls Today statistics over when the local calendar day changes while Home stays open', async () => {
     vi.useRealTimers();
     vi.useFakeTimers();
-    vi.setSystemTime(new Date(2026, 6, 12, 23, 59, 59, 900));
+    vi.setSystemTime(new Date(2026, 6, 31, 23, 59, 59, 900));
 
-    await renderHome(createSeedAppState());
+    await renderHome(createSeedAppState(new Date(2026, 6, 31, 12)));
 
     const todaySection = screen.getByRole('region', { name: 'Today' });
+    const activitySection = screen.getByRole('region', { name: 'Monthly activity' });
     expect(within(todaySection).getByText('2')).toBeTruthy();
     expect(within(todaySection).getByText('50 minutes')).toBeTruthy();
     expect(
@@ -230,6 +230,8 @@ describe('HomeScreen', () => {
         name: /View streak calendar:.*Today complete/,
       })
     ).toBeTruthy();
+    expect(within(activitySection).getByRole('heading', { name: 'July 2026' })).toBeTruthy();
+    expect(within(activitySection).getByText('Today')).toBeTruthy();
 
     act(() => vi.advanceTimersByTime(200));
 
@@ -240,6 +242,8 @@ describe('HomeScreen', () => {
         name: /View streak calendar:.*Focus 5 minutes today/,
       })
     ).toBeTruthy();
+    expect(within(activitySection).getByRole('heading', { name: 'August 2026' })).toBeTruthy();
+    expect(within(activitySection).queryByText('Today')).toBeNull();
   });
 
   it('makes the latest automatic protection explicit in the Home streak link', async () => {
@@ -270,17 +274,16 @@ describe('HomeScreen', () => {
     ).toBeTruthy();
   });
 
-  it('presents a calm empty state without a progressbar when no weekly goal exists', async () => {
+  it('keeps Monthly activity in place when no weekly goal exists', async () => {
     const state = createSeedAppState();
     state.weeklyGoal = null;
 
     await renderHome(state);
 
-    const weeklySection = await screen.findByRole('region', {
-      name: 'No weekly goal',
-    });
-    expect(within(weeklySection).getByRole('heading', { name: 'No weekly goal' })).toBeTruthy();
-    expect(within(weeklySection).queryByRole('progressbar')).toBeNull();
+    const activitySection = await screen.findByRole('region', { name: 'Monthly activity' });
+    expect(within(activitySection).getByText('Scope · All Journeys')).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'No weekly goal' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'This week' })).toBeNull();
   });
 
   it('offers the Journey-detail fallback when the active Journey has no current Next step', async () => {
@@ -303,16 +306,72 @@ describe('HomeScreen', () => {
     expect(screen.queryByRole('link', { name: /Start 25:00/ })).toBeNull();
   });
 
-  it('offers one Journey review action when every Journey is inactive', async () => {
+  it('keeps inactive Journey history visible beneath one Journey review action', async () => {
     const state = createSeedAppState();
-    state.journeys = state.journeys.map((journey) => ({ ...journey, status: 'paused' }));
+    const completedJourney = addActiveJourney(state, {
+      id: 'journey-completed',
+      name: 'Completed Journey',
+      lastActiveAt: '2026-07-10T18:00:00.000Z',
+    });
+    const archivedJourney = addActiveJourney(state, {
+      id: 'journey-archived',
+      name: 'Archived Journey',
+      lastActiveAt: '2026-07-08T18:00:00.000Z',
+    });
+    state.journeys = state.journeys.map((journey) => ({
+      ...journey,
+      status:
+        journey.id === completedJourney.journey.id
+          ? 'completed'
+          : journey.id === archivedJourney.journey.id
+            ? 'archived'
+            : 'paused',
+    }));
+    const templateSession = state.focusSessions[0];
+    if (templateSession === undefined) throw new Error('Expected a seeded session');
+    state.focusSessions = [
+      [LEARN_GUITAR_JOURNEY_ID, 12, 'paused-history'],
+      [completedJourney.journey.id, 10, 'completed-history'],
+      [archivedJourney.journey.id, 8, 'archived-history'],
+    ].map(([journeyId, day, id]) => {
+      const endedAt = new Date(2026, 6, Number(day), 12);
+
+      return {
+        ...templateSession,
+        id: String(id),
+        journeyId: String(journeyId),
+        nextStepId: null,
+        plannedMinutes: 25,
+        focusedMinutes: 25,
+        startedAt: new Date(endedAt.getTime() - 25 * 60 * 1_000).toISOString(),
+        endedAt: endedAt.toISOString(),
+      };
+    });
+    state.lastCompletedSessionId = 'paused-history';
 
     await renderHome(state);
 
-    expect(await screen.findByRole('heading', { name: 'No active Journeys' })).toBeTruthy();
+    const guidanceHeading = await screen.findByRole('heading', { name: 'No active Journeys' });
     const reviewLink = screen.getByRole('link', { name: 'View all Journeys' });
     expect(reviewLink.getAttribute('href')).toBe('/journeys');
     expect(screen.getByRole('link', { name: 'Add Journey' })).toBeTruthy();
+
+    const todaySection = screen.getByRole('region', { name: 'Today' });
+    const activitySection = screen.getByRole('region', { name: 'Monthly activity' });
+    const recentSessionsSection = screen.getByRole('region', { name: 'Recent sessions' });
+    expect(within(todaySection).getByText('1')).toBeTruthy();
+    expect(within(todaySection).getByText('25 minutes')).toBeTruthy();
+    expect(
+      within(activitySection).getByLabelText(
+        'Month total: 3 Pomodoros, 75 focused minutes (1 hour 15 minutes).'
+      )
+    ).toBeTruthy();
+    expect(within(activitySection).getAllByRole('row')).toHaveLength(4);
+    expect(within(recentSessionsSection).getAllByRole('listitem')).toHaveLength(3);
+
+    expectBefore(guidanceHeading, todaySection);
+    expectBefore(todaySection, activitySection);
+    expectBefore(activitySection, recentSessionsSection);
     expect(screen.queryByRole('link', { name: /Start 25:00/ })).toBeNull();
   });
 

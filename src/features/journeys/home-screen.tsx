@@ -12,10 +12,44 @@ import { ApplicationStateBoundary } from './components/application-state-boundar
 import { ContinueCard } from './components/continue-card';
 import { HomeRecentSessions } from './components/home-recent-sessions';
 import { HomeStreakLink } from './components/home-streak-link';
-import { HomeWeeklyProgress } from './components/home-weekly-progress';
 import { JourneyCard } from './components/journey-card';
+import { MonthlyPomodoroActivity } from './components/monthly-pomodoro-activity';
 import { StatItem } from './components/stat-item';
-import { deriveHomeData } from './home-data';
+import { deriveHomeData, type HomeData } from './home-data';
+
+function HomeActivityOverview({
+  home,
+  now,
+  state,
+}: {
+  home: HomeData;
+  now: Date;
+  state: AppState;
+}) {
+  return (
+    <div className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+      <section
+        aria-labelledby="home-today-heading"
+        className="self-start rounded-xl border border-ink/15 p-6"
+      >
+        <h2 id="home-today-heading" className="mb-7 font-bold text-2xl tracking-[-0.025em]">
+          Today
+        </h2>
+        <dl className="grid grid-cols-2 gap-6">
+          <StatItem value={String(home.today.completedPomodoros)} label="Pomodoros" />
+          <StatItem
+            value={formatFocusedDuration(home.today.focusedMinutes)}
+            label="Focused time"
+            className="[&_dd]:text-lg [&_dd]:leading-snug [&_dd]:tracking-normal [&_dd]:[overflow-wrap:normal] sm:[&_dd]:text-2xl"
+          />
+        </dl>
+        <HomeStreakLink streak={home.streak} />
+      </section>
+
+      <MonthlyPomodoroActivity state={state} now={now} scopeLabel="All Journeys" />
+    </div>
+  );
+}
 
 function HomeContent({ now, state }: { now: Date; state: AppState }) {
   if (state.journeys.length === 0) {
@@ -45,6 +79,10 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
             </div>
           }
         />
+        <HomeActivityOverview home={home} now={now} state={state} />
+        <div className="mt-16">
+          <HomeRecentSessions now={now} sessions={home.recentSessions} />
+        </div>
       </ApplicationLayout>
     );
   }
@@ -60,27 +98,7 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
         />
       </section>
 
-      <div className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <section
-          aria-labelledby="home-today-heading"
-          className="rounded-xl border border-ink/15 p-6"
-        >
-          <h2 id="home-today-heading" className="mb-7 font-bold text-2xl tracking-[-0.025em]">
-            Today
-          </h2>
-          <dl className="grid grid-cols-2 gap-6">
-            <StatItem value={String(home.today.completedPomodoros)} label="Pomodoros" />
-            <StatItem
-              value={formatFocusedDuration(home.today.focusedMinutes)}
-              label="Focused time"
-              className="[&_dd]:text-lg [&_dd]:leading-snug [&_dd]:tracking-normal [&_dd]:[overflow-wrap:normal] sm:[&_dd]:text-2xl"
-            />
-          </dl>
-          <HomeStreakLink streak={home.streak} />
-        </section>
-
-        <HomeWeeklyProgress weekly={home.weekly} />
-      </div>
+      <HomeActivityOverview home={home} now={now} state={state} />
 
       <section className="mt-16" aria-labelledby="active-journeys-heading">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-ink/15 border-b pb-4">

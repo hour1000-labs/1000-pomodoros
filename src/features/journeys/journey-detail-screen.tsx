@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { deriveJourneyDetailData } from '@/features/journeys/journey-detail-data';
+import { useCurrentLocalDate } from '@/hooks/use-current-local-date';
 import { formatFocusedDuration } from '@/lib/format-focused-duration';
 import type { AppState, NextStep } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
@@ -75,6 +76,7 @@ function JourneyContent({
   const [addOpen, setAddOpen] = useState(false);
   const [journeyNameEditOpen, setJourneyNameEditOpen] = useState(false);
   const journeyNameMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const now = useCurrentLocalDate();
   const detail = deriveJourneyDetailData(state, journeyId);
 
   if (!detail) return <JourneyNotFoundState />;
@@ -175,6 +177,8 @@ function JourneyContent({
       <section className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
         <div className="order-2 min-w-0 lg:order-1">
           <JourneyDetailProgress
+            state={state}
+            now={now}
             journeyId={detail.journey.id}
             focusedMinutes={progress.focusedMinutes}
             totalPomodoros={progress.totalPomodoros}
