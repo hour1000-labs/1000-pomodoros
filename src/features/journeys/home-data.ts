@@ -1,3 +1,4 @@
+import { getFocusSessionLabel } from '@/lib/focus-session-label';
 import { getLocalDateKey } from '@/lib/local-date';
 import type { AppState, FocusSession, WeeklyGoal } from '@/lib/models';
 import {
@@ -144,7 +145,10 @@ function deriveRecentSessions(
       return {
         session,
         journeyName: journeysById.get(session.journeyId)?.name ?? null,
-        nextStepTitle: nextStep?.journeyId === session.journeyId ? nextStep.title : null,
+        nextStepTitle: getFocusSessionLabel(
+          session,
+          nextStep?.journeyId === session.journeyId ? nextStep.title : null
+        ),
       };
     });
 }

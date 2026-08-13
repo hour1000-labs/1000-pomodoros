@@ -28,10 +28,13 @@ export interface NextStep {
 
 export type FocusSessionStatus = 'running' | 'paused' | 'completed' | 'cancelled';
 
+export const FOCUS_SESSION_ACTIVITY_MAX_LENGTH = 120;
+
 export interface FocusSession {
   id: string;
   journeyId: string;
   nextStepId: string | null;
+  activity?: string;
   plannedMinutes: number;
   focusedMinutes: number;
   status: FocusSessionStatus;

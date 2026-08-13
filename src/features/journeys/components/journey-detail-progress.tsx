@@ -5,7 +5,7 @@ import { MilestoneProgress } from '@/components/shared/milestone-progress';
 import { PomodoroBlock } from '@/components/shared/pomodoro-block';
 import { PomodoroGrid } from '@/components/shared/pomodoro-grid';
 import { Button } from '@/components/ui/button';
-import type { Milestone, NextStep } from '@/lib/models';
+import type { Milestone } from '@/lib/models';
 
 import {
   type JourneyBlockContributionView,
@@ -106,6 +106,7 @@ function GridLegend() {
 }
 
 export function JourneyDetailProgress({
+  journeyId,
   focusedMinutes,
   totalPomodoros,
   targetBlocks,
@@ -121,9 +122,9 @@ export function JourneyDetailProgress({
   latestIndex,
   milestoneIndexes,
   getBlockContributions,
-  nextSteps,
   readOnly = false,
 }: {
+  journeyId: string;
   focusedMinutes: number;
   totalPomodoros: number;
   targetBlocks: number;
@@ -139,7 +140,6 @@ export function JourneyDetailProgress({
   latestIndex: number | null;
   milestoneIndexes: readonly number[];
   getBlockContributions: (index: number) => readonly JourneyBlockContributionView[];
-  nextSteps: readonly NextStep[];
   readOnly?: boolean;
 }) {
   const [fullView, setFullView] = useState(false);
@@ -290,9 +290,9 @@ export function JourneyDetailProgress({
       </div>
 
       <JourneyDetailBlockDialog
+        journeyId={journeyId}
         blockIndex={selectedBlockIndex}
         contributions={selectedContributions}
-        nextSteps={nextSteps}
         readOnly={readOnly}
         onOpenChange={(open) => {
           if (!open) setSelectedBlockIndex(null);

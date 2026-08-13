@@ -472,6 +472,8 @@ describe('localStorage repository', () => {
       focusedMinutes: 10,
       status: 'completed',
       source: 'manual',
+      nextStepId: null,
+      activity: 'Practice scales',
       startedAt: '2026-08-05T17:50:00.000Z',
       endedAt: '2026-08-05T18:00:00.000Z',
     };
@@ -490,7 +492,7 @@ describe('localStorage repository', () => {
     repository.addManualFocusSession({
       ...firstManualSession,
       id: 'manual-session-no-step',
-      nextStepId: null,
+      activity: '',
     });
     repository.addManualFocusSession(firstManualSession);
 

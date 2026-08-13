@@ -4,7 +4,7 @@ import { PrimaryButton } from '@/components/shared/primary-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatFocusedDuration } from '@/lib/format-focused-duration';
-import type { FocusSession, NextStep } from '@/lib/models';
+import { FOCUS_SESSION_ACTIVITY_MAX_LENGTH, type FocusSession } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
 import { deriveStreakSessionImpact, type StreakSessionImpact } from '@/lib/streaks';
 
@@ -46,21 +46,21 @@ function createManualSessionIdentity() {
   return `manual-session-${suffix}`;
 }
 
-function getInitialManualValues(nextSteps: readonly NextStep[]): ManualSessionFormValues {
+function getInitialManualValues(): ManualSessionFormValues {
   return {
     completedDate: getDateInputValue(),
-    nextStepId: nextSteps.find(({ status }) => status === 'current')?.id ?? nextSteps[0]?.id ?? '',
+    activity: '',
     focusedMinutes: '25',
   };
 }
 
 function SavedManualSession({
   session,
-  nextStepTitle,
+  activityLabel,
   streakImpact,
 }: {
   session: FocusSession;
-  nextStepTitle: string;
+  activityLabel: string;
   streakImpact: StreakSessionImpact;
 }) {
   const streakImpactLabel = formatManualStreakImpact(streakImpact);
@@ -74,9 +74,9 @@ function SavedManualSession({
           <dd className="m-0 font-bold">{formatDate(session.endedAt)}</dd>
         </div>
         <div className="flex flex-wrap justify-between gap-3">
-          <dt className="text-ink/65">Next step</dt>
+          <dt className="text-ink/65">What you worked on</dt>
           <dd className="m-0 max-w-[70%] text-right font-bold [overflow-wrap:anywhere]">
-            {nextStepTitle}
+            {activityLabel}
           </dd>
         </div>
         <div className="flex flex-wrap justify-between gap-3">
@@ -152,34 +152,34 @@ function formatManualStreakImpact(impact: StreakSessionImpact) {
 }
 
 export function JourneyDetailBlockDialog({
+  journeyId,
   blockIndex,
   contributions,
-  nextSteps,
   readOnly = false,
   onOpenChange,
 }: {
+  journeyId: string;
   blockIndex: number | null;
   contributions: readonly JourneyBlockContributionView[];
-  nextSteps: readonly NextStep[];
   readOnly?: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const blockNumber = blockIndex === null ? null : blockIndex + 1;
   const manualInputRef = useRef<HTMLInputElement>(null);
   const [manualEntryOpen, setManualEntryOpen] = useState(false);
-  const [manualValues, setManualValues] = useState(() => getInitialManualValues(nextSteps));
+  const [manualValues, setManualValues] = useState(() => getInitialManualValues());
   const [manualTouched, setManualTouched] = useState(false);
   const [manualSaveError, setManualSaveError] = useState<string | null>(null);
   const [savedManualSession, setSavedManualSession] = useState<{
     session: FocusSession;
-    nextStepTitle: string;
+    activityLabel: string;
     streakImpact: StreakSessionImpact;
   } | null>(null);
   const manualFormError = getManualSessionFormError(manualValues);
 
   function resetManualEntry() {
     setManualEntryOpen(false);
-    setManualValues(getInitialManualValues(nextSteps));
+    setManualValues(getInitialManualValues());
     setManualTouched(false);
     setManualSaveError(null);
   }
@@ -195,7 +195,7 @@ export function JourneyDetailBlockDialog({
 
   function openManualEntry() {
     setSavedManualSession(null);
-    setManualValues(getInitialManualValues(nextSteps));
+    setManualValues(getInitialManualValues());
     setManualTouched(false);
     setManualSaveError(null);
     setManualEntryOpen(true);
@@ -213,18 +213,17 @@ export function JourneyDetailBlockDialog({
 
     if (manualFormError !== null) return;
 
-    const nextStep = nextSteps.find(({ id }) => id === manualValues.nextStepId);
     const focusedMinutes = Number(manualValues.focusedMinutes);
 
-    if (nextStep === undefined || !Number.isFinite(focusedMinutes)) {
-      setManualSaveError('Choose a valid Next step and focused time. Nothing changed.');
+    if (!Number.isFinite(focusedMinutes)) {
+      setManualSaveError('Choose a valid activity and focused time. Nothing changed.');
       return;
     }
 
     const session = createManualFocusSession({
       id: createManualSessionIdentity(),
-      journeyId: nextStep.journeyId,
-      nextStepId: nextStep.id,
+      journeyId,
+      activity: manualValues.activity,
       completedDate: manualValues.completedDate,
       focusedMinutes,
     });
@@ -247,7 +246,7 @@ export function JourneyDetailBlockDialog({
         : result.state.focusSessions.filter(({ id }) => id !== session.id);
     setSavedManualSession({
       session,
-      nextStepTitle: nextStep.title,
+      activityLabel: session.activity ?? manualValues.activity.trim(),
       streakImpact: deriveStreakSessionImpact(
         beforeSessions,
         session,
@@ -315,7 +314,7 @@ export function JourneyDetailBlockDialog({
       {savedManualSession ? (
         <SavedManualSession
           session={savedManualSession.session}
-          nextStepTitle={savedManualSession.nextStepTitle}
+          activityLabel={savedManualSession.activityLabel}
           streakImpact={savedManualSession.streakImpact}
         />
       ) : null}
@@ -340,7 +339,6 @@ export function JourneyDetailBlockDialog({
                     Completed date
                   </label>
                   <Input
-                    ref={manualInputRef}
                     id="journey-manual-session-date"
                     type="date"
                     value={manualValues.completedDate}
@@ -355,28 +353,23 @@ export function JourneyDetailBlockDialog({
 
                 <div>
                   <label
-                    htmlFor="journey-manual-session-next-step"
+                    htmlFor="journey-manual-session-activity"
                     className="mb-2 block font-bold text-sm"
                   >
-                    Next step worked on
+                    What did you work on?
                   </label>
-                  <select
-                    id="journey-manual-session-next-step"
-                    value={manualValues.nextStepId}
+                  <Input
+                    ref={manualInputRef}
+                    id="journey-manual-session-activity"
+                    type="text"
+                    maxLength={FOCUS_SESSION_ACTIVITY_MAX_LENGTH}
+                    autoComplete="off"
+                    placeholder="e.g. Practiced chord changes"
+                    value={manualValues.activity}
                     aria-invalid={(manualTouched && manualFormError !== null) || undefined}
-                    onChange={(event) =>
-                      handleManualValueChange({ nextStepId: event.target.value })
-                    }
+                    onChange={(event) => handleManualValueChange({ activity: event.target.value })}
                     onBlur={() => setManualTouched(true)}
-                    className="h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20"
-                  >
-                    <option value="">Choose a Next step</option>
-                    {nextSteps.map((nextStep) => (
-                      <option key={nextStep.id} value={nextStep.id}>
-                        {nextStep.title}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
                 <div>

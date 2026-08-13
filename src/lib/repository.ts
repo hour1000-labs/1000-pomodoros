@@ -13,6 +13,7 @@ import {
   type ActiveTimer,
   APP_STATE_SCHEMA_VERSION,
   type AppState,
+  FOCUS_SESSION_ACTIVITY_MAX_LENGTH,
   type FocusSession,
   type Journey,
   type Milestone,
@@ -222,7 +223,9 @@ function isFocusSession(value: unknown): value is FocusSession {
     isOneOf(value.source, ['timer', 'manual']) &&
     isString(value.startedAt) &&
     isNullableString(value.endedAt) &&
-    isString(value.reflection)
+    isString(value.reflection) &&
+    (value.activity === undefined ||
+      (isString(value.activity) && value.activity.length <= FOCUS_SESSION_ACTIVITY_MAX_LENGTH))
   );
 }
 
@@ -1154,13 +1157,7 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
 
   function addManualFocusSession(session: FocusSession) {
     return update((state) => {
-      const nextStep =
-        session.nextStepId === null
-          ? null
-          : state.nextSteps.find(
-              (candidate) =>
-                candidate.id === session.nextStepId && candidate.journeyId === session.journeyId
-            );
+      const activity = session.activity?.trim() ?? '';
       const canAdd =
         session.source === 'manual' &&
         session.status === 'completed' &&
@@ -1168,10 +1165,12 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
         Number.isFinite(session.focusedMinutes) &&
         session.focusedMinutes >= MINIMUM_FOCUSED_MINUTES &&
         state.journeys.some(({ id }) => id === session.journeyId) &&
-        nextStep !== null &&
+        session.nextStepId === null &&
+        activity.length > 0 &&
+        activity.length <= FOCUS_SESSION_ACTIVITY_MAX_LENGTH &&
         !state.focusSessions.some(({ id }) => id === session.id);
 
-      return canAdd ? completeSessionInState(state, session) : state;
+      return canAdd ? completeSessionInState(state, { ...session, activity }) : state;
     });
   }
 

@@ -63,6 +63,8 @@ function createSession({
   id,
   journeyId = LEARN_GUITAR_JOURNEY_ID,
   nextStepId = LEARN_GUITAR_CURRENT_STEP_ID,
+  activity,
+  source = 'timer',
   startedAt = '2026-07-12T16:00:00.000Z',
   status = 'completed',
 }: {
@@ -71,6 +73,8 @@ function createSession({
   id: string;
   journeyId?: string;
   nextStepId?: string | null;
+  activity?: string;
+  source?: FocusSession['source'];
   startedAt?: string;
   status?: FocusSession['status'];
 }): FocusSession {
@@ -78,10 +82,11 @@ function createSession({
     id,
     journeyId,
     nextStepId,
+    ...(activity === undefined ? {} : { activity }),
     plannedMinutes: focusedMinutes,
     focusedMinutes,
     status,
-    source: 'timer',
+    source,
     startedAt,
     endedAt,
     reflection: '',
@@ -528,6 +533,24 @@ describe('deriveHomeData', () => {
       session: { id: 'session-cross-journey-step' },
       journeyName: 'Learn guitar',
       nextStepTitle: null,
+    });
+  });
+
+  it('uses a manual activity label without consulting the Next-step list', () => {
+    const state = createSeedAppState(LOCAL_SEED_NOW);
+    state.focusSessions = [
+      createSession({
+        id: 'manual-activity',
+        nextStepId: null,
+        activity: 'Replayed the bridge slowly',
+        source: 'manual',
+        endedAt: '2026-07-14T12:00:00.000Z',
+      }),
+    ];
+
+    expect(deriveHomeData(state, LOCAL_SEED_NOW).recentSessions[0]).toMatchObject({
+      session: { id: 'manual-activity' },
+      nextStepTitle: 'Replayed the bridge slowly',
     });
   });
 

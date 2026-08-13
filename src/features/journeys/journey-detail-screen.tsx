@@ -169,6 +169,7 @@ function JourneyContent({
       <section className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
         <div className="order-2 min-w-0 lg:order-1">
           <JourneyDetailProgress
+            journeyId={detail.journey.id}
             focusedMinutes={progress.focusedMinutes}
             totalPomodoros={progress.totalPomodoros}
             targetBlocks={detail.targetBlocks}
@@ -184,7 +185,6 @@ function JourneyContent({
             latestIndex={detail.latestIndex}
             milestoneIndexes={detail.milestoneIndexes}
             getBlockContributions={detail.getBlockContributions}
-            nextSteps={detail.nextSteps}
             readOnly={readOnly}
           />
         </div>

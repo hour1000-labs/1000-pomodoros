@@ -1,3 +1,4 @@
+import { getFocusSessionLabel } from '@/lib/focus-session-label';
 import type { AppState, FocusSession, Journey, Milestone, NextStep } from '@/lib/models';
 import {
   deriveJourneyProgress,
@@ -171,10 +172,12 @@ function deriveBlockContributions(
         date: getSessionDate(session),
         focusedMinutes: session.focusedMinutes,
         contributionMinutes,
-        nextStepTitle:
+        nextStepTitle: getFocusSessionLabel(
+          session,
           session.nextStepId === null
             ? null
-            : (nextStepsById.get(session.nextStepId)?.title ?? null),
+            : (nextStepsById.get(session.nextStepId)?.title ?? null)
+        ),
         source: session.source,
       };
       const existingContributions = contributionsByIndex.get(blockIndex);
@@ -227,8 +230,10 @@ export function deriveJourneyDetailData(
     .slice(0, RECENT_SESSION_LIMIT)
     .map((session) => ({
       session,
-      nextStepTitle:
-        session.nextStepId === null ? null : (nextStepsById.get(session.nextStepId)?.title ?? null),
+      nextStepTitle: getFocusSessionLabel(
+        session,
+        session.nextStepId === null ? null : (nextStepsById.get(session.nextStepId)?.title ?? null)
+      ),
     }));
   const targetBlocks = Math.ceil(Math.max(0, journey.targetMinutes) / POMODORO_MINUTES);
   const progressBlocks = Math.ceil(progress.focusedMinutes / POMODORO_MINUTES);

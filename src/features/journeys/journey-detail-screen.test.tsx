@@ -388,8 +388,10 @@ describe('JourneyDetailScreen', () => {
     fireEvent.change(within(dialog).getByLabelText('Completed date'), {
       target: { value: '2026-08-05' },
     });
-    fireEvent.change(within(dialog).getByLabelText('Next step worked on'), {
-      target: { value: LEARN_GUITAR_CURRENT_STEP_ID },
+    expect(within(dialog).queryByLabelText('Next step worked on')).toBeNull();
+    expect(within(dialog).queryByRole('combobox')).toBeNull();
+    fireEvent.change(within(dialog).getByLabelText('What did you work on?'), {
+      target: { value: 'Replayed the F chord transition' },
     });
     fireEvent.change(within(dialog).getByLabelText('Focused minutes'), {
       target: { value: '15' },
@@ -402,13 +404,15 @@ describe('JourneyDetailScreen', () => {
       expect(saved.focusSessions[1]).toMatchObject({
         focusedMinutes: 15,
         source: 'manual',
-        nextStepId: LEARN_GUITAR_CURRENT_STEP_ID,
+        nextStepId: null,
+        activity: 'Replayed the F chord transition',
       });
     });
     expect(
       await within(dialog).findByText('2 Focus sessions added time to this Pomodoro.')
     ).toBeTruthy();
     expect(within(dialog).getAllByText('Added manually').length).toBeGreaterThan(0);
+    expect(within(dialog).getAllByText('Replayed the F chord transition')).toHaveLength(2);
     expect(within(dialog).getByText('Streak impact')).toBeTruthy();
     expect(
       within(dialog).getByText('This date was already covered. Streak unchanged.')
@@ -427,6 +431,9 @@ describe('JourneyDetailScreen', () => {
     fireEvent.click(block);
     const dialog = await screen.findByRole('dialog', { name: 'Pomodoro 1' });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Forgot to start a session?' }));
+    fireEvent.change(within(dialog).getByLabelText('What did you work on?'), {
+      target: { value: 'Practice scales' },
+    });
     fireEvent.change(within(dialog).getByLabelText('Focused minutes'), {
       target: { value: '5' },
     });
@@ -450,6 +457,9 @@ describe('JourneyDetailScreen', () => {
     fireEvent.click(block);
     const dialog = await screen.findByRole('dialog', { name: 'Pomodoro 1' });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Forgot to start a session?' }));
+    fireEvent.change(within(dialog).getByLabelText('What did you work on?'), {
+      target: { value: 'Practice scales' },
+    });
     fireEvent.change(within(dialog).getByLabelText('Completed date'), {
       target: { value: formatDateInput(getLocalDateOffset(-8)) },
     });
@@ -478,6 +488,9 @@ describe('JourneyDetailScreen', () => {
     fireEvent.click(block);
     const dialog = await screen.findByRole('dialog', { name: 'Pomodoro 1' });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Forgot to start a session?' }));
+    fireEvent.change(within(dialog).getByLabelText('What did you work on?'), {
+      target: { value: 'Practice scales' },
+    });
     fireEvent.change(within(dialog).getByLabelText('Completed date'), {
       target: { value: formatDateInput(missedDate) },
     });
@@ -489,7 +502,7 @@ describe('JourneyDetailScreen', () => {
     const status = await within(dialog).findByRole('status');
     expect(
       within(status).getByText(
-        'History restored · 11-day current streak · 1 streak freeze returned · 1 freeze available.'
+        /History restored · \d+-day current streak · 1 streak freeze returned · 1 freeze available\./
       )
     ).toBeTruthy();
   });

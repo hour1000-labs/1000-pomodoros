@@ -1,9 +1,9 @@
-import type { FocusSession } from '@/lib/models';
+import { FOCUS_SESSION_ACTIVITY_MAX_LENGTH, type FocusSession } from '@/lib/models';
 import { MINIMUM_FOCUSED_MINUTES } from '@/lib/progress';
 
 export interface ManualSessionFormValues {
   completedDate: string;
-  nextStepId: string;
+  activity: string;
   focusedMinutes: string;
 }
 
@@ -40,7 +40,12 @@ export function getManualSessionFormError(values: ManualSessionFormValues, today
   const todayAtNoon = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12);
 
   if (completedAt > todayAtNoon) return 'The completed date cannot be in the future.';
-  if (values.nextStepId.length === 0) return 'Choose the Next step you worked on.';
+  const activity = values.activity.trim();
+
+  if (activity.length === 0) return 'Describe what you worked on.';
+  if (activity.length > FOCUS_SESSION_ACTIVITY_MAX_LENGTH) {
+    return `Keep the activity to ${FOCUS_SESSION_ACTIVITY_MAX_LENGTH} characters or fewer.`;
+  }
   if (values.focusedMinutes.trim().length === 0) return 'Enter the focused minutes you completed.';
 
   const focusedMinutes = Number(values.focusedMinutes);
@@ -55,13 +60,13 @@ export function getManualSessionFormError(values: ManualSessionFormValues, today
 export function createManualFocusSession({
   id,
   journeyId,
-  nextStepId,
+  activity,
   completedDate,
   focusedMinutes,
 }: {
   id: string;
   journeyId: string;
-  nextStepId: string;
+  activity: string;
   completedDate: string;
   focusedMinutes: number;
 }): FocusSession {
@@ -76,7 +81,8 @@ export function createManualFocusSession({
   return {
     id,
     journeyId,
-    nextStepId,
+    nextStepId: null,
+    activity: activity.trim(),
     plannedMinutes: focusedMinutes,
     focusedMinutes,
     status: 'completed',
