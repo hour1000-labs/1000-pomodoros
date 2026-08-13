@@ -296,3 +296,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/fix/fix-stale-timer-tab-title-after-completion`
 - Summary: Restored the default browser title after focus completion and navigation, including delayed 50-minute sessions that cross the 10-pomodoro milestone, with root-level title ownership and regression coverage for persisted completion state.
 - Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (36 files, 407 tests), `pnpm build`, `git diff --check`, and Chromium production-preview checks for `00:33` background catch-up, 50-minute credit, milestone routing, default titles, and zero console errors or warnings passed.
+
+### 2026-08-13 — Journey Target Editing and Presets
+
+- Branch: `codex/feature/journey-target-editing-and-presets`
+- Summary: Added Journey-scoped focus-target editing with shared onboarding presets, a distinct 1,000-Pomodoro default, and exact 10,000-hour support while preserving focused history.
+- Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (37 files, 421 tests), `pnpm build` (client, SSR, and 13 prerendered pages), `git diff --check`, and browser checks for persistence, validation, accessibility, 44px targets, long names, 320px, desktop, and 640×400 200%-equivalent layouts passed.
