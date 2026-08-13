@@ -23,6 +23,8 @@ import { Route as OnboardingJourneyRouteImport } from './routes/onboarding/journ
 import { Route as MilestonesMilestoneIdRouteImport } from './routes/milestones/$milestoneId'
 import { Route as JourneysJourneyIdRouteImport } from './routes/journeys/$journeyId'
 import { Route as FocusCompleteRouteImport } from './routes/focus/complete'
+import { Route as JourneysJourneyIdIndexRouteImport } from './routes/journeys/$journeyId/index'
+import { Route as JourneysJourneyIdTargetRouteImport } from './routes/journeys/$journeyId/target'
 
 const StreaksRoute = StreaksRouteImport.update({
   id: '/streaks',
@@ -94,6 +96,16 @@ const FocusCompleteRoute = FocusCompleteRouteImport.update({
   path: '/focus/complete',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JourneysJourneyIdIndexRoute = JourneysJourneyIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => JourneysJourneyIdRoute,
+} as any)
+const JourneysJourneyIdTargetRoute = JourneysJourneyIdTargetRouteImport.update({
+  id: '/target',
+  path: '/target',
+  getParentRoute: () => JourneysJourneyIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -102,7 +114,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/streaks': typeof StreaksRoute
   '/focus/complete': typeof FocusCompleteRoute
-  '/journeys/$journeyId': typeof JourneysJourneyIdRoute
+  '/journeys/$journeyId': typeof JourneysJourneyIdRouteWithChildren
   '/milestones/$milestoneId': typeof MilestonesMilestoneIdRoute
   '/onboarding/journey': typeof OnboardingJourneyRoute
   '/onboarding/motivation': typeof OnboardingMotivationRoute
@@ -110,6 +122,8 @@ export interface FileRoutesByFullPath {
   '/onboarding/target': typeof OnboardingTargetRoute
   '/focus/': typeof FocusIndexRoute
   '/journeys/': typeof JourneysIndexRoute
+  '/journeys/$journeyId/target': typeof JourneysJourneyIdTargetRoute
+  '/journeys/$journeyId/': typeof JourneysJourneyIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,7 +132,6 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/streaks': typeof StreaksRoute
   '/focus/complete': typeof FocusCompleteRoute
-  '/journeys/$journeyId': typeof JourneysJourneyIdRoute
   '/milestones/$milestoneId': typeof MilestonesMilestoneIdRoute
   '/onboarding/journey': typeof OnboardingJourneyRoute
   '/onboarding/motivation': typeof OnboardingMotivationRoute
@@ -126,6 +139,8 @@ export interface FileRoutesByTo {
   '/onboarding/target': typeof OnboardingTargetRoute
   '/focus': typeof FocusIndexRoute
   '/journeys': typeof JourneysIndexRoute
+  '/journeys/$journeyId/target': typeof JourneysJourneyIdTargetRoute
+  '/journeys/$journeyId': typeof JourneysJourneyIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -135,7 +150,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/streaks': typeof StreaksRoute
   '/focus/complete': typeof FocusCompleteRoute
-  '/journeys/$journeyId': typeof JourneysJourneyIdRoute
+  '/journeys/$journeyId': typeof JourneysJourneyIdRouteWithChildren
   '/milestones/$milestoneId': typeof MilestonesMilestoneIdRoute
   '/onboarding/journey': typeof OnboardingJourneyRoute
   '/onboarding/motivation': typeof OnboardingMotivationRoute
@@ -143,6 +158,8 @@ export interface FileRoutesById {
   '/onboarding/target': typeof OnboardingTargetRoute
   '/focus/': typeof FocusIndexRoute
   '/journeys/': typeof JourneysIndexRoute
+  '/journeys/$journeyId/target': typeof JourneysJourneyIdTargetRoute
+  '/journeys/$journeyId/': typeof JourneysJourneyIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +178,8 @@ export interface FileRouteTypes {
     | '/onboarding/target'
     | '/focus/'
     | '/journeys/'
+    | '/journeys/$journeyId/target'
+    | '/journeys/$journeyId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -169,7 +188,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/streaks'
     | '/focus/complete'
-    | '/journeys/$journeyId'
     | '/milestones/$milestoneId'
     | '/onboarding/journey'
     | '/onboarding/motivation'
@@ -177,6 +195,8 @@ export interface FileRouteTypes {
     | '/onboarding/target'
     | '/focus'
     | '/journeys'
+    | '/journeys/$journeyId/target'
+    | '/journeys/$journeyId'
   id:
     | '__root__'
     | '/'
@@ -193,6 +213,8 @@ export interface FileRouteTypes {
     | '/onboarding/target'
     | '/focus/'
     | '/journeys/'
+    | '/journeys/$journeyId/target'
+    | '/journeys/$journeyId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -202,7 +224,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   StreaksRoute: typeof StreaksRoute
   FocusCompleteRoute: typeof FocusCompleteRoute
-  JourneysJourneyIdRoute: typeof JourneysJourneyIdRoute
+  JourneysJourneyIdRoute: typeof JourneysJourneyIdRouteWithChildren
   MilestonesMilestoneIdRoute: typeof MilestonesMilestoneIdRoute
   OnboardingJourneyRoute: typeof OnboardingJourneyRoute
   OnboardingMotivationRoute: typeof OnboardingMotivationRoute
@@ -312,8 +334,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FocusCompleteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/journeys/$journeyId/': {
+      id: '/journeys/$journeyId/'
+      path: '/'
+      fullPath: '/journeys/$journeyId/'
+      preLoaderRoute: typeof JourneysJourneyIdIndexRouteImport
+      parentRoute: typeof JourneysJourneyIdRoute
+    }
+    '/journeys/$journeyId/target': {
+      id: '/journeys/$journeyId/target'
+      path: '/target'
+      fullPath: '/journeys/$journeyId/target'
+      preLoaderRoute: typeof JourneysJourneyIdTargetRouteImport
+      parentRoute: typeof JourneysJourneyIdRoute
+    }
   }
 }
+
+interface JourneysJourneyIdRouteChildren {
+  JourneysJourneyIdTargetRoute: typeof JourneysJourneyIdTargetRoute
+  JourneysJourneyIdIndexRoute: typeof JourneysJourneyIdIndexRoute
+}
+
+const JourneysJourneyIdRouteChildren: JourneysJourneyIdRouteChildren = {
+  JourneysJourneyIdTargetRoute: JourneysJourneyIdTargetRoute,
+  JourneysJourneyIdIndexRoute: JourneysJourneyIdIndexRoute,
+}
+
+const JourneysJourneyIdRouteWithChildren =
+  JourneysJourneyIdRoute._addFileChildren(JourneysJourneyIdRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -322,7 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   StreaksRoute: StreaksRoute,
   FocusCompleteRoute: FocusCompleteRoute,
-  JourneysJourneyIdRoute: JourneysJourneyIdRoute,
+  JourneysJourneyIdRoute: JourneysJourneyIdRouteWithChildren,
   MilestonesMilestoneIdRoute: MilestonesMilestoneIdRoute,
   OnboardingJourneyRoute: OnboardingJourneyRoute,
   OnboardingMotivationRoute: OnboardingMotivationRoute,

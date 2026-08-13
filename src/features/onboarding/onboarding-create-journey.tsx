@@ -6,6 +6,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { LoadingState } from '@/components/shared/loading-state';
 import { PrimaryButton } from '@/components/shared/primary-button';
 import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
+import { DEFAULT_TARGET_MINUTES } from '@/components/shared/target-picker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppState } from '@/hooks/use-app-state';
@@ -15,7 +16,6 @@ import { appRepository } from '@/lib/repository';
 
 import { OnboardingLayout } from './components/onboarding-layout';
 
-const DEFAULT_TARGET_MINUTES = 1_000 * 60;
 const journeyExamples = ['Learn Spanish', 'Build my portfolio', 'Improve at chess'];
 
 function JourneyForm({ state, startFresh }: { state: AppState; startFresh: boolean }) {

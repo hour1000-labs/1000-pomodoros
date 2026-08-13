@@ -671,6 +671,77 @@ describe('localStorage repository', () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
+  it('updates only an existing Journey target and preserves all other saved state', () => {
+    const storage = new MemoryStorage();
+    const state = createSeedAppState();
+    const repository = createLocalStorageRepository({
+      getStorage: () => storage,
+      createSeedState: () => state,
+    });
+    const initial = repository.load();
+    if (initial.status !== 'ready') throw new Error('Expected persisted state to load');
+    const listener = vi.fn();
+    repository.subscribe(listener);
+
+    const result = repository.updateJourneyTarget('journey-learn-guitar', 25_000);
+    const saved = repository.load();
+
+    expect(result.status).toBe('saved');
+    if (saved.status !== 'ready') throw new Error('Expected persisted state to load');
+    expect(saved.state).toEqual({
+      ...initial.state,
+      journeys: initial.state.journeys.map((journey) =>
+        journey.id === 'journey-learn-guitar' ? { ...journey, targetMinutes: 25_000 } : journey
+      ),
+    });
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not notify or write for invalid, unknown, or unchanged Journey targets', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({ getStorage: () => storage });
+    const initial = repository.load();
+    if (initial.status !== 'ready') throw new Error('Expected persisted state to load');
+    const setItem = vi.spyOn(storage, 'setItem');
+    const listener = vi.fn();
+    repository.subscribe(listener);
+
+    repository.updateJourneyTarget('journey-learn-guitar', -1);
+    repository.updateJourneyTarget('journey-learn-guitar', Number.NaN);
+    repository.updateJourneyTarget('missing-journey', 25_000);
+    repository.updateJourneyTarget(
+      'journey-learn-guitar',
+      initial.state.journeys[0]?.targetMinutes ?? 0
+    );
+
+    expect(setItem).not.toHaveBeenCalled();
+    expect(listener).not.toHaveBeenCalled();
+    const saved = repository.load();
+    expect(saved.status).toBe('ready');
+    if (saved.status === 'ready') expect(saved.state).toEqual(initial.state);
+  });
+
+  it('returns a recoverable error without changing state when target persistence fails', () => {
+    const storage = new MemoryStorage();
+    const repository = createLocalStorageRepository({
+      getStorage: () => storage,
+      createSeedState: () => createSeedAppState(),
+    });
+    const initial = repository.load();
+    if (initial.status !== 'ready') throw new Error('Expected persisted state to load');
+    storage.setItem = () => {
+      throw new Error('Simulated write failure');
+    };
+
+    const result = repository.updateJourneyTarget('journey-learn-guitar', 25_000);
+
+    expect(result.status).toBe('error');
+    expect(result.status === 'error' ? result.error.code : undefined).toBe('storage-write-failed');
+    const saved = repository.load();
+    expect(saved.status).toBe('ready');
+    if (saved.status === 'ready') expect(saved.state).toEqual(initial.state);
+  });
+
   it('rejects invalid, unknown, and completed rename targets without notifying', () => {
     const storage = new MemoryStorage();
     const repository = createLocalStorageRepository({ getStorage: () => storage });

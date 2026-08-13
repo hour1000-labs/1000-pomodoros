@@ -1,10 +1,9 @@
-import { Link, Navigate, useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { ArrowLeft, Check } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 
-import { LoadingState } from '@/components/shared/loading-state';
+import { EmptyState } from '@/components/shared/empty-state';
 import { PrimaryButton } from '@/components/shared/primary-button';
-import { RecoverableErrorState } from '@/components/shared/recoverable-error-state';
 import {
   getCustomHoursError,
   getInitialCustomHours,
@@ -14,19 +13,38 @@ import {
   targetSelectionToMinutes,
 } from '@/components/shared/target-picker';
 import { Button } from '@/components/ui/button';
-import { useAppState } from '@/hooks/use-app-state';
-import type { OnboardingDraft } from '@/lib/models';
+import type { AppState, Journey } from '@/lib/models';
 import { appRepository } from '@/lib/repository';
 
-import { OnboardingLayout } from './components/onboarding-layout';
+import { ApplicationLayout } from './components/application-layout';
+import { ApplicationStateBoundary } from './components/application-state-boundary';
 
-export { hoursToPomodoros } from '@/components/shared/target-picker';
+function JourneyTargetNotFound() {
+  return (
+    <ApplicationLayout>
+      <EmptyState
+        className="w-full"
+        title="Journey not found"
+        description="This Journey may have been removed. Your saved progress has not been changed."
+        action={
+          <PrimaryButton asChild>
+            <Link to="/journeys">
+              <ArrowLeft aria-hidden="true" />
+              Return to Journeys
+            </Link>
+          </PrimaryButton>
+        }
+      />
+    </ApplicationLayout>
+  );
+}
 
-function TargetForm({ draft }: { draft: OnboardingDraft }) {
-  const navigate = useNavigate({ from: '/onboarding/target' });
-  const initialSelection = getInitialSelection(draft.targetMinutes);
+function JourneyTargetForm({ journey }: { journey: Journey }) {
+  const navigate = useNavigate({ from: '/journeys/$journeyId/target' });
+
+  const initialSelection = getInitialSelection(journey.targetMinutes);
   const [selection, setSelection] = useState<TargetSelection>(initialSelection);
-  const [customHours, setCustomHours] = useState(getInitialCustomHours(draft.targetMinutes));
+  const [customHours, setCustomHours] = useState(getInitialCustomHours(journey.targetMinutes));
   const [customHasBlurred, setCustomHasBlurred] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -45,43 +63,35 @@ function TargetForm({ draft }: { draft: OnboardingDraft }) {
 
     setIsSaving(true);
     await Promise.resolve();
-    const result = appRepository.saveOnboardingDraft({
-      ...draft,
-      targetMinutes,
-      updatedAt: new Date().toISOString(),
-    });
+    const result = appRepository.updateJourneyTarget(journey.id, targetMinutes);
 
     if (result.status === 'saved') {
-      void navigate({ to: '/onboarding/next-step' });
+      void navigate({ to: '/journeys/$journeyId', params: { journeyId: journey.id } });
       return;
     }
 
     setIsSaving(false);
-    setSaveError('Your target could not be saved. Try again.');
+    setSaveError('Your target could not be saved. Nothing changed. Try again.');
   }
 
   return (
-    <OnboardingLayout>
+    <ApplicationLayout>
       <div className="mx-auto w-full max-w-[42rem]">
         <section className="w-full min-w-0">
-          <div className="mb-6 flex items-center gap-3">
-            <p className="mb-0 shrink-0 font-bold text-ink/60 text-sm">3 of 4</p>
-            <span className="h-px w-24 bg-ink/20" aria-hidden="true">
-              <span className="block h-px w-3/4 bg-pomodoro-red" />
-            </span>
-          </div>
-
           <p className="mb-3 min-w-0 font-bold text-ink/60 text-sm [overflow-wrap:anywhere]">
-            {draft.journeyName}
+            {journey.name}
           </p>
-
           <h1 className="mb-3 max-w-[14ch] font-bold text-4xl leading-[1.08] tracking-[-0.035em] sm:text-5xl">
-            Choose a focus target
+            Edit focus target
           </h1>
-          <p className="mb-6 text-base text-ink/60">You can change it later.</p>
+          <p className="mb-6 text-base text-ink/60">
+            Change the finish line. Recorded focused time stays the same.
+          </p>
 
           <form noValidate onSubmit={handleSubmit}>
             <TargetPicker
+              inputId={`custom-target-hours-${journey.id}`}
+              messageIdPrefix={`custom-target-${journey.id}`}
               selection={selection}
               customHours={customHours}
               customHasBlurred={customHasBlurred}
@@ -104,50 +114,39 @@ function TargetForm({ draft }: { draft: OnboardingDraft }) {
               </p>
             ) : null}
 
-            <div className="mt-6 flex items-center justify-between">
+            <div className="mt-6 flex items-center justify-between gap-4">
               <Button asChild variant="link" className="px-0 text-ink">
-                <Link to="/onboarding/motivation">
+                <Link to="/journeys/$journeyId" params={{ journeyId: journey.id }}>
                   <ArrowLeft aria-hidden="true" className="size-4" />
-                  Back
+                  Cancel
                 </Link>
               </Button>
               <PrimaryButton type="submit" className="min-w-36" disabled={isSaving}>
-                {isSaving ? 'Saving…' : 'Continue'}
-                <ArrowRight aria-hidden="true" className="size-4" />
+                {isSaving ? 'Saving…' : 'Save target'}
+                <Check aria-hidden="true" className="size-4" />
               </PrimaryButton>
             </div>
           </form>
         </section>
       </div>
-    </OnboardingLayout>
+    </ApplicationLayout>
   );
 }
 
-export function OnboardingChooseTarget() {
-  const hydration = useAppState();
+function JourneyTargetContent({ state, journeyId }: { state: AppState; journeyId: string }) {
+  const journey = state.journeys.find(({ id }) => id === journeyId);
 
-  if (hydration.status === 'loading') {
-    return (
-      <OnboardingLayout>
-        <LoadingState label="Loading target draft" variant="form" />
-      </OnboardingLayout>
-    );
-  }
+  return journey === undefined ? (
+    <JourneyTargetNotFound />
+  ) : (
+    <JourneyTargetForm journey={journey} />
+  );
+}
 
-  if (hydration.status === 'error') {
-    return (
-      <OnboardingLayout>
-        <RecoverableErrorState onRetry={hydration.retry} onReset={hydration.reset} />
-      </OnboardingLayout>
-    );
-  }
-
-  if (
-    hydration.state.onboardingDraft === null ||
-    hydration.state.onboardingDraft.journeyName.trim().length === 0
-  ) {
-    return <Navigate to="/onboarding/journey" replace />;
-  }
-
-  return <TargetForm draft={hydration.state.onboardingDraft} />;
+export function JourneyTargetScreen({ journeyId }: { journeyId: string }) {
+  return (
+    <ApplicationStateBoundary variant="form">
+      {(state) => <JourneyTargetContent state={state} journeyId={journeyId} />}
+    </ApplicationStateBoundary>
+  );
 }

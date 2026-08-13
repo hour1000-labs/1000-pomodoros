@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowLeft, Ellipsis, Pencil, Plus } from 'lucide-react';
+import { ArrowLeft, Ellipsis, Pencil, Plus, Target } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 import { EmptyState } from '@/components/shared/empty-state';
@@ -138,6 +138,12 @@ function JourneyContent({
                     <DropdownMenuItem onSelect={() => setJourneyNameEditOpen(true)}>
                       <Pencil aria-hidden="true" />
                       Edit name
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/journeys/$journeyId/target" params={{ journeyId: journey.id }}>
+                        <Target aria-hidden="true" />
+                        Edit target
+                      </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

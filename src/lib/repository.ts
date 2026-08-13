@@ -102,6 +102,7 @@ export interface AppRepository {
   saveOnboardingDraft(draft: OnboardingDraft | null): RepositorySaveResult;
   upsertJourney(journey: Journey): RepositorySaveResult;
   renameJourney(journeyId: string, name: string): RepositorySaveResult;
+  updateJourneyTarget(journeyId: string, targetMinutes: number): RepositorySaveResult;
   deleteJourney(journeyId: string): RepositorySaveResult;
   upsertNextStep(nextStep: NextStep): RepositorySaveResult;
   renameNextStep(journeyId: string, nextStepId: string, title: string): RepositorySaveResult;
@@ -677,6 +678,22 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     });
   }
 
+  function updateJourneyTarget(journeyId: string, targetMinutes: number) {
+    return update((state) => {
+      if (!isNonNegativeNumber(targetMinutes)) return state;
+
+      const journey = state.journeys.find(({ id }) => id === journeyId);
+      if (journey === undefined || journey.targetMinutes === targetMinutes) return state;
+
+      return {
+        ...state,
+        journeys: state.journeys.map((currentJourney) =>
+          currentJourney.id === journeyId ? { ...currentJourney, targetMinutes } : currentJourney
+        ),
+      };
+    });
+  }
+
   function deleteJourney(journeyId: string) {
     return update((state) => {
       const journeyToDelete = state.journeys.find((journey) => journey.id === journeyId);
@@ -1199,6 +1216,7 @@ export function createLocalStorageRepository(options: RepositoryOptions = {}): A
     saveOnboardingDraft,
     upsertJourney,
     renameJourney,
+    updateJourneyTarget,
     deleteJourney,
     upsertNextStep,
     renameNextStep,

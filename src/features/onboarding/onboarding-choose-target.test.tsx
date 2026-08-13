@@ -72,7 +72,7 @@ describe('OnboardingChooseTarget', () => {
 
     const targetGroup = screen.getByRole('group', { name: 'Focus target' });
     const radios = within(targetGroup).getAllByRole('radio');
-    expect(radios).toHaveLength(5);
+    expect(radios).toHaveLength(7);
     expect(within(targetGroup).getByRole('radio', { name: /1,000 hours/i })).toBeTruthy();
     expect(
       (within(targetGroup).getByRole('radio', { name: /1,000 hours/i }) as HTMLInputElement).checked
@@ -82,6 +82,8 @@ describe('OnboardingChooseTarget', () => {
     for (const label of [/10 hours/i, /25 hours/i, /100 hours/i, /1,000 hours/i, /Custom/i]) {
       expect(within(targetGroup).getByRole('radio', { name: label })).toBeTruthy();
     }
+    expect(within(targetGroup).getByRole('radio', { name: /1,000 Pomodoros/i })).toBeTruthy();
+    expect(within(targetGroup).getByRole('radio', { name: /10,000 hours/i })).toBeTruthy();
     expect(screen.queryByText(/Easy|Serious|Hardcore/i)).toBeNull();
   });
 
@@ -114,6 +116,17 @@ describe('OnboardingChooseTarget', () => {
     expect(savedDraft?.startedAt).toBe(baseDraft.startedAt);
   });
 
+  it('saves the 10,000-hour preset as 600,000 focused minutes', async () => {
+    const router = await renderTarget(createState(baseDraft));
+    fireEvent.click(await screen.findByRole('radio', { name: /10,000 hours/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/onboarding/next-step');
+    });
+    expect(readSavedState().onboardingDraft?.targetMinutes).toBe(600_000);
+  });
+
   it('reveals one custom input, validates its boundaries, and saves a valid target', async () => {
     const router = await renderTarget(createState(baseDraft));
     fireEvent.click(await screen.findByRole('radio', { name: /Custom/i }));
@@ -135,7 +148,9 @@ describe('OnboardingChooseTarget', () => {
 
     fireEvent.change(hoursInput, { target: { value: '10000' } });
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(screen.getByText('24,000 Pomodoros')).toBeTruthy();
+    expect(
+      within(screen.getByRole('group', { name: 'Focus target' })).getAllByText('24,000 Pomodoros')
+    ).toHaveLength(2);
 
     fireEvent.change(hoursInput, { target: { value: '10000.01' } });
     expect(screen.getByRole('alert').textContent).toContain('1 to 10,000 hours');

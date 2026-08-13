@@ -146,6 +146,7 @@ describe('OnboardingCreateJourney', () => {
       expect(router.state.location.pathname).toBe('/onboarding/motivation');
     });
     expect(readSavedState().onboardingDraft?.journeyName).toBe('Learn guitar');
+    expect(readSavedState().onboardingDraft?.targetMinutes).toBe(25_000);
   });
 
   it('restores a populated draft without stealing focus', async () => {

@@ -546,6 +546,22 @@ describe('JourneyDetailScreen', () => {
     expect(screen.getByRole('heading', { name: 'Practice the F shape' })).toBeTruthy();
   });
 
+  it('offers Edit target from the writable Journey actions menu', async () => {
+    const router = await renderJourney(createSeedAppState());
+
+    const menu = openDropdownMenu('Journey actions for Learn guitar').menu;
+    const editTarget = within(menu).getByRole('menuitem', { name: 'Edit target' });
+    expect(editTarget).toBeTruthy();
+    fireEvent.click(editTarget);
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe(`/journeys/${LEARN_GUITAR_JOURNEY_ID}/target`);
+    });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Edit focus target' })
+    ).toBeTruthy();
+  });
+
   it('renames an upcoming Next step from its action menu and restores menu focus', async () => {
     await renderJourney(createSeedAppState());
     const originalTitle = 'Practice the verse strumming pattern';
