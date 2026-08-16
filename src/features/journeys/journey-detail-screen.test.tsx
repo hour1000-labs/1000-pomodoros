@@ -22,6 +22,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
   cleanup();
   window.localStorage.clear();
@@ -103,6 +104,16 @@ function createStreakTimerSession(id: string, endedAt: Date): FocusSession {
     endedAt: endedAt.toISOString(),
     reflection: '',
   };
+}
+
+function createJourneyActivityState(activeDayCount: number): AppState {
+  const state = createSeedAppState(new Date(2026, 7, 31, 12));
+  state.focusSessions = Array.from({ length: activeDayCount }, (_, index) =>
+    createStreakTimerSession(`journey-boundary-${index + 1}`, new Date(2026, 7, index + 1, 12))
+  );
+  state.lastCompletedSessionId = state.focusSessions.at(-1)?.id ?? null;
+
+  return state;
 }
 
 function mockUpcomingListGeometry(list: HTMLElement, rowHeight = 80) {
@@ -295,6 +306,81 @@ describe('JourneyDetailScreen', () => {
     expect(screen.getByText('3 of 24 sections')).toBeTruthy();
     expect(screen.getByRole('list', { name: 'Pomodoro grid legend' })).toBeTruthy();
     expect(document.querySelectorAll('[data-pomodoro-index]')).toHaveLength(300);
+  });
+
+  it('keeps Journey Detail activity in chronological top-down order', async () => {
+    const state = createSeedAppState();
+    state.focusSessions = Array.from({ length: 8 }, (_, index) =>
+      createStreakTimerSession(`monthly-activity-${index}`, getLocalDateOffset(-index))
+    );
+
+    await renderJourney(state);
+    fireEvent.click(screen.getByRole('button', { name: 'Monthly activity' }));
+
+    const activitySection = screen.getByRole('region', { name: 'Monthly activity' });
+    expect(within(activitySection).getAllByRole('row')).toHaveLength(8);
+    expect(within(activitySection).getByText('Showing 7 of 8 active days')).toBeTruthy();
+    expect(
+      within(activitySection).getByRole('button', { name: 'Show 1 earlier day' })
+    ).toBeTruthy();
+    expect(within(activitySection).getAllByRole('row')[7]?.textContent).toContain('Today');
+  });
+
+  it.each([
+    0, 1, 7, 8, 15, 31,
+  ])('keeps Journey Detail activity disclosure correct for %i active days', async (activeDayCount) => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 7, 31, 12));
+    await renderJourney(createJourneyActivityState(activeDayCount));
+    fireEvent.click(screen.getByRole('button', { name: 'Monthly activity' }));
+
+    const activitySection = screen.getByRole('region', { name: 'Monthly activity' });
+    const visibleDayCount = Math.min(activeDayCount, 7);
+    expect(within(activitySection).getAllByRole('row')).toHaveLength(visibleDayCount + 1);
+
+    if (activeDayCount === 0) {
+      expect(
+        within(activitySection).getByText('No focused work for this Journey this month.')
+      ).toBeTruthy();
+      expect(within(activitySection).queryByText(/Showing .* active days?/)).toBeNull();
+      expect(within(activitySection).queryByRole('button', { name: /earlier/ })).toBeNull();
+      expect(within(activitySection).queryByRole('button', { name: /Show latest/ })).toBeNull();
+      return;
+    }
+
+    if (activeDayCount <= 7) {
+      expect(within(activitySection).queryByText(/Showing .* active days?/)).toBeNull();
+      expect(within(activitySection).queryByRole('button', { name: /earlier/ })).toBeNull();
+      expect(within(activitySection).queryByRole('button', { name: /Show latest/ })).toBeNull();
+      return;
+    }
+
+    expect(
+      within(activitySection).getByText(
+        `Showing ${visibleDayCount} of ${activeDayCount} active days`
+      )
+    ).toBeTruthy();
+
+    while (within(activitySection).queryByRole('button', { name: /Show .* earlier/ })) {
+      fireEvent.click(within(activitySection).getByRole('button', { name: /Show .* earlier/ }));
+    }
+
+    expect(within(activitySection).getAllByRole('row')).toHaveLength(activeDayCount + 1);
+    expect(within(activitySection).queryByRole('button', { name: /Show .* earlier/ })).toBeNull();
+    expect(
+      within(activitySection).getByRole('button', { name: 'Show latest 7 days' })
+    ).toBeTruthy();
+
+    fireEvent.click(within(activitySection).getByRole('button', { name: 'Show latest 7 days' }));
+    expect(within(activitySection).getAllByRole('row')).toHaveLength(8);
+    expect(
+      within(activitySection).getByText(`Showing 7 of ${activeDayCount} active days`)
+    ).toBeTruthy();
+    expect(
+      within(activitySection).getByRole('button', {
+        name: `Show ${Math.min(7, activeDayCount - 7)} earlier ${activeDayCount - 7 === 1 ? 'day' : 'days'}`,
+      })
+    ).toBeTruthy();
   });
 
   it('persists the selected Journey view until the user toggles it back', async () => {

@@ -46,7 +46,12 @@ function HomeActivityOverview({
         <HomeStreakLink streak={home.streak} />
       </section>
 
-      <MonthlyPomodoroActivity state={state} now={now} scopeLabel="All Journeys" />
+      <MonthlyPomodoroActivity
+        initialVisibleDays={3}
+        state={state}
+        now={now}
+        scopeLabel="All Journeys"
+      />
     </div>
   );
 }

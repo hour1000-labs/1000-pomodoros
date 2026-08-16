@@ -74,7 +74,7 @@ function renderActivity(
 }
 
 describe('MonthlyPomodoroActivity', () => {
-  it('defaults to the current month and renders active days oldest first', () => {
+  it('defaults to the current month and renders active days chronologically top down', () => {
     const state = createState([
       createSession({ id: 'today', date: new Date(2026, 7, 13, 10), focusedMinutes: 37.5 }),
       createSession({ id: 'older', date: new Date(2026, 7, 5, 10), focusedMinutes: 25 }),
@@ -86,7 +86,9 @@ describe('MonthlyPomodoroActivity', () => {
     expect(
       within(region).getByRole('heading', { level: 2, name: 'Monthly activity' })
     ).toBeTruthy();
-    expect(within(region).getByText('Scope · All Journeys')).toBeTruthy();
+    expect(within(region).getByText('All Journeys')).toBeTruthy();
+    expect(within(region).getByText('Month total')).toBeTruthy();
+    expect(within(region).queryByText('Active days')).toBeNull();
     const monthHeading = within(region).getByText('August 2026');
     expect(monthHeading.getAttribute('aria-live')).toBe('polite');
     expect(within(region).getByRole('columnheader', { name: 'Date' })).toBeTruthy();
@@ -99,6 +101,11 @@ describe('MonthlyPomodoroActivity', () => {
     expect(rows[1]?.textContent).toContain('Wed');
     expect(rows[2]?.textContent).toContain('Aug 13');
     expect(rows[2]?.textContent).toContain('Today');
+    const todayRow = rows[2];
+    if (todayRow === undefined) throw new Error('Expected a Today row');
+    const todayLabel = within(todayRow).getByText('Today');
+    expect(todayLabel.className).toContain('font-bold');
+    expect(todayLabel.querySelector('[aria-hidden="true"]')).toBeTruthy();
     expect(rows[1]?.getAttribute('aria-label')).toBe(
       'Wednesday, August 5, 2026; 25 focused minutes; 1 Pomodoro.'
     );
@@ -250,5 +257,83 @@ describe('MonthlyPomodoroActivity', () => {
         } focused minutes (13 hours 7 minutes).`
       )
     ).toBeTruthy();
+  });
+
+  it('reveals earlier days from a latest-day window and restores the compact view', () => {
+    const state = createState(
+      Array.from({ length: 15 }, (_, index) =>
+        createSession({
+          id: `day-${index + 1}`,
+          date: new Date(2026, 7, index + 1, 10),
+          focusedMinutes: 25,
+        })
+      )
+    );
+
+    renderActivity(state, {
+      initialVisibleDays: 3,
+      now: new Date(2026, 7, 31, 12),
+    });
+
+    expect(screen.getAllByRole('row')).toHaveLength(4);
+    expect(screen.getByText('Showing 3 of 15 active days')).toBeTruthy();
+    expect(screen.getAllByRole('row')[1]?.textContent).toContain('Aug 13');
+    expect(screen.getAllByRole('row')[3]?.textContent).toContain('Aug 15');
+    const revealButton = screen.getByRole('button', { name: 'Show 7 earlier days' });
+    const table = screen.getByRole('table');
+    expect(
+      Boolean(revealButton.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ).toBe(true);
+
+    fireEvent.click(revealButton);
+
+    expect(screen.getAllByRole('row')).toHaveLength(11);
+    expect(screen.getByText('Showing 10 of 15 active days')).toBeTruthy();
+    expect(screen.getAllByRole('row')[1]?.textContent).toContain('Aug 6');
+    expect(screen.getAllByRole('row')[10]?.textContent).toContain('Aug 15');
+    expect(screen.getByRole('button', { name: 'Show 5 earlier days' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show 5 earlier days' }));
+
+    expect(screen.getAllByRole('row')).toHaveLength(16);
+    expect(screen.getByText('Showing 15 of 15 active days')).toBeTruthy();
+    expect(screen.getAllByRole('row')[1]?.textContent).toContain('Aug 1');
+    expect(screen.getAllByRole('row')[15]?.textContent).toContain('Aug 15');
+    expect(screen.getByRole('button', { name: 'Show latest 3 days' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Show .* earlier days/ })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show latest 3 days' }));
+
+    expect(screen.getAllByRole('row')).toHaveLength(4);
+    expect(screen.getByText('Showing 3 of 15 active days')).toBeTruthy();
+    expect(screen.getAllByRole('row')[1]?.textContent).toContain('Aug 13');
+    expect(screen.getAllByRole('row')[3]?.textContent).toContain('Aug 15');
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Show 7 earlier days' })
+    );
+  });
+
+  it('resets the disclosure when navigating to another month', () => {
+    const state = createState([
+      createSession({ id: 'aug-1', date: new Date(2026, 7, 1, 10), focusedMinutes: 25 }),
+      createSession({ id: 'aug-2', date: new Date(2026, 7, 2, 10), focusedMinutes: 25 }),
+      createSession({ id: 'aug-3', date: new Date(2026, 7, 3, 10), focusedMinutes: 25 }),
+      createSession({ id: 'aug-4', date: new Date(2026, 7, 4, 10), focusedMinutes: 25 }),
+      createSession({ id: 'jul-1', date: new Date(2026, 6, 31, 10), focusedMinutes: 25 }),
+    ]);
+
+    renderActivity(state, {
+      initialVisibleDays: 3,
+      now: new Date(2026, 7, 31, 12),
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show 1 earlier day' }));
+    expect(screen.getByText('Showing 4 of 4 active days')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'View previous month' }));
+
+    expect(screen.getByText('July 2026')).toBeTruthy();
+    expect(screen.getAllByRole('row')).toHaveLength(2);
+    expect(screen.queryByText(/Showing .* active days/)).toBeNull();
   });
 });

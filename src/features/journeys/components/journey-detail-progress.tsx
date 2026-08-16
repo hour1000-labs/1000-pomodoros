@@ -259,7 +259,13 @@ export function JourneyDetailProgress({
       </div>
 
       {view === 'activity' ? (
-        <MonthlyPomodoroActivity state={state} now={now} journeyId={journeyId} headingLevel={3} />
+        <MonthlyPomodoroActivity
+          initialVisibleDays={7}
+          state={state}
+          now={now}
+          journeyId={journeyId}
+          headingLevel={3}
+        />
       ) : (
         <>
           <div className="overflow-hidden rounded-xl border border-ink/15 bg-paper">

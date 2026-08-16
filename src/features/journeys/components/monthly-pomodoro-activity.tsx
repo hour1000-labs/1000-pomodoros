@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { PomodoroBlock } from '@/components/shared/pomodoro-block';
@@ -26,6 +26,9 @@ const NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
 const POMODORO_NUMBER_FORMATTER = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 1,
 });
+
+const DEFAULT_INITIAL_VISIBLE_DAYS = 7;
+const REVEAL_BATCH_SIZE = 7;
 
 function createLocalMonthDate({ year, monthIndex }: LocalMonth) {
   const date = new Date(0);
@@ -123,7 +126,14 @@ function ActivityRow({
       <th className="px-3 py-4 text-left font-normal sm:px-5" scope="row">
         <time className="block leading-tight" dateTime={day.dateKey}>
           <span className="block font-bold text-sm tabular-nums">{shortDate}</span>
-          <span className="mt-1 block text-ink/60 text-xs">{dayContext}</span>
+          {isToday ? (
+            <span className="mt-1 inline-flex items-center gap-1.5 font-bold text-ink text-xs">
+              <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-pomodoro-red" />
+              Today
+            </span>
+          ) : (
+            <span className="mt-1 block text-ink/60 text-xs">{dayContext}</span>
+          )}
         </time>
       </th>
       <td className="min-w-0 px-1.5 py-4 sm:px-3">
@@ -172,12 +182,14 @@ export function MonthlyPomodoroActivity({
   journeyId,
   scopeLabel,
   headingLevel = 2,
+  initialVisibleDays = DEFAULT_INITIAL_VISIBLE_DAYS,
 }: {
   state: AppState;
   now: Date;
   journeyId?: string;
   scopeLabel?: string;
   headingLevel?: 2 | 3;
+  initialVisibleDays?: number;
 }) {
   const sectionHeadingId = useId();
   const monthHeadingId = useId();
@@ -187,6 +199,12 @@ export function MonthlyPomodoroActivity({
   );
   const [selectedMonth, setSelectedMonth] = useState<LocalMonth>(() => currentMonth);
   const previousCurrentMonthRef = useRef(currentMonth);
+  const revealFocusTargetRef = useRef<'reveal' | 'collapse' | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const normalizedInitialVisibleDays = Number.isFinite(initialVisibleDays)
+    ? Math.max(1, Math.floor(initialVisibleDays))
+    : DEFAULT_INITIAL_VISIBLE_DAYS;
+  const [visibleDayCount, setVisibleDayCount] = useState(normalizedInitialVisibleDays);
   const Heading = headingLevel === 3 ? 'h3' : 'h2';
   const MonthHeading = headingLevel === 3 ? 'h4' : 'h3';
 
@@ -198,8 +216,11 @@ export function MonthlyPomodoroActivity({
         ? currentMonth
         : month
     );
+    setVisibleDayCount((count) =>
+      isSameMonth(previousCurrentMonth, currentMonth) ? count : normalizedInitialVisibleDays
+    );
     previousCurrentMonthRef.current = currentMonth;
-  }, [currentMonth]);
+  }, [currentMonth, normalizedInitialVisibleDays]);
 
   const activity = useMemo(
     () =>
@@ -214,8 +235,28 @@ export function MonthlyPomodoroActivity({
   const monthLabel = formatMonth(selectedMonth);
   const todayKey = getLocalDateKey(now);
   const canViewNextMonth = compareMonths(selectedMonth, currentMonth) < 0;
+  const visibleDays = activity.days.slice(Math.max(0, activity.days.length - visibleDayCount));
+  const earlierDayCount = Math.max(0, activity.days.length - visibleDayCount);
+  const earlierBatchCount = Math.min(REVEAL_BATCH_SIZE, earlierDayCount);
+  const hasEarlierDays = earlierDayCount > 0;
+  const hasExpandedDays = visibleDayCount > normalizedInitialVisibleDays;
+  const visibleDayStatus = `Showing ${visibleDays.length} of ${activity.days.length} active ${activity.days.length === 1 ? 'day' : 'days'}`;
+  const revealEarlierLabel = `Show ${earlierBatchCount} earlier ${earlierBatchCount === 1 ? 'day' : 'days'}`;
+  const collapseLatestLabel = `Show latest ${normalizedInitialVisibleDays} ${normalizedInitialVisibleDays === 1 ? 'day' : 'days'}`;
+  useEffect(() => {
+    void visibleDayCount;
+    const focusTarget = revealFocusTargetRef.current;
+    if (focusTarget === null) return;
+
+    revealFocusTargetRef.current = null;
+    const target = sectionRef.current?.querySelector<HTMLButtonElement>(
+      `[data-monthly-activity-action="${focusTarget}"]`
+    );
+    target?.focus();
+  }, [visibleDayCount]);
 
   function moveMonth(offset: -1 | 1) {
+    setVisibleDayCount(normalizedInitialVisibleDays);
     setSelectedMonth((month) => {
       const nextMonth = normalizeLocalMonth(month.year, month.monthIndex + offset);
       if (nextMonth === null) return month;
@@ -224,8 +265,22 @@ export function MonthlyPomodoroActivity({
     });
   }
 
+  function revealEarlierDays() {
+    const nextVisibleDayCount = Math.min(activity.days.length, visibleDayCount + REVEAL_BATCH_SIZE);
+    if (nextVisibleDayCount === activity.days.length) {
+      revealFocusTargetRef.current = 'collapse';
+    }
+    setVisibleDayCount(nextVisibleDayCount);
+  }
+
+  function collapseToLatestDays() {
+    revealFocusTargetRef.current = 'reveal';
+    setVisibleDayCount(normalizedInitialVisibleDays);
+  }
+
   return (
     <section
+      ref={sectionRef}
       aria-labelledby={sectionHeadingId}
       className="overflow-hidden rounded-xl border border-ink/15 bg-paper"
     >
@@ -234,7 +289,7 @@ export function MonthlyPomodoroActivity({
           Monthly activity
         </Heading>
         {scopeLabel ? (
-          <p className="mb-0 text-ink/60 text-sm [overflow-wrap:anywhere]">Scope · {scopeLabel}</p>
+          <p className="mb-0 text-ink/60 text-sm [overflow-wrap:anywhere]">{scopeLabel}</p>
         ) : null}
       </header>
 
@@ -268,6 +323,59 @@ export function MonthlyPomodoroActivity({
         </Button>
       </div>
 
+      <dl
+        aria-label={`Month total: ${formatPomodoroCount(activity.totalPomodoros)}, ${formatFocusedMinutes(activity.focusedMinutes)} (${formatFocusedDuration(activity.focusedMinutes)}).`}
+        className="flex items-center justify-between gap-4 border-ink/15 border-b px-4 py-5 sm:px-6"
+      >
+        <dt className="shrink-0 font-bold text-ink/60 text-sm sm:text-base">Month total</dt>
+        <dd className="mb-0 min-w-0 text-right [overflow-wrap:anywhere]">
+          <span className="block font-bold text-xl tabular-nums leading-tight tracking-[-0.02em] sm:text-2xl">
+            {formatPomodoroCount(activity.totalPomodoros)}
+          </span>
+          <span className="mt-1 block text-ink/60 text-sm tabular-nums leading-tight sm:text-base">
+            {formatFocusedDuration(activity.focusedMinutes)}
+          </span>
+        </dd>
+      </dl>
+
+      {activity.days.length > normalizedInitialVisibleDays ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-ink/15 border-b px-4 py-3 sm:px-6">
+          <p aria-live="polite" className="m-0 text-ink/60 text-sm tabular-nums">
+            {visibleDayStatus}
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            {hasEarlierDays ? (
+              <Button
+                aria-label={revealEarlierLabel}
+                data-monthly-activity-action="reveal"
+                onClick={revealEarlierDays}
+                size="sm"
+                title={revealEarlierLabel}
+                type="button"
+                variant="ghost"
+              >
+                <ChevronUp aria-hidden="true" />
+                <span aria-hidden="true">{earlierBatchCount} earlier</span>
+              </Button>
+            ) : null}
+            {hasExpandedDays ? (
+              <Button
+                aria-label={collapseLatestLabel}
+                data-monthly-activity-action="collapse"
+                onClick={collapseToLatestDays}
+                size="sm"
+                title={collapseLatestLabel}
+                type="button"
+                variant="ghost"
+              >
+                <ChevronDown aria-hidden="true" />
+                <span aria-hidden="true">Latest {normalizedInitialVisibleDays}</span>
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
       <table aria-labelledby={monthHeadingId} className="w-full table-fixed border-collapse">
         <colgroup>
           <col className="w-[5.5rem] sm:w-32" />
@@ -288,7 +396,7 @@ export function MonthlyPomodoroActivity({
           </tr>
         </thead>
         <tbody>
-          {activity.days.map((day) => (
+          {visibleDays.map((day) => (
             <ActivityRow day={day} key={day.dateKey} todayKey={todayKey} />
           ))}
         </tbody>
@@ -301,21 +409,6 @@ export function MonthlyPomodoroActivity({
             : 'No focused work for this Journey this month.'}
         </p>
       ) : null}
-
-      <section
-        aria-label={`Month total: ${formatPomodoroCount(activity.totalPomodoros)}, ${formatFocusedMinutes(activity.focusedMinutes)} (${formatFocusedDuration(activity.focusedMinutes)}).`}
-        className="flex items-baseline justify-between gap-4 border-ink/15 border-t px-4 py-4 sm:px-6"
-      >
-        <p className="mb-0 font-bold text-ink/60 text-sm">Month total</p>
-        <div className="min-w-0 text-right">
-          <p className="mb-0 font-bold text-lg tabular-nums [overflow-wrap:anywhere]">
-            {formatPomodoroCount(activity.totalPomodoros)}
-          </p>
-          <p className="mt-1 mb-0 text-ink/60 text-sm [overflow-wrap:anywhere]">
-            {formatFocusedDuration(activity.focusedMinutes)}
-          </p>
-        </div>
-      </section>
     </section>
   );
 }

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
-import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -51,6 +51,27 @@ function createJourneyFreeState(): AppState {
     lastActiveJourneyId: null,
     lastCompletedSessionId: null,
   };
+}
+
+function createHomeActivityState(activeDayCount: number): AppState {
+  const state = createSeedAppState(new Date(2026, 6, 31, 12));
+  const templateSession = state.focusSessions[0];
+  if (templateSession === undefined) throw new Error('Expected a seeded session');
+
+  state.focusSessions = Array.from({ length: activeDayCount }, (_, index) => {
+    const endedAt = new Date(2026, 6, index + 1, 12);
+    return {
+      ...templateSession,
+      id: `home-boundary-${index + 1}`,
+      plannedMinutes: 25,
+      focusedMinutes: 25,
+      startedAt: new Date(endedAt.getTime() - 25 * 60 * 1_000).toISOString(),
+      endedAt: endedAt.toISOString(),
+    };
+  });
+  state.lastCompletedSessionId = state.focusSessions.at(-1)?.id ?? null;
+
+  return state;
 }
 
 function addActiveJourney(
@@ -123,7 +144,7 @@ describe('HomeScreen', () => {
     expect(within(streakLink).getByText(/\d+ freezes?/)).toBeTruthy();
     expect(todaySection.className).toContain('self-start');
 
-    expect(within(activitySection).getByText('Scope · All Journeys')).toBeTruthy();
+    expect(within(activitySection).getByText('All Journeys')).toBeTruthy();
     expect(within(activitySection).getByRole('heading', { name: 'July 2026' })).toBeTruthy();
     expect(within(activitySection).getByRole('columnheader', { name: 'Date' })).toBeTruthy();
     expect(
@@ -145,6 +166,81 @@ describe('HomeScreen', () => {
     expectBefore(todaySection, activitySection);
     expectBefore(activitySection, activeJourneysSection);
     expectBefore(activeJourneysSection, recentSessionsSection);
+  });
+
+  it('keeps the Home activity preview in chronological top-down order', async () => {
+    const state = createSeedAppState();
+    const templateSession = state.focusSessions[0];
+    if (templateSession === undefined) throw new Error('Expected a seeded session');
+
+    state.focusSessions = [1, 2, 3, 4].map((day, index) => {
+      const endedAt = new Date(2026, 6, day, 12);
+
+      return {
+        ...templateSession,
+        id: `home-activity-${index}`,
+        plannedMinutes: 25,
+        focusedMinutes: 25,
+        startedAt: new Date(endedAt.getTime() - 25 * 60 * 1_000).toISOString(),
+        endedAt: endedAt.toISOString(),
+      };
+    });
+
+    await renderHome(state);
+
+    const activitySection = await screen.findByRole('region', { name: 'Monthly activity' });
+    expect(within(activitySection).getAllByRole('row')).toHaveLength(4);
+    expect(within(activitySection).getByText('Showing 3 of 4 active days')).toBeTruthy();
+    expect(
+      within(activitySection).getByRole('button', { name: 'Show 1 earlier day' })
+    ).toBeTruthy();
+    expect(within(activitySection).getAllByRole('row')[1]?.textContent).toContain('Jul 2');
+    expect(within(activitySection).getAllByRole('row')[3]?.textContent).toContain('Jul 4');
+  });
+
+  it.each([
+    0, 1, 3, 4, 10, 31,
+  ])('keeps the Home activity disclosure correct for %i active days', async (activeDayCount) => {
+    vi.setSystemTime(new Date(2026, 6, 31, 12));
+    await renderHome(createHomeActivityState(activeDayCount));
+
+    const activitySection = await screen.findByRole('region', { name: 'Monthly activity' });
+    const visibleDayCount = Math.min(activeDayCount, 3);
+    expect(within(activitySection).getAllByRole('row')).toHaveLength(visibleDayCount + 1);
+
+    if (activeDayCount <= 3) {
+      expect(within(activitySection).queryByText(/Showing .* active days?/)).toBeNull();
+      expect(within(activitySection).queryByRole('button', { name: /earlier/ })).toBeNull();
+      expect(within(activitySection).queryByRole('button', { name: /Show latest/ })).toBeNull();
+      return;
+    }
+
+    expect(
+      within(activitySection).getByText(
+        `Showing ${visibleDayCount} of ${activeDayCount} active days`
+      )
+    ).toBeTruthy();
+
+    while (within(activitySection).queryByRole('button', { name: /Show .* earlier/ })) {
+      fireEvent.click(within(activitySection).getByRole('button', { name: /Show .* earlier/ }));
+    }
+
+    expect(within(activitySection).getAllByRole('row')).toHaveLength(activeDayCount + 1);
+    expect(within(activitySection).queryByRole('button', { name: /Show .* earlier/ })).toBeNull();
+    expect(
+      within(activitySection).getByRole('button', { name: 'Show latest 3 days' })
+    ).toBeTruthy();
+
+    fireEvent.click(within(activitySection).getByRole('button', { name: 'Show latest 3 days' }));
+    expect(within(activitySection).getAllByRole('row')).toHaveLength(4);
+    expect(
+      within(activitySection).getByText(`Showing 3 of ${activeDayCount} active days`)
+    ).toBeTruthy();
+    expect(
+      within(activitySection).getByRole('button', {
+        name: `Show ${Math.min(7, activeDayCount - 3)} earlier ${activeDayCount - 3 === 1 ? 'day' : 'days'}`,
+      })
+    ).toBeTruthy();
   });
 
   it('keeps the Journey card body and both Start actions on their typed destinations', async () => {
@@ -281,7 +377,7 @@ describe('HomeScreen', () => {
     await renderHome(state);
 
     const activitySection = await screen.findByRole('region', { name: 'Monthly activity' });
-    expect(within(activitySection).getByText('Scope · All Journeys')).toBeTruthy();
+    expect(within(activitySection).getByText('All Journeys')).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'No weekly goal' })).toBeNull();
     expect(screen.queryByRole('heading', { name: 'This week' })).toBeNull();
   });
