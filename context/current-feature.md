@@ -1,98 +1,42 @@
-# Current Feature: Compact Monthly Activity
+# Current Feature: <feature name>
 
 <!-- One-sentence description of the feature or fix -->
-
-Redesign the shared Monthly activity ledger around context-specific chronological disclosure so Home stays compact, keeps the newest work visible, and Journey Detail supports deeper review without a month-long default scroll.
 
 ## Status
 
 <!-- Not Started | In Progress | Ready to Commit -->
 
-Ready to Commit
+Not Started
 
 ## Goal
 
 <!-- User-visible outcome of the feature -->
 
-Users can see the selected month's exact result and a familiar chronological focused-work journal, with the latest active days visible by default and earlier history available on demand.
 
 ## Acceptance Criteria
 
 <!-- Checklist of testable outcomes -->
 
-- [x] On Home and Journey Detail, one flat, non-dashboard summary appears directly below the month controls and before the daily ledger: a clear `Month total` anchor pairs the selected month's exact Pomodoro value with its unit, while focused time appears as a smaller supporting line; the visible Active days metric is intentionally omitted, while disclosure status can still report exact active-day counts when history is hidden.
-- [x] Active-day rows are ordered chronologically from oldest at the top to newest at the bottom; when today has countable focus in the current month, its correctly labeled row is the last visible row when the full month is shown.
-- [x] The Today context label receives a restrained red marker and stronger text weight while ordinary weekday labels remain muted; the distinction is not color-only.
-- [x] Home renders at most its 3 latest active days by default, while Journey Detail renders at most its 7 latest active days by default; a surface with no more than its default count shows every row and no disclosure control.
-- [x] When a surface has hidden active days, concise status text reports the exact visible and total active-day counts, and a top-of-ledger caret control reveals the next batch of up to 7 earlier days without duplicates, gaps, or reordering until every active day is available.
-- [x] The reveal control's accessible name states the exact number of earlier days it will add, and keyboard focus remains predictable after each activation.
-- [x] Once any earlier rows are revealed, Home provides a quiet `Show latest 3 days` control and Journey Detail provides a quiet `Show latest 7 days` control; activating it restores that surface's compact latest-day window without changing the selected month.
-- [x] When every active day is visible, the reveal-earlier control is removed but the surface-specific collapse control remains available until the user returns to the compact latest-day window; the compact default shows no redundant collapse control.
-- [x] Changing the selected month resets Home to its latest 3 active days and Journey Detail to its latest 7 active days; disclosure state is transient and is not added to persisted app or Journey-view state.
-- [x] Existing month behavior remains intact: current month is the default, future months cannot be opened, navigation crosses year boundaries, the current month follows local-month rollover unless the user explicitly selected history, and historical months never label a date as Today.
-- [x] Existing daily and monthly values remain exact for all-Journey Home scope and Journey-specific Detail scope: qualifying timer and manual sessions combine by local date, partial Pomodoros remain proportional, and invalid, future, duplicated, orphaned, incomplete, or sub-five-minute sessions remain excluded.
-- [x] Each visible day retains a semantic table row and row header, machine-readable date, full accessible date/minutes/Pomodoro summary, earned-only non-focusable tomato marks, partial fill, and the existing 24-mark dense-day cap with an exact overflow count.
-- [x] The calm Journey-specific and all-Journey empty messages, Home's Continue-first section order, Journey Detail's persisted Progress/Monthly activity choice, and the read-only sample behavior remain unchanged.
-- [x] The component uses normal page flow rather than a nested scrolling region, has no horizontal overflow or clipped content, and keeps every interactive target at least 44px at 320px, desktop, and a 200%-zoom-equivalent viewport.
+- [ ] Criterion 1
 
 ## Plan
 
 <!-- Implementation steps -->
 
-1. Reorder the shared monthly activity data or presentation into canonical chronological active days while preserving all aggregation, filtering, and total calculations.
-2. Move the exact two-value month summary ahead of the ledger in a flat hierarchy led by the Pomodoro total with smaller focused-time support, then add placement-owned initial visibility of 3 latest days on Home and 7 latest days on Journey Detail, with a top caret and seven-day reveal batches for earlier days plus reversible surface-specific collapse that reset safely on month changes without persistence.
-3. Preserve the existing semantic table and tomato row treatment while adding accurate visible-count copy, reveal/collapse labels, and predictable keyboard focus behavior.
-4. Update Home, Journey Detail, sample, data, component, and persistence tests for the compact state, successive batches, month resets, and unchanged cross-surface contracts.
-5. Verify empty, current, historical, full 31-day, partial, dense-day, malformed-record, and responsive states in automated tests and a real browser.
+1. Step 1
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm exec tsc --noEmit` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] `git diff --check` passes
-- [x] Focused tests cover Home with 0, 1, 3, 4, 10, and 31 active days and Journey Detail with 0, 1, 7, 8, 15, and 31 active days, including repeated disclosure, partial and full expansion, collapse to each default, month resets, exact visible/total counts, reveal-control removal, and collapse-control visibility
-- [x] Focused tests cover current/historical month behavior, exact Pomodoro/focused-time/active-day totals, singular/plural labels, and 5-, near-25-, 25-, 37.5-, and 50-minute boundaries
-- [x] Regression tests cover same-day timer/manual aggregation, Journey scoping, malformed/duplicate/orphan/future exclusions, reload/import/delete recalculation, Journey-view persistence, and read-only sample isolation
-- [x] Home and Journey Detail are verified in a real browser with empty, respective 3-day/7-day defaults, first hidden-day boundaries, repeated expand/collapse, full 31-day, partial-Pomodoro, dense-day-overflow, current-month, and historical-month states
-- [x] Keyboard and accessibility checks verify heading/table relationships, row summaries, month announcements, exact reveal/collapse names, focus through expansion and collapse, decorative tomatoes, and 44px controls without relying on color alone
-- [x] Browser layouts pass at 320px, desktop, and a 640×400 200%-zoom equivalent with normal page flow, reachable following content, no clipping, and no horizontal overflow
-- [x] No relevant browser console errors or warnings
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
 <!-- Decisions, blockers, and scope changes -->
-
-- UX decision: keep the exact tomato ledger, but put a single `Month total` anchor with a smaller focused-time line first, order active days chronologically from oldest at the top to newest at the bottom, show the latest 3 active days on Home and latest 7 active days on Journey Detail, and reveal earlier active days from a top-of-ledger caret in batches of 7. This keeps the traditional paper-journal reading direction while keeping Today visible and Home Continue-first without adding a dashboard-style Active days metric.
-- Competitive research across Forest, Focus To-Do, TickTick, Daylio, Strava, Duolingo, and Opal supports summary-first hierarchy, bounded Home previews, and intentional access to older history. Several references use newest-first feeds, but the product decision here intentionally favors a traditional chronological journal. It adds one visual requirement—Pomodoros lead a flat summary while focused time supports beneath—and does not justify a calendar or analytics dashboard in this refinement. See `docs/monthly-activity-ui-inspiration.md`.
-- Progressive disclosure is reversible: after expansion, the user can always restore the surface-specific compact default; revealing every day removes only the reveal-later action, not the collapse action.
-- Product refinement on 2026-08-15: the user preferred a traditional pen-and-paper journal order over newest-first. The ledger now reads top-down from the earliest active day to the latest; Today appears at the bottom when the full month is expanded.
-- Product refinement on 2026-08-15: the user then preferred the latest chronological window to remain visible without scrolling, so Home and Journey Detail show their latest active days by default, with a top caret labeled by the exact earlier-day count and a collapse action back to the latest window.
-- Product refinement on 2026-08-15: the user preferred a minimal two-value summary, so the visible Active days metric was removed. The selected month's Pomodoro total remains primary, with focused time as a smaller right-aligned supporting line; disclosure status retains active-day counts when needed to explain hidden history.
-- Product refinement on 2026-08-15: the combined Pomodoro total and unit now use one restrained bold treatment, while focused time remains the smaller muted line beneath; this keeps the primary value cohesive without making it feel oversized.
-- Product refinement on 2026-08-15: the all-Journeys scope label now renders as `All Journeys` without the redundant `Scope ·` prefix, keeping the card header quieter.
-- 2026-08-15 minimal-summary revalidation: the visible summary now uses one restrained bold `Pomodoros` line with focused time beneath, omits Active days, and renders concise scope copy. `pnpm check`, TypeScript, the focused three-file suite (80 tests), the full suite (40 files, 443 tests), `pnpm build`, and `git diff --check` passed. A live sample-Journey browser check at 1280px confirmed the new hierarchy, no Active days text, no horizontal overflow, and no captured warning/error logs; prior 320px and 640×400 evidence remains applicable because the summary became narrower and less dense.
-- A seven-column calendar with selected-day details was considered, but it would compress dates, tomato progress, and interactive targets at 320px/200% zoom and hide exact daily effort behind another interaction. A fixed-height inner scroller was rejected because it creates nested scrolling and makes the full record harder to navigate.
-- “Active day” means a selected-month local date with at least one already-countable focus session; inactive dates are not added as placeholder rows.
-- This is a presentation and interaction redesign. Do not add a route, dependency, data-model field, persistence key, filter, session editor, new analytics, or changes to streak/freeze rules.
-- Existing repository, import/export, deletion, local-date, Pomodoro math, all-Journey/Journey scope, month-navigation, and midnight-rollover contracts remain authoritative.
-- No pending decision in `context/decisions.md` materially blocks this feature.
-- TanStack Intent was listed during load; no available TanStack-specific skill matches this display-only feature definition.
-- The unrelated untracked `context/screenshots/journey-detail-ui-v2.png` is outside this feature and must remain untouched.
-- 2026-08-15 chronological-window revalidation: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (40 files, 443 tests), `pnpm build`, and `git diff --check` passed before this refinement. The focused three-file suite passed again after the latest-window change (80 tests), and the full suite still passes (40 files, 443 tests). A live browser pass verified the read-only sample, Home, and Journey Detail with latest 3/7 defaults, top caret placement, dynamic earlier-day counts (including 1, 2, and 6), earlier-day reveal, latest-window collapse, Today remaining at the bottom, 320px/640px layouts, 44px controls, no horizontal overflow, no nested scrolling, and no console errors or warnings. The remaining unchecked matrix is the exhaustive 31-day, partial-Pomodoro, and dense-day fixture coverage.
-- 2026-08-15 month-summary refinement revalidation: the summary now has a labeled `Month total` anchor with Pomodoros attached as its unit, quieter focused-time and active-day support values, and a responsive weighted layout that keeps long durations readable. `pnpm check`, TypeScript, the focused three-file suite (80 tests), the full suite (40 files, 443 tests), `pnpm build`, and `git diff --check` passed; browser checks at 1280px and 320px confirmed the hierarchy, semantic summary label, 44px disclosure control, no horizontal overflow, and no console errors or warnings.
-- 2026-08-15 Today-label refinement: current-day rows now use a small Pomodoro-red marker plus bold Ink text while other weekday context stays muted. Component coverage and the same desktop/mobile browser pass verify the marker remains decorative, the Today text remains semantic, and no overflow or console errors were introduced.
-- Revalidation class: localized behavioral; the sort direction and disclosure copy changed the shared activity UI and its tests, so focused tests, the full suite, build, and responsive browser checks were rerun. Earlier unaffected persistence and data-contract evidence was retained where the implementation did not change.
-- 2026-08-15 feature-test revalidation: with no implementation changes since the prior evidence, `pnpm test -- src/features/journeys/components/monthly-pomodoro-activity.test.tsx src/features/journeys/home-screen.test.tsx src/features/journeys/journey-detail-screen.test.tsx` completed the full repository suite (40 files, 443 tests), `pnpm check` passed (158 files), `pnpm build` passed for client, SSR, and 13 prerendered pages, and `git diff --check` passed. A live browser check of the sample Journey at 1280px verified the 7-of-9 latest-day default, top `Show 2 earlier days` control, chronological expansion to all 9 rows, `Show latest 7 days` collapse with focus returned to the reveal action, preserved `Total` header, no horizontal page overflow or monthly-section scrolling, and zero captured warning/error logs. Home's empty monthly state still renders the zero summary and unchanged empty message. The exhaustive active-day fixture and browser matrix remain unchecked.
-- 2026-08-15 focused-test revalidation: `pnpm exec vitest run src/features/journeys/components/monthly-pomodoro-activity.test.tsx src/features/journeys/home-screen.test.tsx src/features/journeys/journey-detail-screen.test.tsx` passed 3 files and 80 tests. Vitest emitted only the repository's existing jsdom `Window's scrollTo()` notices.
-- 2026-08-15 boundary-fixture revalidation: added data-driven Home coverage for 0, 1, 3, 4, 10, and 31 active days and Journey Detail coverage for 0, 1, 7, 8, 15, and 31 active days. The focused three-file suite passed 3 files and 92 tests; the full suite passed 40 files and 455 tests. `pnpm check`, TypeScript, `pnpm build`, and `git diff --check` also passed. The browser matrix was exercised against the read-only sample for current-month, 7-day default, earlier-day expansion, collapse, chronological Today placement, summary hierarchy, overflow, and console output; the remaining synthetic 31-day/partial/dense Home fixture was prepared but not imported because the browser import flow requires replacing saved data with an irreversible confirmation, so no saved browser data was changed.
-- 2026-08-15 feature-test revalidation: this pass was documentation-only (`context/current-feature.md` evidence maintenance), so runtime and browser behavior evidence remains applicable. Reran `pnpm check`, `pnpm exec tsc --noEmit`, the focused three-file suite (92 tests), `pnpm test` (40 files, 455 tests), `pnpm build` (client, SSR, and 13 prerendered pages), and `git diff --check`; all passed. The complete synthetic browser matrix remains the only unchecked verification item.
-- 2026-08-15 feature review: implementation and existing evidence satisfy the documented behavior without a code-level blocker or scope expansion. The exhaustive active-day/default-window fixture is now covered; readiness remains blocked only by the complete browser state matrix.
-- 2026-08-15 feature-review revalidation: reviewed the complete tracked diff and the untracked research, documentation, and screenshot artifacts; `pnpm check` passed with no warnings. All 13 acceptance criteria remain satisfied by the shared ledger implementation and focused/full test evidence. No code-level finding or scope expansion was found; status remains `In Progress` solely because the complete synthetic browser state matrix is still unchecked.
-- 2026-08-15 P1 browser-matrix verification: imported a temporary canonical AppState fixture into the previously empty browser profile, then verified Home and Journey Detail against an empty current month and a historical 31-day month. Home showed its latest 3 rows and Journey Detail its latest 7, each reported the exact hidden count and `Show 7 earlier days`, four successive expansions exposed all 31 rows, and the surface-specific latest-window collapse restored the compact view. The full historical ledger visibly included a 37.5-minute partial day and the dense day’s `+8 more` overflow while retaining chronological order and no `Today` label for July. At 1280px, document and section scroll widths matched and disclosure/month controls measured 44px high; browser warning/error logs were empty. The temporary Journey was deleted afterward and the browser profile returned to zero saved Journeys; the fixture file was removed from the worktree.
-- 2026-08-15 P1 follow-up: the previously missing browser evidence is now complete. Status remains `In Progress` until the feature review lifecycle is rerun against this new evidence.
-- 2026-08-16 final feature review: all 13 acceptance criteria and every verification item are checked. The focused/full test, type-check, build, static-check, diff-check, and completed P1 browser-matrix evidence were reviewed; no code-level findings, regressions, accessibility issues, scope expansion, or unapproved changes were found. The feature is ready to commit.
 
 ## History
 
@@ -364,3 +308,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/monthly-pomodoro-activity-views`
 - Summary: Added an oldest-first monthly activity ledger to Journey Detail and Home with Journey-scoped/all-Journey totals, month navigation, earned-only tomato marks, focused-duration totals, one-decimal Pomodoro display, and per-Journey persisted view selection.
 - Verification: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (40 files, 439 tests), `pnpm build` (client, SSR, and 13 prerendered pages), `git diff --check`, focused persistence/data/component tests, targeted Journey/manual-entry/streak regressions (8 files, 209 tests), and browser checks at 320px, desktop, and 640×400 zoom-equivalent sizes for current/historical/empty/partial/dense states, keyboard controls, no overflow, and no console errors passed.
+
+### 2026-08-16 — Compact Monthly Activity
+
+- Branch: `codex/feature/compact-monthly-activity`
+- Summary: Refined Monthly activity into a minimal chronological journal with a month-total summary, emphasized Today state, context-specific latest-day windows, caret-based earlier-day disclosure, reversible collapse, and responsive accessible table behavior on Home and Journey Detail. Added research-backed UI guidance and regression coverage for boundary, partial, dense, historical, and empty states.
+- Verification: `pnpm check`, `pnpm exec tsc --noEmit`, focused and full `pnpm test` suites (40 files, 455 tests), `pnpm build`, `git diff --check`, and real-browser P1 checks for empty/current and historical 31-day states, 3/7-day defaults, repeated expansion/collapse, partial Pomodoros, dense-day overflow, 320px, desktop, 640×400 zoom-equivalent layouts, 44px targets, no horizontal overflow, and clean console logs passed.
