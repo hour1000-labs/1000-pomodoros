@@ -11,7 +11,7 @@ describe('BrandMark', () => {
     const image = container.querySelector('img');
     const text = container.querySelector('span span');
 
-    expect(image?.getAttribute('src')).toContain('brand-mark.png');
+    expect(image?.getAttribute('src')).toContain('logo.png');
     expect(image?.getAttribute('alt')).toBe('');
     expect(image?.getAttribute('aria-hidden')).toBe('true');
     expect(image?.getAttribute('width')).toBe('32');

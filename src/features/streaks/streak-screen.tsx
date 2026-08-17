@@ -73,29 +73,31 @@ export function StreakContent({ now, state }: { now: Date; state: AppState }) {
           Back to Home
         </Link>
 
-        <header className="mt-8 border-ink/15 border-b pb-10">
-          <p className="mb-4 font-bold text-ink/60 text-sm">Current streak</p>
+        <header className="mt-8 border-ink/8 border-b pb-10">
+          <p className="mb-4 font-bold text-ink/60 text-xs uppercase tracking-wider">
+            Current streak
+          </p>
           <div className="flex items-center gap-4">
             <span
               aria-hidden="true"
-              className="inline-flex size-12 shrink-0 items-center justify-center rounded-full border border-pomodoro-red text-pomodoro-red sm:size-14"
+              className="inline-flex size-12 shrink-0 items-center justify-center rounded-full border border-pomodoro-red/40 bg-pomodoro-red/5 text-pomodoro-red sm:size-14"
             >
               <Flame className="size-6 fill-pomodoro-red stroke-[1.75] sm:size-7" />
             </span>
             <h1
               aria-label={`Current streak: ${summary.currentStreak} ${streakUnit}`}
-              className="mb-0 flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-0 tracking-[-0.045em]"
+              className="mb-0 flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-0 tracking-tight"
             >
-              <span className="font-bold text-[clamp(4rem,20vw,7rem)] tabular-nums leading-none">
+              <span className="font-extrabold text-[clamp(4rem,20vw,7rem)] text-ink tabular-nums leading-none tracking-[-0.05em]">
                 {summary.currentStreak}
               </span>
-              <span className="font-bold text-2xl tracking-[-0.03em] sm:text-3xl">
+              <span className="font-bold text-2xl text-ink/70 tracking-tight sm:text-3xl">
                 {streakUnit}
               </span>
             </h1>
           </div>
 
-          <p className="mt-5 mb-0 text-ink/60 text-sm">{getTodayMessage(summary.todayState)}</p>
+          <p className="mt-5 mb-0 text-ink/70 text-sm">{getTodayMessage(summary.todayState)}</p>
           <p className="mt-2 mb-0 text-ink/60 text-sm">
             Personal best: {summary.longestStreak} {bestUnit} · {summary.freezesAvailable}{' '}
             {freezeUnit} available
@@ -138,26 +140,30 @@ export function StreakContent({ now, state }: { now: Date; state: AppState }) {
             </Button>
           </header>
 
-          <div className="mt-6 overflow-hidden rounded-xl border border-ink/15">
+          <div className="mt-6 overflow-hidden rounded-2xl border border-ink/8 bg-card shadow-[0_1px_3px_rgba(0,0,0,0.02),0_8px_24px_rgba(0,0,0,0.03)] ring-1 ring-ink/5">
             <section
               aria-label={`${getMonthLabel(selectedMonth)} totals`}
-              className="border-ink/15 border-b"
+              className="border-ink/8 border-b"
             >
-              <dl className="m-0 grid grid-cols-2 divide-x divide-ink/15">
+              <dl className="m-0 grid grid-cols-2 divide-x divide-ink/8">
                 <div className="min-w-0 p-4 sm:px-6">
-                  <dt className="mt-1 text-ink/60 text-xs sm:text-sm">Days practiced</dt>
-                  <dd className="m-0 flex items-center gap-2 font-bold text-2xl tabular-nums sm:text-3xl">
+                  <dt className="mt-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                    Days practiced
+                  </dt>
+                  <dd className="m-0 flex items-center gap-2 font-extrabold text-2xl text-ink tabular-nums sm:text-3xl">
                     <Flame
                       aria-hidden="true"
-                      className="size-4 fill-pomodoro-red text-pomodoro-red"
+                      className="size-5 fill-pomodoro-red text-pomodoro-red"
                     />
                     {month?.practicedDays ?? 0}
                   </dd>
                 </div>
                 <div className="min-w-0 p-4 sm:px-6">
-                  <dt className="mt-1 text-ink/60 text-xs sm:text-sm">Freezes used</dt>
-                  <dd className="m-0 flex items-center gap-2 font-bold text-2xl tabular-nums sm:text-3xl">
-                    <Snowflake aria-hidden="true" className="size-4" />
+                  <dt className="mt-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                    Freezes used
+                  </dt>
+                  <dd className="m-0 flex items-center gap-2 font-extrabold text-2xl text-ink tabular-nums sm:text-3xl">
+                    <Snowflake aria-hidden="true" className="size-5 text-ink/60" />
                     {month?.freezesUsed ?? 0}
                   </dd>
                 </div>

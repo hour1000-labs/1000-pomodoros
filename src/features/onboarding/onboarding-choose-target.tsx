@@ -75,10 +75,10 @@ function TargetForm({ draft }: { draft: OnboardingDraft }) {
             {draft.journeyName}
           </p>
 
-          <h1 className="mb-3 max-w-[14ch] font-bold text-4xl leading-[1.08] tracking-[-0.035em] sm:text-5xl">
+          <h1 className="mb-3 max-w-[14ch] font-extrabold text-4xl text-ink leading-[1.06] tracking-[-0.04em] sm:text-5xl">
             Choose a focus target
           </h1>
-          <p className="mb-6 text-base text-ink/60">You can change it later.</p>
+          <p className="mb-7 text-base text-ink/65">You can change it later.</p>
 
           <form noValidate onSubmit={handleSubmit}>
             <TargetPicker

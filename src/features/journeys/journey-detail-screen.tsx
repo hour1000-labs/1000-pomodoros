@@ -115,11 +115,11 @@ function JourneyContent({
       mobileDock={mobileDock}
       showNavigationItems={showNavigationItems}
     >
-      <header className="border-ink/15 border-b pb-8">
+      <header className="border-ink/8 border-b pb-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
             <div className="flex min-w-0 items-start gap-2">
-              <h1 className="mb-0 min-w-0 max-w-[18ch] flex-1 font-bold text-5xl leading-[1.02] tracking-[-0.045em] [overflow-wrap:anywhere] sm:text-6xl">
+              <h1 className="mb-0 min-w-0 max-w-[18ch] flex-1 font-extrabold text-5xl text-ink leading-[1.02] tracking-[-0.045em] [overflow-wrap:anywhere] sm:text-6xl">
                 {journey.name}
               </h1>
               {!readOnly ? (
@@ -152,21 +152,25 @@ function JourneyContent({
               ) : null}
             </div>
             {journey.reason ? (
-              <p className="mb-0 max-w-[60ch] text-ink/60 leading-relaxed">{journey.reason}</p>
+              <p className="mt-2 mb-0 max-w-[60ch] text-ink/65 leading-relaxed">{journey.reason}</p>
             ) : null}
           </div>
-          <dl className="grid shrink-0 grid-cols-2 gap-8 border-ink/15 border-t pt-4 md:min-w-72 md:border-t-0 md:border-l md:pt-0 md:pl-8">
+          <dl className="grid shrink-0 grid-cols-2 gap-8 border-ink/8 border-t pt-4 md:min-w-72 md:border-t-0 md:border-l md:pt-0 md:pl-8">
             <div>
-              <dt className="mb-1 font-bold text-ink/60 text-sm">Pomodoros</dt>
-              <dd className="mb-0 font-bold text-2xl tabular-nums">
+              <dt className="mb-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                Pomodoros
+              </dt>
+              <dd className="mb-0 font-extrabold text-3xl text-ink tabular-nums tracking-tight">
                 {progress.totalPomodoros.toLocaleString(undefined, {
                   maximumFractionDigits: 1,
                 })}
               </dd>
             </div>
             <div>
-              <dt className="mb-1 font-bold text-ink/60 text-sm">Focused time</dt>
-              <dd className="mb-0 font-bold text-lg tabular-nums">
+              <dt className="mb-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                Focused time
+              </dt>
+              <dd className="mb-0 font-extrabold text-2xl text-ink tabular-nums tracking-tight">
                 {formatFocusedDuration(progress.focusedMinutes)}
               </dd>
             </div>

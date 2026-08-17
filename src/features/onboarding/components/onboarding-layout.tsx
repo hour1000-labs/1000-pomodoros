@@ -14,8 +14,8 @@ export function OnboardingLayout({
 }>) {
   return (
     <div className="flex min-h-dvh flex-col bg-paper text-ink">
-      <header className="border-ink/12 border-b">
-        <div className="mx-auto flex w-full max-w-content items-center justify-between gap-4 px-gutter-mobile py-3 md:px-gutter-desktop">
+      <header className="sticky top-0 z-30 border-ink/8 border-b bg-paper/90 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-content items-center justify-between gap-4 px-gutter-mobile py-3.5 md:px-gutter-desktop">
           <BrandMark />
           {headerAction}
         </div>

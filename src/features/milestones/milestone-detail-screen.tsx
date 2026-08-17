@@ -102,13 +102,13 @@ function MilestoneContent({ state, milestoneId }: { state: AppState; milestoneId
           </header>
 
           <div className="min-w-0">
-            <Card className="min-w-0 gap-0 py-0">
-              <CardContent className="p-4 sm:p-6">
+            <Card className="min-w-0 gap-0 rounded-2xl border border-ink/8 bg-card py-0 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_6px_20px_rgba(0,0,0,0.02)]">
+              <CardContent className="p-5 sm:p-7">
                 <header className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
-                  <h2 className="mb-0 font-bold text-xl [overflow-wrap:anywhere]">
+                  <h2 className="mb-0 font-extrabold text-ink text-xl tracking-tight [overflow-wrap:anywhere]">
                     {milestone.name}
                   </h2>
-                  <p className="mb-0 font-bold text-sm tabular-nums">
+                  <p className="mb-0 font-bold text-ink/70 text-sm tabular-nums">
                     {pomodoroAmount} of {pomodoroAmount} {pomodoroLabel}
                   </p>
                 </header>
@@ -122,7 +122,7 @@ function MilestoneContent({ state, milestoneId }: { state: AppState; milestoneId
                   milestoneIndexes={targetMilestoneIndexes}
                 />
 
-                <p className="mt-5 mb-0 border-ink/15 border-t pt-4 text-ink/60 text-sm leading-relaxed">
+                <p className="mt-5 mb-0 border-ink/8 border-t pt-4 text-ink/60 text-sm leading-relaxed">
                   Each Pomodoro is 25 minutes. The milestone Pomodoro is marked.
                 </p>
               </CardContent>

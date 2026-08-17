@@ -339,18 +339,18 @@ function PausedSessionState({
         </div>
 
         <div
-          className="grid size-[clamp(12rem,min(68vw,43dvh),22rem)] place-items-center rounded-full p-2"
+          className="grid size-[clamp(12rem,min(68vw,43dvh),22rem)] place-items-center rounded-full p-2.5 shadow-[0_0_60px_rgba(0,0,0,0.03),0_8px_24px_rgba(0,0,0,0.03)]"
           style={ringStyle}
         >
-          <div className="grid size-full place-content-center rounded-full border border-ink/15 bg-paper px-3">
-            <p className="mb-3 font-bold text-ink/60 text-sm">Paused</p>
+          <div className="grid size-full place-content-center rounded-full border border-ink/8 bg-paper px-3">
+            <p className="mb-2 font-bold text-ink/60 text-xs uppercase tracking-wider">Paused</p>
             <h1
-              className="mb-2 font-bold text-[clamp(3.25rem,14vw,6.5rem)] tabular-nums leading-none tracking-[-0.065em]"
+              className="mb-2 font-extrabold text-[clamp(3.25rem,14vw,6.5rem)] text-ink tabular-nums leading-none tracking-tight"
               id="active-session-title"
             >
               {formatRemainingTime(activeTimer.remainingSeconds)}
             </h1>
-            <p className="mb-0 text-ink/60 text-sm">Time remaining</p>
+            <p className="mb-0 text-ink/60 text-xs">Time remaining</p>
           </div>
         </div>
 
@@ -637,13 +637,15 @@ function RunningSessionState({
         </div>
 
         <div
-          className="grid size-[clamp(12.5rem,min(70vw,50dvh),25rem)] place-items-center rounded-full p-2"
+          className="grid size-[clamp(12.5rem,min(70vw,50dvh),25rem)] place-items-center rounded-full p-2.5 shadow-[0_0_90px_rgba(193,1,52,0.08),0_12px_36px_rgba(0,0,0,0.04)] transition-shadow duration-500 dark:shadow-[0_0_120px_rgba(193,1,52,0.15),0_16px_48px_rgba(0,0,0,0.4)]"
           style={ringStyle}
         >
-          <div className="grid size-full place-content-center rounded-full border border-ink/15 bg-paper px-3 text-ink">
-            <p className="mb-2 text-ink/60 text-sm">Time remaining</p>
+          <div className="grid size-full place-content-center rounded-full border border-ink/8 bg-paper px-3 text-ink">
+            <p className="mb-2 font-bold text-ink/60 text-xs uppercase tracking-wider">
+              Time remaining
+            </p>
             <h1
-              className="mb-0 font-bold text-[clamp(3.4rem,14vw,7.5rem)] tabular-nums leading-none tracking-[-0.065em]"
+              className="mb-0 font-extrabold text-[clamp(3.4rem,14vw,7.5rem)] text-ink tabular-nums leading-none tracking-tight"
               id="running-timer-title"
             >
               {formatRemainingTime(remainingSeconds)}
@@ -756,8 +758,10 @@ function DurationOption({
   return (
     <label
       className={cn(
-        'relative flex min-h-18 cursor-pointer flex-col justify-between rounded-lg border p-3 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink has-[:focus-visible]:ring-offset-2 [@media(max-height:680px)]:min-h-12 [@media(max-height:680px)]:p-2',
-        checked ? 'border-ink bg-ink text-paper' : 'border-ink/50 bg-paper text-ink'
+        'relative flex min-h-18 cursor-pointer flex-col justify-between rounded-xl border p-3.5 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.985] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink has-[:focus-visible]:ring-offset-2 motion-reduce:transition-none motion-reduce:active:scale-100 [@media(max-height:680px)]:min-h-12 [@media(max-height:680px)]:p-2.5',
+        checked
+          ? 'border-ink bg-ink text-paper shadow-sm'
+          : 'border-ink/12 bg-card text-ink hover:border-ink/30 hover:bg-ink/[0.02]'
       )}
     >
       <input
@@ -768,12 +772,12 @@ function DurationOption({
         className="sr-only"
         onChange={() => onChange(value)}
       />
-      <span className="font-bold text-base leading-none sm:text-xl">{label}</span>
-      <span className={cn('text-xs', checked ? 'text-paper/65' : 'text-ink/60')}>
+      <span className="font-extrabold text-base tabular-nums leading-none sm:text-xl">{label}</span>
+      <span className={cn('font-medium text-xs', checked ? 'text-paper/70' : 'text-ink/55')}>
         {description}
       </span>
       {checked ? (
-        <Check aria-hidden="true" className="absolute top-2 right-2 size-3 text-paper" />
+        <Check aria-hidden="true" className="absolute top-2.5 right-2.5 size-3.5 text-paper" />
       ) : null}
     </label>
   );
@@ -934,11 +938,13 @@ function TimerSetup({
         </header>
 
         <form noValidate onSubmit={handleStart} className="min-w-0">
-          <div className="grid gap-3 rounded-xl border border-ink/15 p-4">
+          <div className="grid gap-3 rounded-2xl border border-ink/8 bg-card p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_6px_20px_rgba(0,0,0,0.02)]">
             <div className="flex min-w-0 items-center justify-between gap-4">
               <div className="min-w-0">
-                <p className="mb-1 font-bold text-ink/60 text-sm">Journey</p>
-                <p className="mb-0 truncate font-bold text-base">{journey.name}</p>
+                <p className="mb-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                  Journey
+                </p>
+                <p className="mb-0 truncate font-extrabold text-base text-ink">{journey.name}</p>
               </div>
               <SelectionDialog
                 label="Change Journey"
@@ -966,10 +972,12 @@ function TimerSetup({
               </SelectionDialog>
             </div>
 
-            <div className="flex min-w-0 items-center justify-between gap-4 border-ink/15 border-t pt-3">
+            <div className="flex min-w-0 items-center justify-between gap-4 border-ink/8 border-t pt-3.5">
               <div className="min-w-0">
-                <p className="mb-1 font-bold text-ink/60 text-sm">Next step</p>
-                <p className="mb-0 line-clamp-2 font-bold text-sm">
+                <p className="mb-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                  Next step
+                </p>
+                <p className="mb-0 line-clamp-2 font-bold text-ink text-sm">
                   {nextStep?.title ?? 'No current Next step'}
                 </p>
               </div>

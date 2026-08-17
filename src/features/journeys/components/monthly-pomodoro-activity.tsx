@@ -282,10 +282,13 @@ export function MonthlyPomodoroActivity({
     <section
       ref={sectionRef}
       aria-labelledby={sectionHeadingId}
-      className="overflow-hidden rounded-xl border border-ink/15 bg-paper"
+      className="overflow-hidden rounded-2xl border border-ink/8 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_16px_rgba(0,0,0,0.02)]"
     >
-      <header className="px-4 pt-5 pb-4 sm:px-6">
-        <Heading className="mb-1 font-bold text-2xl tracking-[-0.025em]" id={sectionHeadingId}>
+      <header className="px-5 pt-6 pb-4 sm:px-6">
+        <Heading
+          className="mb-1 font-extrabold text-2xl text-ink tracking-tight"
+          id={sectionHeadingId}
+        >
           Monthly activity
         </Heading>
         {scopeLabel ? (
@@ -293,7 +296,7 @@ export function MonthlyPomodoroActivity({
         ) : null}
       </header>
 
-      <div className="grid grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 border-ink/15 border-y px-3 py-2 sm:gap-3 sm:px-5">
+      <div className="grid grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 border-ink/8 border-y px-3 py-2 sm:gap-3 sm:px-5">
         <Button
           aria-label="View previous month"
           onClick={() => moveMonth(-1)}

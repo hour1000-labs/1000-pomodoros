@@ -5,12 +5,12 @@ export function BrandMark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        'inline-flex min-h-11 items-center gap-2 font-bold text-base tracking-[-0.02em]',
+        'inline-flex min-h-11 select-none items-center gap-2.5 font-extrabold text-base text-ink tracking-tight',
         className
       )}
     >
       <img
-        src={getPublicAssetPath('brand-mark.png')}
+        src={getPublicAssetPath('logo.png')}
         alt=""
         aria-hidden="true"
         width={32}

@@ -134,10 +134,10 @@ function TargetOption({
   return (
     <label
       className={cn(
-        'relative grid min-h-20 cursor-pointer content-between rounded-xl border px-4 py-3 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink has-[:focus-visible]:ring-offset-2 sm:min-h-24 sm:px-5 sm:py-4',
+        'relative grid min-h-20 cursor-pointer content-between rounded-2xl border p-4 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.985] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink has-[:focus-visible]:ring-offset-2 motion-reduce:transition-none motion-reduce:active:scale-100 sm:min-h-24 sm:p-5',
         selected
-          ? 'border-ink bg-ink text-paper'
-          : 'border-ink/50 bg-paper text-ink hover:border-ink'
+          ? 'border-ink bg-ink text-paper shadow-sm'
+          : 'border-ink/12 bg-card text-ink hover:border-ink/30 hover:bg-ink/[0.02]'
       )}
     >
       <input
@@ -149,16 +149,23 @@ function TargetOption({
         className="sr-only"
         onChange={onSelect}
       />
-      <span className="font-bold text-2xl tabular-nums leading-none tracking-[-0.03em] sm:text-3xl">
+      <span className="font-extrabold text-2xl tabular-nums leading-none tracking-tight sm:text-3xl">
         {preset.value}
-        <span className="mt-1 block font-normal text-sm tracking-normal">{preset.unit}</span>
+        <span className="mt-1.5 block font-bold font-sans text-xs uppercase tracking-wider">
+          {preset.unit}
+        </span>
       </span>
-      <span className={cn('mt-3 text-sm tabular-nums', selected ? 'text-paper/70' : 'text-ink/60')}>
+      <span
+        className={cn(
+          'mt-3 font-medium text-xs tabular-nums sm:text-sm',
+          selected ? 'text-paper/70' : 'text-ink/60'
+        )}
+      >
         {preset.detail}
       </span>
       {selected ? (
-        <span className="absolute top-3 right-3 grid size-6 place-items-center rounded-full bg-pomodoro-red text-paper">
-          <Check aria-hidden="true" className="size-4" />
+        <span className="absolute top-3.5 right-3.5 grid size-5 place-items-center rounded-full bg-pomodoro-red text-paper">
+          <Check aria-hidden="true" className="size-3.5" />
         </span>
       ) : null}
     </label>

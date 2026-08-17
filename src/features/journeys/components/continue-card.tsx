@@ -16,20 +16,20 @@ export function ContinueCard({
   nextStep: NextStep | null;
 }) {
   return (
-    <Card className="border border-ink/15 bg-paper py-0 ring-0">
+    <Card className="rounded-2xl border border-ink/8 bg-card py-0 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_8px_24px_rgba(0,0,0,0.03)] ring-1 ring-ink/5">
       <CardContent className="grid gap-8 p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end lg:p-10">
         <div className="min-w-0">
-          <p className="mb-3 font-bold text-ink/60 text-sm [overflow-wrap:anywhere]">
+          <p className="mb-2.5 font-bold text-ink/60 text-xs uppercase tracking-wider [overflow-wrap:anywhere]">
             {journeyName}
           </p>
-          <p className="mb-4 text-ink/60 text-sm">
+          <p className="mb-3 text-ink/60 text-sm">
             {hasCompletedActivity
               ? 'Continue where you left off.'
               : 'Your first Pomodoro starts here.'}
           </p>
           <h1
             id="home-continue-heading"
-            className="mb-0 max-w-[22ch] font-bold text-[clamp(2.25rem,7vw,3.75rem)] leading-[1.05] tracking-[-0.045em] [overflow-wrap:anywhere]"
+            className="mb-0 max-w-[22ch] font-extrabold text-[clamp(2.25rem,6.5vw,3.5rem)] leading-[1.04] tracking-[-0.04em] [overflow-wrap:anywhere]"
           >
             {nextStep?.title ?? 'Choose the next thing you can work on'}
           </h1>

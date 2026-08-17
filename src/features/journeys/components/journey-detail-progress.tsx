@@ -234,7 +234,7 @@ export function JourneyDetailProgress({
               {fullView ? 'View current section' : 'View full Journey'}
             </Button>
           ) : null}
-          <fieldset className="grid w-full grid-cols-2 gap-1 rounded-lg bg-ink/5 p-1 sm:w-auto">
+          <fieldset className="grid w-full grid-cols-2 gap-1 rounded-lg border border-ink/5 bg-ink/[0.04] p-1 sm:w-auto">
             <legend className="sr-only">Journey progress view</legend>
             <Button
               type="button"
@@ -268,8 +268,8 @@ export function JourneyDetailProgress({
         />
       ) : (
         <>
-          <div className="overflow-hidden rounded-xl border border-ink/15 bg-paper">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-ink/15 border-b px-4 py-3 sm:px-5">
+          <div className="overflow-hidden rounded-2xl border border-ink/8 bg-card shadow-[0_1px_3px_rgba(0,0,0,0.02),0_6px_20px_rgba(0,0,0,0.02)]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-ink/8 border-b px-5 py-3.5 sm:px-6">
               <p className="mb-0 text-ink/65 text-sm">
                 {fullView
                   ? `${visibleSectionIndexes.length} of ${totalSections} sections`
@@ -357,7 +357,7 @@ export function JourneyDetailProgress({
               </div>
             )}
 
-            <div className="grid gap-5 border-ink/15 border-t px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:px-5">
+            <div className="grid gap-5 border-ink/8 border-t px-5 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:px-6">
               <MilestoneProgress
                 value={nextMilestonePercentage}
                 label={currentMilestone?.name ?? 'Journey target'}

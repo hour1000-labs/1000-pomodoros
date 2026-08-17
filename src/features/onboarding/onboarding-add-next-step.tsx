@@ -152,7 +152,7 @@ function NextStepForm({
             {draft.journeyName}
           </p>
 
-          <h1 className="mb-7 max-w-[14ch] font-bold text-4xl leading-[1.08] tracking-[-0.035em] sm:text-5xl">
+          <h1 className="mb-7 max-w-[14ch] font-extrabold text-4xl text-ink leading-[1.06] tracking-[-0.04em] sm:text-5xl">
             Add your first Next step
           </h1>
 
@@ -172,7 +172,7 @@ function NextStepForm({
                   : 'first-next-step-helper'
               }
               aria-invalid={showNextStepError}
-              className="h-14 w-full min-w-0 rounded-lg border-ink/50 bg-paper px-4 font-bold text-lg focus-visible:border-ink sm:text-xl"
+              className="h-14 w-full min-w-0 rounded-xl border-ink/25 bg-card px-4 font-bold text-lg shadow-xs focus-visible:border-ink focus-visible:ring-1 focus-visible:ring-ink sm:text-xl"
               onBlur={() => setHasBlurred(true)}
               onChange={(event) => {
                 setNextStepTitle(event.target.value);

@@ -39,8 +39,10 @@ function JourneysContent({ state }: { state: AppState }) {
   if (!hasJourneys) {
     return (
       <ApplicationLayout>
-        <header className="border-ink/15 border-b pb-6">
-          <h1 className="mb-0 font-bold text-4xl tracking-[-0.035em] sm:text-5xl">Journeys</h1>
+        <header className="border-ink/8 border-b pb-6">
+          <h1 className="mb-0 font-extrabold text-4xl text-ink tracking-tight sm:text-5xl">
+            Journeys
+          </h1>
         </header>
         <div className="mt-8">
           <EmptyJourneyState />
@@ -51,8 +53,10 @@ function JourneysContent({ state }: { state: AppState }) {
 
   return (
     <ApplicationLayout>
-      <header className="flex flex-wrap items-center justify-between gap-4 border-ink/15 border-b pb-6">
-        <h1 className="mb-0 font-bold text-4xl tracking-[-0.035em] sm:text-5xl">Journeys</h1>
+      <header className="flex flex-wrap items-center justify-between gap-4 border-ink/8 border-b pb-6">
+        <h1 className="mb-0 font-extrabold text-4xl text-ink tracking-tight sm:text-5xl">
+          Journeys
+        </h1>
         <Button asChild variant="outline">
           <Link to="/onboarding/journey" search={{ fresh: true }}>
             <Plus aria-hidden="true" />
@@ -63,7 +67,10 @@ function JourneysContent({ state }: { state: AppState }) {
 
       {groups.active.length > 0 ? (
         <section className="mt-10" aria-labelledby="active-journeys-heading">
-          <h2 id="active-journeys-heading" className="mb-6 font-bold text-3xl tracking-[-0.03em]">
+          <h2
+            id="active-journeys-heading"
+            className="mb-6 font-extrabold text-2xl text-ink tracking-tight sm:text-3xl"
+          >
             Active Journeys
           </h2>
           <JourneyGrid summaries={groups.active} />
@@ -72,7 +79,10 @@ function JourneysContent({ state }: { state: AppState }) {
 
       {groups.inactive.length > 0 ? (
         <section className="mt-14" aria-labelledby="inactive-journeys-heading">
-          <h2 id="inactive-journeys-heading" className="mb-6 font-bold text-3xl tracking-[-0.03em]">
+          <h2
+            id="inactive-journeys-heading"
+            className="mb-6 font-extrabold text-2xl text-ink tracking-tight sm:text-3xl"
+          >
             Other Journeys
           </h2>
           <JourneyGrid summaries={groups.inactive} />

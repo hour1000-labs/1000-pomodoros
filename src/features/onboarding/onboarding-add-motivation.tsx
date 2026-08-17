@@ -71,7 +71,7 @@ function MotivationForm({ draft }: { draft: OnboardingDraft }) {
             {draft.journeyName}
           </p>
 
-          <h1 className="mb-7 max-w-[13ch] font-bold text-4xl leading-[1.08] tracking-[-0.035em] sm:text-5xl">
+          <h1 className="mb-7 max-w-[13ch] font-extrabold text-4xl text-ink leading-[1.06] tracking-[-0.04em] sm:text-5xl">
             Why does it matter?
           </h1>
 
@@ -81,7 +81,7 @@ function MotivationForm({ draft }: { draft: OnboardingDraft }) {
               htmlFor="journey-reason"
             >
               <span>Reason</span>
-              <span className="font-normal text-ink/60">Optional</span>
+              <span className="font-medium text-ink/60 text-xs">Optional</span>
             </label>
             <Textarea
               id="journey-reason"
@@ -91,7 +91,7 @@ function MotivationForm({ draft }: { draft: OnboardingDraft }) {
               maxLength={REASON_MAX_LENGTH}
               autoComplete="off"
               aria-describedby={showCharacterCount ? 'journey-reason-count' : undefined}
-              className="h-32 min-h-0 w-full min-w-0 max-w-full resize-none border-ink/50 bg-paper px-4 py-3 text-base leading-relaxed sm:h-36 sm:text-lg"
+              className="h-32 min-h-0 w-full min-w-0 max-w-full resize-none rounded-xl border-ink/25 bg-card px-4 py-3 text-base leading-relaxed shadow-xs focus-visible:border-ink focus-visible:ring-1 focus-visible:ring-ink sm:h-36 sm:text-lg"
               onChange={(event) => {
                 setReason(event.target.value);
                 setSaveError(null);

@@ -115,10 +115,10 @@ function JourneyForm({ state, startFresh }: { state: AppState; startFresh: boole
             </span>
           </div>
 
-          <h1 className="mb-4 max-w-[15ch] font-bold text-4xl leading-[1.08] tracking-[-0.035em] sm:text-5xl">
+          <h1 className="mb-4 max-w-[15ch] font-extrabold text-4xl text-ink leading-[1.06] tracking-[-0.04em] sm:text-5xl">
             {startFresh ? 'Name your next Journey' : 'Name your first Journey'}
           </h1>
-          <p className="mb-8 max-w-[58ch] text-base text-ink/60 leading-relaxed sm:text-lg">
+          <p className="mb-8 max-w-[58ch] text-base text-ink/65 leading-relaxed sm:text-lg">
             Track focused work, one pomodoro at a time.
           </p>
 
@@ -135,7 +135,7 @@ function JourneyForm({ state, startFresh }: { state: AppState; startFresh: boole
               autoFocus={savedDraft?.journeyName.trim().length === 0 || savedDraft === null}
               aria-describedby={showValidation ? 'journey-name-error' : undefined}
               aria-invalid={showValidation}
-              className="h-14 rounded-lg border-ink/50 px-4 font-bold text-lg focus-visible:border-ink sm:text-xl"
+              className="h-14 rounded-xl border-ink/25 bg-card px-4 font-bold text-lg shadow-xs focus-visible:border-ink focus-visible:ring-1 focus-visible:ring-ink sm:text-xl"
               onBlur={() => setHasBlurred(true)}
               onChange={(event) => {
                 setJourneyName(event.target.value);
@@ -155,14 +155,14 @@ function JourneyForm({ state, startFresh }: { state: AppState; startFresh: boole
             </div>
 
             <fieldset className="mt-4">
-              <legend className="mb-3 text-ink/60 text-sm">Try an example</legend>
+              <legend className="mb-3 font-semibold text-ink/60 text-sm">Try an example</legend>
               <div className="flex flex-wrap gap-2">
                 {journeyExamples.map((example) => (
                   <Button
                     key={example}
                     type="button"
                     variant="outline"
-                    className="border-ink/50 bg-paper px-4 font-normal text-sm"
+                    className="border-ink/15 bg-card px-4 font-medium text-sm hover:border-ink/35 hover:bg-ink/[0.02]"
                     onClick={() => {
                       setJourneyName(example);
                       setSaveError(null);

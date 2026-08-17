@@ -37,7 +37,9 @@ export function PomodoroBlock({
   dialogOpen?: boolean;
   className?: string;
 }) {
-  const fillClipId = `pomodoro-fill-${useId().replaceAll(':', '')}`;
+  const rawId = useId().replaceAll(':', '');
+  const fillClipId = `pomodoro-fill-${rawId}`;
+  const inkFilterId = `pomodoro-ink-${rawId}`;
   const defaultFraction = state === 'partial' ? 0.5 : state === 'future' ? 0 : 1;
   const rawFraction = fraction ?? defaultFraction;
   const clampedFraction = Number.isFinite(rawFraction)
@@ -57,7 +59,7 @@ export function PomodoroBlock({
   const commonClass = cn(
     'relative grid aspect-square size-full min-h-4 min-w-4 max-w-7 place-items-center overflow-visible rounded-full border-0 bg-transparent p-0',
     highlighted &&
-      'zoom-in-75 animate-in ring-2 ring-ink ring-offset-2 duration-300 motion-reduce:animate-none',
+      'animate-[ink-stamp_450ms_cubic-bezier(0.16,1,0.3,1)_forwards] ring-2 ring-ink ring-offset-2 duration-300 motion-reduce:animate-none',
     dialogOpen && 'bg-pomodoro-red/10 ring-2 ring-pomodoro-red ring-offset-2',
     onSelect &&
       'min-h-11 min-w-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2',
@@ -96,6 +98,16 @@ export function PomodoroBlock({
               y="6"
             />
           </clipPath>
+          <filter id={inkFilterId} x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" result="noise" />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale="0.6"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
         </defs>
         {isLatest ? (
           <circle
@@ -111,6 +123,7 @@ export function PomodoroBlock({
         <path
           className="fill-pomodoro-red"
           clipPath={`url(#${fillClipId})`}
+          filter={`url(#${inkFilterId})`}
           d={TOMATO_BODY_PATH}
           data-pomodoro-fill="true"
         />

@@ -30,9 +30,12 @@ function HomeActivityOverview({
     <div className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
       <section
         aria-labelledby="home-today-heading"
-        className="self-start rounded-xl border border-ink/15 p-6"
+        className="self-start rounded-2xl border border-ink/8 bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_16px_rgba(0,0,0,0.02)] sm:p-7"
       >
-        <h2 id="home-today-heading" className="mb-7 font-bold text-2xl tracking-[-0.025em]">
+        <h2
+          id="home-today-heading"
+          className="mb-6 font-extrabold text-2xl text-ink tracking-tight"
+        >
           Today
         </h2>
         <dl className="grid grid-cols-2 gap-6">
@@ -106,8 +109,11 @@ function HomeContent({ now, state }: { now: Date; state: AppState }) {
       <HomeActivityOverview home={home} now={now} state={state} />
 
       <section className="mt-16" aria-labelledby="active-journeys-heading">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-ink/15 border-b pb-4">
-          <h2 id="active-journeys-heading" className="mb-0 font-bold text-3xl tracking-[-0.03em]">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-ink/8 border-b pb-4">
+          <h2
+            id="active-journeys-heading"
+            className="mb-0 font-extrabold text-3xl text-ink tracking-tight"
+          >
             Active Journeys
           </h2>
           <Button asChild variant="outline">

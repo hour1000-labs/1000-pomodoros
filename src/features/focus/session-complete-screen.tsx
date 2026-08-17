@@ -290,14 +290,16 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
               <p className="-mt-4 mb-8 font-bold text-ink/65 text-sm">{streakFeedback}</p>
             ) : null}
 
-            <div className="mb-8 border-ink/15 border-y py-5">
-              <p className="mb-1 font-bold text-ink/60 text-sm">Next step</p>
-              <p className="mb-0 font-bold text-lg [overflow-wrap:anywhere]">
+            <div className="mb-8 border-ink/8 border-y py-5">
+              <p className="mb-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                Next step
+              </p>
+              <p className="mb-0 font-extrabold text-ink text-lg [overflow-wrap:anywhere]">
                 {context.nextStep.title}
               </p>
             </div>
 
-            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <PrimaryButton asChild>
                 {context.crossedMilestone ? (
                   <Link
@@ -314,7 +316,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
                   </Link>
                 )}
               </PrimaryButton>
-              <Button asChild variant="outline" className="border-ink/50 bg-paper">
+              <Button asChild variant="outline">
                 <Link
                   to="/focus"
                   search={{
@@ -328,7 +330,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
               </Button>
             </div>
 
-            <div className="border-ink/15 border-t pt-3">
+            <div className="border-ink/8 border-t pt-3">
               <Button
                 type="button"
                 variant="ghost"
@@ -349,7 +351,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
 
               {reflectionOpen ? (
                 <form
-                  className="mt-3 grid gap-3"
+                  className="mt-3 grid gap-3 rounded-xl border border-ink/8 bg-card p-4 shadow-sm"
                   id="session-reflection-panel"
                   onSubmit={saveReflection}
                 >
@@ -362,7 +364,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
                     maxLength={SESSION_REFLECTION_MAX_LENGTH}
                     rows={4}
                     aria-describedby="session-reflection-count"
-                    className="field-sizing-fixed min-h-28 min-w-0 max-w-full resize-y border-ink/50 bg-paper"
+                    className="field-sizing-fixed min-h-28 min-w-0 max-w-full resize-y border-ink/25 bg-card"
                     onChange={(event) => {
                       setReflection(event.target.value);
                       setSaveError(null);
@@ -376,7 +378,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
                     >
                       {reflection.length} / {SESSION_REFLECTION_MAX_LENGTH}
                     </p>
-                    <Button type="submit" variant="outline" className="border-ink/50">
+                    <Button type="submit" variant="outline">
                       Save reflection
                     </Button>
                   </div>
@@ -396,25 +398,27 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
           </section>
 
           <section
-            className="min-w-0 rounded-xl border border-ink/15 p-4 sm:p-6"
+            className="min-w-0 rounded-2xl border border-ink/8 bg-card p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_6px_20px_rgba(0,0,0,0.02)] sm:p-7"
             aria-labelledby="session-progress-title"
           >
-            <div className="mb-5 flex flex-wrap items-start justify-between gap-3 border-ink/15 border-b pb-4">
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3 border-ink/8 border-b pb-4">
               <div className="min-w-0">
-                <p className="mb-1 font-bold text-ink/60 text-sm">Progress</p>
+                <p className="mb-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                  Progress
+                </p>
                 <h2
-                  className="mb-0 font-bold text-xl [overflow-wrap:anywhere]"
+                  className="mb-0 font-extrabold text-ink text-xl tracking-tight [overflow-wrap:anywhere]"
                   id="session-progress-title"
                 >
                   {context.milestoneLabel}
                 </h2>
               </div>
-              <p className="mb-0 font-bold text-lg tabular-nums">
+              <p className="mb-0 font-extrabold text-ink text-xl tabular-nums">
                 {Math.round(context.milestonePercentage)}%
               </p>
             </div>
 
-            <p className="mb-4 font-bold text-ink/65 text-sm tabular-nums">
+            <p className="mb-4 font-bold text-ink/70 text-sm tabular-nums">
               {formatPomodoroCount(context.totalPomodoros)} of{' '}
               {formatPomodoroCount(context.gridTotalPomodoros)} Pomodoros
             </p>
@@ -429,7 +433,7 @@ function CompletionExperience({ context }: { context: SessionCompletionContext }
             />
 
             <MilestoneProgress
-              className="mt-6 border-ink/15 border-t pt-5"
+              className="mt-6 border-ink/8 border-t pt-5"
               value={context.milestonePercentage}
               label={
                 remainingMinutes === 0

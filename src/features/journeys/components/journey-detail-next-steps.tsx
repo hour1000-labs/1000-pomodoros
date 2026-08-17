@@ -281,12 +281,12 @@ export function JourneyDetailCurrentStep({
   }
 
   return (
-    <aside className="min-w-0 border-ink/15 border-t pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-7">
-      <p className="mb-3 font-bold text-ink/60 text-sm">Next step</p>
+    <aside className="min-w-0 border-ink/8 border-t pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+      <p className="mb-3 font-bold text-ink/60 text-xs uppercase tracking-wider">Next step</p>
       {currentStep ? (
         <>
           <div className="mb-3 flex items-start justify-between gap-3">
-            <h2 className="mb-0 min-w-0 font-bold text-2xl leading-tight tracking-[-0.025em] [overflow-wrap:anywhere]">
+            <h2 className="mb-0 min-w-0 font-extrabold text-2xl text-ink leading-tight tracking-tight [overflow-wrap:anywhere]">
               {currentStep.title}
             </h2>
             {!readOnly ? (

@@ -190,12 +190,15 @@ function SettingsContent({ state }: { state: AppState }) {
 
       <div className="mt-10 grid max-w-reading gap-6">
         <section aria-labelledby="saved-data-heading">
-          <Card className="border border-ink/15 bg-paper py-0 ring-0">
-            <CardHeader className="border-b p-6 sm:p-8">
-              <CardTitle id="saved-data-heading" className="text-xl">
+          <Card className="rounded-2xl border border-ink/8 bg-card py-0 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_8px_24px_rgba(0,0,0,0.03)] ring-1 ring-ink/5">
+            <CardHeader className="border-ink/8 border-b p-6 sm:p-8">
+              <CardTitle
+                id="saved-data-heading"
+                className="font-extrabold text-ink text-xl tracking-tight"
+              >
                 Saved data
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-ink/65 text-sm">
                 Your backup includes Journeys, Next steps, sessions, milestones, goals, and other
                 saved progress from this device.
               </CardDescription>
@@ -203,18 +206,26 @@ function SettingsContent({ state }: { state: AppState }) {
             <CardContent className="p-6 sm:p-8">
               <dl className="mb-7 grid grid-cols-2 gap-5 sm:grid-cols-3">
                 <div>
-                  <dt className="mb-1 text-ink/60 text-sm">Journeys</dt>
-                  <dd className="mb-0 font-bold text-2xl tabular-nums">{state.journeys.length}</dd>
+                  <dt className="mb-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                    Journeys
+                  </dt>
+                  <dd className="mb-0 font-extrabold text-2xl text-ink tabular-nums">
+                    {state.journeys.length}
+                  </dd>
                 </div>
                 <div>
-                  <dt className="mb-1 text-ink/60 text-sm">Focused time</dt>
-                  <dd className="mb-0 font-bold text-lg tabular-nums">
+                  <dt className="mb-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                    Focused time
+                  </dt>
+                  <dd className="mb-0 font-extrabold text-ink text-lg tabular-nums">
                     {formatFocusedDuration(focusedMinutes)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="mb-1 text-ink/60 text-sm">Sessions</dt>
-                  <dd className="mb-0 font-bold text-2xl tabular-nums">
+                  <dt className="mb-1 font-bold text-ink/60 text-xs uppercase tracking-wider">
+                    Sessions
+                  </dt>
+                  <dd className="mb-0 font-extrabold text-2xl text-ink tabular-nums">
                     {state.focusSessions.length}
                   </dd>
                 </div>
@@ -238,7 +249,7 @@ function SettingsContent({ state }: { state: AppState }) {
                 </p>
               ) : null}
 
-              <div className="mt-6 flex gap-3 rounded-lg border border-ink/15 bg-background p-4 text-ink/65 text-sm leading-relaxed">
+              <div className="mt-6 flex gap-3 rounded-xl border border-ink/8 bg-ink/[0.02] p-4 text-ink/70 text-sm leading-relaxed">
                 <ShieldCheck
                   aria-hidden="true"
                   className="mt-0.5 size-5 shrink-0 text-pomodoro-red"
@@ -253,12 +264,17 @@ function SettingsContent({ state }: { state: AppState }) {
         </section>
 
         <section aria-labelledby="manage-journeys-heading">
-          <Card className="border border-ink/15 bg-paper py-0 ring-0">
-            <CardHeader className="border-b p-6 sm:p-8">
-              <CardTitle id="manage-journeys-heading" className="text-xl">
+          <Card className="rounded-2xl border border-ink/8 bg-card py-0 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_8px_24px_rgba(0,0,0,0.03)] ring-1 ring-ink/5">
+            <CardHeader className="border-ink/8 border-b p-6 sm:p-8">
+              <CardTitle
+                id="manage-journeys-heading"
+                className="font-extrabold text-ink text-xl tracking-tight"
+              >
                 Manage Journeys
               </CardTitle>
-              <CardDescription>Review or remove saved Journeys from this device.</CardDescription>
+              <CardDescription className="text-ink/65 text-sm">
+                Review or remove saved Journeys from this device.
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-6 sm:p-8">
               {state.journeys.length === 0 ? (
@@ -272,7 +288,7 @@ function SettingsContent({ state }: { state: AppState }) {
                   </Button>
                 </div>
               ) : (
-                <ul className="divide-y divide-ink/10 rounded-lg border border-ink/15 bg-background">
+                <ul className="divide-y divide-ink/8 rounded-xl border border-ink/8 bg-card">
                   {state.journeys.map((journey) => {
                     const journeyMinutes = getFocusedMinutes(state.focusSessions, journey.id);
                     const journeySessionsCount = state.focusSessions.filter(

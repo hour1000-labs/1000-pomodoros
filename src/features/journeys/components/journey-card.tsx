@@ -35,9 +35,12 @@ export function JourneyCard({
   const summaryDescription = `${focusedTime} focused. Next step: ${nextStepLabel}. ${milestoneLabel}. ${safeMilestonePercent}% complete.`;
 
   return (
-    <Card className="border border-ink/15 py-0 ring-0">
+    <Card className="rounded-2xl border border-ink/8 bg-card py-0 shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_16px_rgba(0,0,0,0.02)] transition-all duration-200 hover:border-ink/20 hover:shadow-md">
       <CardContent
-        className={cn('grid gap-6 p-6', isActive && 'sm:grid-cols-[1fr_auto] sm:items-start')}
+        className={cn(
+          'grid gap-6 p-6 sm:p-7',
+          isActive && 'sm:grid-cols-[1fr_auto] sm:items-start'
+        )}
       >
         <span id={summaryDescriptionId} hidden>
           {summaryDescription}
@@ -45,16 +48,16 @@ export function JourneyCard({
         <Link
           to="/journeys/$journeyId"
           params={{ journeyId }}
-          className="min-w-0 rounded-md"
+          className="group min-w-0 rounded-lg"
           aria-label={isActive ? `View ${name} Journey` : `View ${name} Journey (${status})`}
           aria-describedby={summaryDescriptionId}
         >
           <span className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="font-bold text-2xl underline-offset-4 [overflow-wrap:anywhere] hover:underline">
+            <span className="font-extrabold text-2xl text-ink tracking-tight underline-offset-4 [overflow-wrap:anywhere] group-hover:underline">
               {name}
             </span>
             {isActive ? null : (
-              <span className="rounded-full border border-ink/15 px-2 py-1 font-bold text-ink/60 text-xs">
+              <span className="rounded-full border border-ink/12 bg-ink/[0.03] px-2.5 py-0.5 font-bold text-ink/60 text-xs">
                 {formatJourneyStatus(status)}
               </span>
             )}

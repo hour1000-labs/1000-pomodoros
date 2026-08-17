@@ -81,10 +81,10 @@ function JourneyTargetForm({ journey }: { journey: Journey }) {
           <p className="mb-3 min-w-0 font-bold text-ink/60 text-sm [overflow-wrap:anywhere]">
             {journey.name}
           </p>
-          <h1 className="mb-3 max-w-[14ch] font-bold text-4xl leading-[1.08] tracking-[-0.035em] sm:text-5xl">
+          <h1 className="mb-3 max-w-[14ch] font-extrabold text-4xl text-ink leading-[1.06] tracking-[-0.04em] sm:text-5xl">
             Edit focus target
           </h1>
-          <p className="mb-6 text-base text-ink/60">
+          <p className="mb-7 text-base text-ink/65">
             Change the finish line. Recorded focused time stays the same.
           </p>
 
