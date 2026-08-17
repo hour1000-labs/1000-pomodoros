@@ -1,59 +1,42 @@
-# Current Feature: Award-Winning Minimalist UI Redesign & Atmospheric Immersion
+# Current Feature: <feature name>
 
-Overhaul the visual identity, typography, color palette, logo, motion physics, and immersion across the entire app with an award-winning minimal aesthetic (Dieter Rams / Swiss restraint) while preserving all underlying functionality and user flows.
+<!-- One-sentence description of the feature or fix -->
 
 ## Status
 
-Ready to Commit
+<!-- Not Started | In Progress | Ready to Commit -->
+
+Not Started
 
 ## Goal
 
-Deliver a museum-grade, market-ready minimalist art direction featuring a unified Manrope-led hierarchy with stable tabular numerals, spring motion physics, ambient focus immersion, tactile finish, and OLED dark mode layering across all app surfaces without altering core behavior or feature functionality.
+<!-- User-visible outcome of the feature -->
+
 
 ## Acceptance Criteria
 
-- [x] Define and document a new minimalist, premium art direction and design system in `context/DESIGN.md` (refined palette, typography, elevation, spacing, iconographic style, and logo mark).
-- [x] Define and document the unified Manrope typography system with tabular numerals, spring physics, and focus stage guidelines in `context/DESIGN.md`.
-- [x] Update root theme tokens, spring easings, and OLED dark mode layering in `src/styles.css`.
-- [x] Refresh the brand logo, icon assets, and favicon with a modern, distinctive, minimalist identity.
-- [x] Apply tabular Manrope numerals and refined visual hierarchy across public, onboarding, dashboard, and utility surfaces.
-- [x] Enhance the active focus stage with ambient timer illumination, smooth control transitions, and stable Manrope countdown digits.
-- [x] Implement spring micro-interactions across interactive primitives (buttons, drawers, drag handles, tile selectors).
-- [x] Retain all existing functionality, test suites, accessibility (WCAG AA contrast, keyboard navigation, screen reader labels, 44px tap targets), reduced motion support, and responsive layouts (320px to 1200px+).
+<!-- Checklist of testable outcomes -->
+
+- [ ] Criterion 1
 
 ## Plan
 
-1. Update `src/styles.css` with custom spring easings (`--ease-spring`, `--ease-tactile`) and OLED dark mode tokens.
-2. Update `context/DESIGN.md` documenting the unified Manrope hierarchy, tabular numerals, spring dynamics, and focus stage principles.
-3. Apply tabular Manrope numerals and spring feedback to metric groups and interactive surfaces.
-4. Enhance `focus-session-screen.tsx` and `session-complete-screen.tsx` with stable Manrope digits and ambient focus illumination.
-5. Run Biome checks (`pnpm check`), full test suites (`pnpm test`), and production build (`pnpm build`).
-6. Inspect viewports with Chrome DevTools MCP tools (`take_screenshot`).
+<!-- Implementation steps -->
+
+1. Step 1
 
 ## Verification
 
-- [x] `pnpm check` passes
-- [x] `pnpm test` passes
-- [x] `pnpm build` passes
-- [x] Affected UI verified in the browser, if applicable
-- [x] Mobile and desktop verified, if responsive UI changed
-- [x] No relevant console errors
+- [ ] `pnpm check` passes
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` passes
+- [ ] Affected UI verified in the browser, if applicable
+- [ ] Mobile and desktop verified, if responsive UI changed
+- [ ] No relevant console errors
 
 ## Notes
 
-- Visual-only redesign: zero changes to state management, persistence schemas, timer intervals, or core business rules.
-- Existing tests and accessibility guarantees were strictly preserved across all 455 tests in 40 test files.
-- Revalidation results: `pnpm check` (158 files, 0 errors/warnings), `pnpm test` (40 files, 455 tests passed), `pnpm build` (client, SSR, 13 prerendered pages passed), `git diff --check` passed.
-- 2026-08-17 test pass: `pnpm exec tsc --noEmit` passed; browser checks at 1280x800 and 320x568 covered `/sample`, `/onboarding/journey`, `/home`, `/journeys`, `/settings`, `/streaks`, `/focus`, and `/focus/complete`; all rendered expected headings with no horizontal overflow, no missing image alternatives, no unnamed buttons, and no relevant browser errors or warnings.
-- 2026-08-17 restored-scope revalidation: `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test` (40 files, 455 tests), `pnpm build` (client, SSR, and 13 prerendered pages), and `git diff --check` passed. The same eight routes were rechecked at 1280x800 and 320x568 with no horizontal overflow, missing image alternatives, unnamed visible controls, or relevant console errors/warnings; the Home `Start 25:00` action reached Focus successfully. No tests were added because this pass restored visual-only UI changes and the existing suites remained applicable.
-- Resolved review findings: Vermilion is now `#C10134` with 6.32:1 white and 6.17:1 Paper contrast; Manrope with tabular numerals is used for timers and numeric readouts; all new press transforms reset under reduced motion; and the existing `logo.png` mascot is used for the shared wordmark while the existing `favicon.png` remains the browser and manifest icon with aligned `#c10134` browser chrome metadata.
-- 2026-08-17 broad/high-risk remediation revalidation: shared theme tokens, interactive primitives, root metadata, and manifest were treated as cross-cutting changes. Reran `pnpm check` (159 files), `pnpm exec tsc --noEmit`, `pnpm test` (40 files, 455 tests), `pnpm build` (client, SSR, and 13 prerendered pages), and `git diff --check`; browser verification covered the eight redesigned routes at 1280x800 and 320x568, metadata and computed token checks, reduced-motion class coverage, console errors/warnings, Home-to-Focus navigation, and final desktop composition.
-- 2026-08-17 typography refinement revalidation: replaced the system monospace treatment with the existing Manrope family plus `tabular-nums` for timer and numeric readouts. `pnpm check`, `pnpm test` (40 files, 455 tests), `pnpm build` (client, SSR, and 13 prerendered pages), and `git diff --check` passed; rendered `/streaks` confirmed the numeric readout resolves to Manrope with tabular numerals.
-- 2026-08-17 color refinement: adjusted Vermilion from `#C63F32` through `#C83A2E` and `#C43B3B` to `#C10134`, preserving the desired crimson character while passing 6.32:1 white and 6.17:1 Paper contrast. Updated shared UI tokens, focus glow/shadows, browser metadata, manifest, and design documentation; `pnpm check` and `git diff --check` passed.
-- 2026-08-17 feature test: `pnpm check` passed on 158 files; `pnpm test` passed with 40 files and 455 tests; `pnpm build` passed for client, SSR, and 13 prerendered pages. Final browser checks on `/home` found `#c10134` as both the computed token and theme metadata, `/logo.png` as the mascot, no missing image alternatives, and no error/warning logs; stable desktop 1280x800 and mobile 320x568 renders had no persistent horizontal overflow. A transient loading-state width measurement resolved to the viewport after the page settled.
-- 2026-08-17 feature review: compared the complete feature diff with base `9f4a87d`, including all tracked changes and untracked workspace artifacts. Every code change maps to a documented visual, accessibility, branding, motion, or verification criterion; no persistence, timer, routing, dependency, or business-rule changes were found. The final color, Manrope/tabular numeral treatment, `logo.png` mascot wiring, reduced-motion resets, and SVG effect IDs were rechecked against the recorded test/build/browser evidence. No blocking findings remain; status remains `Ready to Commit`.
-- Remediation classification: proven non-semantic restoration of the pre-refinement UI; only visual tokens/layout classes and scope documentation were restored, with no state, types, persistence, generated output, or business-rule changes. Re-ran `pnpm check`, `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm build`, `git diff --check`, and the responsive browser audit; reused earlier functional and accessibility evidence where unaffected.
-- The root route was intentionally observed through the existing saved-data redirect to `/home`; direct public-surface coverage used `/sample` and onboarding without changing saved data. A body-level Tab simulation was blocked by the in-app browser's focus translation, while the existing 455-test suite and DOM accessibility audit remained passing.
+<!-- Decisions, blockers, and scope changes -->
 
 ## History
 
@@ -331,3 +314,9 @@ Append completed work from earliest to latest using this format:
 - Branch: `codex/feature/compact-monthly-activity`
 - Summary: Refined Monthly activity into a minimal chronological journal with a month-total summary, emphasized Today state, context-specific latest-day windows, caret-based earlier-day disclosure, reversible collapse, and responsive accessible table behavior on Home and Journey Detail. Added research-backed UI guidance and regression coverage for boundary, partial, dense, historical, and empty states.
 - Verification: `pnpm check`, `pnpm exec tsc --noEmit`, focused and full `pnpm test` suites (40 files, 455 tests), `pnpm build`, `git diff --check`, and real-browser P1 checks for empty/current and historical 31-day states, 3/7-day defaults, repeated expansion/collapse, partial Pomodoros, dense-day overflow, 320px, desktop, 640×400 zoom-equivalent layouts, 44px targets, no horizontal overflow, and clean console logs passed.
+
+### 2026-08-17 — Award-Winning Minimalist UI Redesign & Atmospheric Immersion
+
+- Branch: `codex/feature/award-winning-minimalist-ui-redesign`
+- Summary: Delivered the Manrope-led minimalist visual redesign, final `#C10134` red palette, atmospheric focus treatment, spring interactions, existing mascot alignment, responsive refinements, and added the requested Journey Detail UI reference screenshot.
+- Verification: `pnpm check`, `pnpm test` (40 files, 455 tests), `pnpm build` (client, SSR, 13 prerendered pages), `git diff --check`, WCAG contrast audit, and desktop/mobile browser checks passed.
